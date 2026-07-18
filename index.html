@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zojo Nepal</title>
+  
+  
+  <style>
+    /* --- 1. DESIGN SYSTEM & CORE CSS VARIABLES (LIGHT MODE + PURPLE THEME) --- */
+    :root {
+      --bg-main: #f4f5f8;
+      --bg-card: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --nepal-blue: #9333ea;
+      --nepal-red: #7e22ce;
+      --transition: all 0.25s ease-in-out;
+      --input-bg: #f9fafb;
+      --frame-bg: #f3f4f6;
+      --promo-gradient-start: #f3e8ff;
+      --promo-gradient-end: #ffffff;
+    }
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+  /* Removes the automatic blue tap animation overlay on mobile devices */
+  -webkit-tap-highlight-color: transparent; 
+}
+    
+    html, body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+    
+    body { 
+      background-color: var(--bg-main); 
+      color: var(--text-main); 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+    }
+
+    /* --- 2. NAVBAR --- */
+    .app-header {
+      background: var(--bg-card);
+      border-bottom: 3px solid var(--nepal-blue);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    @media (min-width: 768px) { 
+      .app-header { padding: 16px 24px; gap: 16px; } 
+    }
+
+    .brand-logo-container { 
+      display: flex; 
+      align-items: center; 
+      cursor: pointer; 
+      flex-shrink: 0;
+    }
+    .brand-logo-img { 
+      height: 42px; 
+      width: auto; 
+      object-fit: contain; 
+    }
+    @media (min-width: 768px) { 
+      .brand-logo-img { height: 65px; } 
+    }
+
+    .nav-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    @media (min-width: 768px) {
+      .nav-actions-right { gap: 12px; }
+    }
+
+    /* --- SEARCH ICON & EXPANDABLE POPUP --- */
+    .search-icon-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .search-icon-btn:hover { background: var(--frame-bg); }
+
+    .header-search-overlay {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: var(--bg-card);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      border-bottom: 1px solid var(--border-color);
+      display: none;
+      flex-direction: column;
+      z-index: 99;
+    }
+    .header-search-overlay.active { display: flex; }
+    
+    .search-input-row-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      border: 2px solid var(--border-color);
+      border-radius: 30px;
+      background-color: var(--input-bg);
+      color: var(--text-main);
+      outline: none;
+      transition: var(--transition);
+    }
+    .search-input:focus { border-color: var(--nepal-blue); background-color: var(--bg-card); }
+
+    .search-inline-results-panel {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding: 12px 16px;
+      background: var(--bg-main);
+      display: none;
+    }
+    .search-inline-results-panel.has-query {
+      display: block;
+    }
+
+    /* --- THREE DOTS KEBAB DROPDOWN --- */
+    .dots-menu-container {
+      position: relative;
+      display: inline-block;
+    }
+    .dots-toggle-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .dots-toggle-btn:hover { background: var(--frame-bg); }
+    
+    .dots-dropdown-panel {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 120%;
+      background-color: var(--bg-card);
+      min-width: 220px;
+      box-shadow: 0px 8px 24px rgba(0,0,0,0.12);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      z-index: 1050;
+      padding: 14px;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dots-dropdown-panel.active { display: flex; }
+    
+    .dropdown-section-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 4px;
+      margin-bottom: 2px;
+    }
+    
+    .dropdown-links-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .dropdown-item-link {
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      border-radius: 6px;
+      width: 100%;
+    }
+    .dropdown-item-link:hover { background: var(--frame-bg); color: var(--nepal-blue); }
+
+    /* --- AUTH & CART BUTTONS --- */
+    .auth-btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: var(--transition);
+      width: 100%;
+    }
+    .auth-btn:hover { background: var(--frame-bg); }
+
+    .user-profile-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--frame-bg);
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .user-avatar-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+    }
+    .signout-link {
+      color: var(--nepal-blue);
+      cursor: pointer;
+      font-size: 0.75rem;
+      text-decoration: underline;
+      align-self: flex-end;
+    }
+
+    .cart-nav-btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      transition: var(--transition);
+      position: relative;
+    }
+    @media (min-width: 768px) {
+      .cart-nav-btn { padding: 8px 16px; font-size: 0.9rem; gap: 8px; }
+    }
+    .cart-nav-btn:hover { background: var(--frame-bg); }
+    .cart-badge {
+      background: var(--nepal-red);
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    /* --- 3. MAIN CONTAINER VIEW --- */
+    #app-viewport { 
+      flex: 1; 
+      max-width: 1200px; 
+      width: 100%; 
+      margin: 0 auto; 
+      padding: 10px; 
+    }
+    @media (min-width: 768px) { #app-viewport { padding: 24px; } }
+
+    /* --- DYNAMIC SLIDER HERO BANNER --- */
+    .hero-slider-container {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--frame-bg);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    @media (min-width: 480px) { .hero-slider-container { height: 300px; } }
+    @media (min-width: 768px) { .hero-slider-container { height: 420px; margin-bottom: 30px; } }
+
+    .slider-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .slide-panel { min-width: 100%; height: 100%; position: relative; overflow: hidden; }
+    .slide-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .slider-nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      user-select: none;
+      transition: var(--transition);
+    }
+    @media (min-width: 768px) { .slider-nav-arrow { width: 46px; height: 46px; font-size: 1.25rem; } }
+    .slider-nav-arrow:hover { background: rgba(147, 51, 234, 0.6); transform: translateY(-50%) scale(1.05); }
+    .nav-arrow-left { left: 10px; }
+    .nav-arrow-right { right: 10px; }
+
+    .slider-indicators {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: var(--transition);
+    }
+    .indicator-dot.active-dot { background: var(--nepal-blue); width: 20px; border-radius: 10px; }
+
+    .categories-filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 4px 12px 4px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      width: calc(100% + 20px);
+      margin-left: -10px;
+    }
+    @media (min-width: 768px) { .categories-filter-bar { width: 100%; margin-left: 0; padding: 4px 0 16px 0; } }
+    .categories-filter-bar::-webkit-scrollbar { display: none; }
+    
+    .category-pill-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--text-muted);
+      outline: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: none !important;
+    }
+    .category-pill-btn:focus,
+    .category-pill-btn:active,
+    .category-pill-btn:hover {
+      outline: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      box-shadow: none !important;
+    }
+    .category-pill-btn.active-category {
+      background: #ffffff !important;
+      border: 1.5px solid var(--text-main) !important;
+      color: var(--text-main) !important;
+      font-weight: 700 !important;
+      outline: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      box-shadow: none !important;
+    }
+
+    /* --- 4. CATALOG GRID --- */
+    .catalog-grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 8px; 
+    }
+    @media (min-width: 768px) { 
+      .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; } 
+    }
+    
+    .product-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 8px; 
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .product-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); }
+    @media (min-width: 768px) { .product-card { padding: 16px; border-radius: 12px; } }
+
+    .image-frame { 
+      width: 100%; 
+      aspect-ratio: 1 / 1;
+      height: auto;
+      background: var(--frame-bg); 
+      border-radius: 6px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      overflow: hidden; 
+    }
+    @media (max-width: 480px) {
+      .image-frame {
+        max-height: 145px;
+      }
+    }
+    @media (min-width: 768px) { .image-frame { aspect-ratio: 4 / 3; height: 180px; } }
+    .image-frame img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+
+    .product-meta { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 10px;
+    }
+    .product-meta h3 { 
+      font-size: 0.85rem; 
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 6px; 
+      color: var(--text-main);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 2.8em; 
+    }
+    @media (min-width: 768px) { .product-meta h3 { font-size: 1.05rem; height: 2.8em; } }
+    
+    .product-meta p { 
+      font-size: 0.75rem; 
+      color: var(--text-muted); 
+      line-height: 1.4; 
+      margin-bottom: 12px; 
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 2.8em; 
+    }
+
+    .buy-row { 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center;
+      align-items: stretch;
+      gap: 8px;
+      margin-top: auto; 
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+      width: 100%;
+    }
+    @media (min-width: 480px) { .buy-row { flex-direction: row; justify-content: space-between; align-items: center; gap: 6px; } }
+    
+    .price-block { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+    .discount-container { display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: var(--text-muted); }
+    .price { font-weight: 800; color: var(--nepal-blue); font-size: 0.95rem; white-space: nowrap; }
+    @media (min-width: 768px) { .price { font-size: 1.1rem; } }
+
+    .btn { padding: 8px 12px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; transition: var(--transition); text-align: center; font-size: 0.75rem; white-space: nowrap; }
+    @media (min-width: 768px) { .btn { padding: 10px 16px; font-size: 0.85rem; } }
+    .btn-crimson { background: var(--nepal-red); color: #ffffff; }
+    .btn-crimson:hover { background: #6b21a8; }
+
+    /* --- 5. MODALS --- */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 12px;
+    }
+    .modal-card {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 440px;
+      border-radius: 16px;
+      padding: 16px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    .modal-close { 
+      position: absolute; 
+      top: 12px; right: 12px; 
+      background: var(--frame-bg); 
+      color: var(--text-main);
+      border: 1px solid var(--border-color); 
+      width: 28px; height: 28px; 
+      border-radius: 50%; 
+      font-weight: bold; 
+      cursor: pointer; 
+      display: flex; align-items: center; justify-content: center; 
+      z-index: 10;
+    }
+
+    #shippingDetailsModal .modal-card {
+      max-width: 100%;
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+      margin: 0;
+      padding: 40px 24px;
+      box-shadow: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    @media (min-width: 768px) {
+      #shippingDetailsModal .modal-card {
+        max-width: 550px !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: 90vh !important;
+        border-radius: 16px !important;
+        margin: auto !important;
+        padding: 30px 24px !important;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
+        border: 1px solid var(--border-color) !important;
+      }
+    }
+    
+    .checkout-live-summary-box { background: var(--frame-bg); padding: 16px; border-radius: 12px; margin: 16px 0; border-left: 4px solid var(--nepal-blue); }
+    .live-summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; color: var(--text-muted); }
+    .live-summary-total { font-weight: 800; color: var(--nepal-blue); font-size: 1.1rem; border-top: 1px dashed var(--border-color); padding-top: 6px; margin-top: 4px; }
+
+    .gallery-main-viewport { width: 100%; height: 160px; background: var(--frame-bg); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
+    .gallery-main-viewport img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+    .gallery-thumbs-row { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
+    .thumb-nail-item { width: 45px; height: 45px; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; object-fit: contain; background: var(--bg-card); flex-shrink: 0; mix-blend-mode: multiply;}
+    .thumb-nail-item.active-thumb { border-color: var(--nepal-blue); box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2); }
+
+    .variant-swatch-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 12px 0; }
+    .color-pill-selector { border: 2px solid var(--border-color); border-radius: 20px; padding: 6px 12px; font-size: 0.75rem; font-weight: 700; background: var(--bg-card); color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .color-pill-selector.active-color { border-color: var(--nepal-blue); background: var(--promo-gradient-start); color: var(--nepal-blue); }
+    .color-circle-preview { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.1); }
+
+    .details-form-group { margin-bottom: 10px; text-align: left; }
+    .details-form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
+    .details-form-input { width: 100%; padding: 8px 12px; font-size: 0.85rem; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; outline: none; background: var(--input-bg); }
+
+    /* --- 6. SIDEBAR CART PANEL --- */
+    .cart-sidebar { position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%; background: var(--bg-card); box-shadow: -4px 0 20px rgba(0,0,0,0.1); z-index: 1011; transition: right 0.3s ease-in-out; display: flex; flex-direction: column; border-left: 1px solid var(--border-color);}
+    .cart-sidebar.open { right: 0; }
+    .cart-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .cart-items-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    
+    .cart-item { display: flex; gap: 10px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+    .cart-item-img { width: 45px; height: 45px; object-fit: contain; background: var(--frame-bg); border-radius: 4px; mix-blend-mode: multiply;}
+    .cart-item-details { flex: 1; }
+    
+    .quantity-controls { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .qty-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--frame-bg); color: var(--text-main); cursor: pointer; font-weight: bold; font-size: 0.75rem; }
+    .cart-footer { padding: 16px; border-top: 1px solid var(--border-color); background: var(--bg-main); }
+    .cart-total-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 700; font-size: 1rem; color: var(--text-main); }
+
+    .checkout-management-box { background: var(--bg-card); border-radius: 12px; padding: 12px 0; margin-top: 8px; }
+    .payment-options-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
+    .method-selector-card { border: 2px solid var(--border-color); border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 0.75rem; font-weight: bold; background: var(--frame-bg); color: var(--text-muted); cursor: pointer; }
+    .method-selector-card.active-cod { border-color: #f0ad4e; background: rgba(240,173,78,0.1); color: #e69620; }
+    .method-selector-card.active-esewa { border-color: #60bb46; background: rgba(96,187,70,0.1); color: #4cad26; }
+    .method-selector-card.active-khalti { border-color: #5c2d91; background: rgba(92,45,145,0.1); color: #5c2d91; }
+
+    /* --- FIXED BOTTOM CONTACT PILLS --- */
+    .whatsapp-fixed-fab { position: fixed; bottom: 16px; right: 16px; width: 46px; height: 46px; background-color: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    /* --- 7. ACCORDION FAQ SYSTEM --- */
+    .faq-container { margin-top: 30px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; }
+    .faq-title { font-size: 1.15rem; font-weight: 800; color: var(--nepal-blue); margin-bottom: 12px; text-align: center; }
+    .faq-wrapper { display: flex; flex-direction: column; gap: 10px; }
+    .faq-item { border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-main); overflow: hidden; }
+    .faq-item[open] { background: var(--bg-card); border-color: var(--nepal-blue); }
+    .faq-question { padding: 12px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; user-select: none; outline: none; color: var(--text-main); }
+    .faq-answer { padding: 0 14px 14px 14px; font-size: 0.8rem; line-height: 1.5; color: var(--text-muted); }
+
+    /* --- FOOTER REGION --- */
+    footer { background: var(--text-main); color: #ffffff; padding: 40px 20px 20px 20px; margin-top: 40px; }
+    .footer-grid-layout { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 30px; }
+    @media (min-width: 768px) { .footer-grid-layout { grid-template-columns: repeat(3, 1fr); } }
+    .footer-block h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; color: var(--promo-gradient-start); }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { color: #9ca3af; text-decoration: none; font-size: 0.9rem; }
+    .footer-links a:hover { color: white; }
+    .footer-copyright-bar { text-align: center; border-top: 1px solid #374151; padding-top: 20px; margin-top: 30px; font-size: 0.8rem; color: #6b7280; }
+
+    /* --- DARAZ STYLE PRODUCT DETAIL VIEW --- */
+    .daraz-product-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+    @media (min-width: 800px) {
+      .daraz-product-grid {
+        grid-template-columns: 1fr 1.2fr;
+      }
+    }
+    .detail-thumbnail-item {
+      width: 60px;
+      height: 60px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      object-fit: contain;
+      background: var(--bg-card);
+      flex-shrink: 0;
+      mix-blend-mode: multiply;
+      transition: var(--transition);
+    }
+    .detail-thumbnail-item.active-thumb {
+      border-color: var(--nepal-blue);
+      box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
+      transform: scale(1.05);
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: var(--transition);
+    }
+    .tab-btn.active-tab {
+      color: var(--nepal-blue);
+      border-bottom-color: var(--nepal-blue);
+    }
+    .detail-review-item {
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 0;
+    }
+    .detail-review-item:last-child {
+      border-bottom: none;
+    }
+    .dropdown-item-link {
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 10px 14px;
+      width: 100%;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      display: block;
+      transition: background 0.2s;
+      border-radius: 6px;
+    }
+    .dropdown-item-link:hover {
+      background: var(--bg-main);
+    }
+    .interactive-star {
+      cursor: pointer;
+    }
+    .interactive-star.selected {
+      color: #f59e0b !important;
+    }
+    .timeline-node {
+      display: flex;
+      gap: 12px;
+      position: relative;
+      padding-bottom: 14px;
+    }
+    .timeline-node::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 16px;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+    }
+    .timeline-node:last-child::before {
+      display: none;
+    }
+    .timeline-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      margin-top: 3px;
+    }
+    .timeline-dot.active {
+      background: var(--nepal-blue);
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.25);
+    }
+
+    @keyframes spinLoader {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulseLogo {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FULL SCREEN BRANDED LOAD OVERLAY -->
+  <div id="appGlobalLoadScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease; gap: 20px;">
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.src='zozonepal.png'">
+      <div style="width: 45px; height: 45px; border: 4px solid #f3e8ff; border-top: 4px solid var(--nepal-blue); border-radius: 50%; animation: spinLoader 0.9s linear infinite;"></div>
+      <p style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.05em; margin: 0; font-family: sans-serif;">Loading Zozo Nepal...</p>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin: -8px 0 0 0; font-family: sans-serif;">Please wait a moment</p>
+    </div>
+  </div>
+
+  <header class="app-header">
+    <div class="brand-logo-container" onclick="location.reload()">
+      <img src="zozonepal.png" class="brand-logo-img" alt="Zojo Nepal Logo">
+    </div>
+    
+    <div class="nav-actions-right">
+      <button class="search-icon-btn" onclick="toggleHeaderSearchOverlay()" title="Search catalog">
+        <svg style="width:18px; height:18px;" viewBox="0 0 24 24"><path fill="var(--text-muted)" d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </button>
+      
+      <button class="cart-nav-btn" onclick="toggleCartSidebar(true)">
+        🛒 <span id="navCartCountBadge" class="cart-badge">0</span>
+      </button>
+
+      <div class="dots-menu-container">
+        <button class="dots-toggle-btn" onclick="toggleDotsDropdown()">
+          <svg style="width:18px; height:18px;" viewBox="0 0 24 24"><path fill="var(--text-muted)" d="M12 16a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2Z"/></svg>
+        </button>
+        <div id="dotsMenuDropdown" class="dots-dropdown-panel">
+          <div id="userAuthenticationTargetBox">
+             </div>
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 8px 0;">
+          <button class="dropdown-item-link" onclick="openOrderTrackingModal()">🔍 Track My Orders</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="searchOverlayDrop" class="header-search-overlay">
+      <div class="search-input-row-bar">
+        <div class="search-input-wrapper">
+          <input type="text" id="liveQuerySearchInput" class="search-input" placeholder="What are you searching for today?" oninput="executeLiveCatalogSearchSearch()">
+        </div>
+        <button class="modal-close" style="position:static;" onclick="toggleHeaderSearchOverlay()">✕</button>
+      </div>
+      <div id="searchInlineViewResults" class="search-inline-results-panel"></div>
+    </div>
+  </header>
+
+  <div id="app-viewport">
+    <div id="homeMainView">
+      <div class="hero-slider-container">
+        <div id="sliderTrack" class="slider-track">
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 1" onerror="this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 2" onerror="this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 3" onerror="this.src='zozonepal.png'"></div>
+        </div>
+        <button class="slider-nav-arrow nav-arrow-left" onclick="slideShift(-1)">&#10094;</button>
+        <button class="slider-nav-arrow nav-arrow-right" onclick="slideShift(1)">&#10095;</button>
+        <div class="slider-indicators" id="sliderIndicatorsContainer"></div>
+      </div>
+
+      <div class="categories-filter-bar">
+        <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
+        <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
+        <button id="catBtn-headphones" class="category-pill-btn" onclick="switchCategoryFilter('headphones')">🎧 Headphones</button>
+        <button id="catBtn-charger" class="category-pill-btn" onclick="switchCategoryFilter('charger')">🔌 Chargers</button>
+        <button id="catBtn-mobile-coolers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-coolers')">❄️ Mobile Coolers</button>
+        <button id="catBtn-mini-fan" class="category-pill-btn" onclick="switchCategoryFilter('mini-fan')">🌬️ Mini Fans</button>
+      </div>
+
+      <div id="productGrid" class="catalog-grid">
+      </div>
+
+      <section class="faq-container">
+        <h3 class="faq-title">Frequently Asked Questions (FAQ)</h3>
+        <div class="faq-wrapper">
+          <details class="faq-item">
+            <summary class="faq-question">How do I place an order on Zojo Nepal?</summary>
+            <div class="faq-answer">
+              To place an order, select your desired item, choose your variant color, and add it to your cart. Click on your shopping cart, choose your payment method, click "Proceed to Checkout", and sign in with your Google Account to safely fill out your shipping information.
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-question">What payment methods do you support?</summary>
+            <div class="faq-answer">
+              We officially support Cash on Delivery (COD) for flexible physical transactions, alongside instant mobile digital wallet payouts via eSewa QR code routing and Khalti QR code transfer systems.
+            </div>
+          </details>
+        </div>
+      </section>
+    </div>
+
+    <div id="productQuickViewModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeQuickViewModal()">✕</button>
+      <div class="gallery-main-viewport">
+        <img id="modalMainLargePreview" src="" alt="Product Preview">
+      </div>
+      <div class="gallery-thumbs-row" id="modalThumbnailsContainer"></div>
+      
+      <div class="product-meta" style="margin:0; text-align:left;">
+        <h3 id="modalProductName" style="height:auto; font-size:1.2rem; margin-bottom:4px;"></h3>
+        <p id="modalProductDesc" style="height:auto; margin-bottom:12px;"></p>
+        <div id="modalProductPriceContainer"></div>
+      </div>
+
+      <div style="margin-top:12px; text-align:left;">
+        <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted);">Available Color Variant:</span>
+        <div class="variant-swatch-row" id="modalColorsContainer"></div>
+      </div>
+
+      <button class="btn btn-crimson" style="width:100%; margin-top:10px; font-size:0.9rem; padding:12px;" onclick="addCurrentConfiguredItemToCart()">🛒 Add Item to Selection Bag</button>
+    </div>
+  </div>
+
+  <div id="cartSidebarLayer" class="cart-sidebar">
+    <div class="cart-header">
+      <h3 style="font-weight:800; font-size:1.15rem;">Shopping Cart Bag</h3>
+      <button class="modal-close" style="position:static;" onclick="toggleCartSidebar(false)">✕</button>
+    </div>
+    <div class="cart-items-container" id="cartDrawerItemsTarget"></div>
+    <div class="cart-footer" id="cartDrawerFooterZone" style="display:none;">
+      <div class="cart-total-row">
+        <span>Subtotal:</span>
+        <span id="cartDrawerCalculatedSubtotal">Rs. 0</span>
+      </div>
+      <button class="btn btn-crimson" style="width:100%; padding:12px; font-size:0.95rem; margin-top:8px;" onclick="openCustomerDetailsModal()">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <div id="shippingDetailsModal" class="modal-overlay" style="z-index: 1020;">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeCustomerDetailsModal()" style="top:20px; right:20px; width:36px; height:36px; font-size:1.2rem;">✕</button>
+      <div style="max-width:480px; width:100%; margin:auto;">
+        <h3 style="font-size:1.4rem; margin-bottom:6px; text-align:center; color:var(--text-main); font-weight:800;">Delivery Details</h3>
+        <p style="text-align:center; font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">Please provide accurate shipping inputs below.</p>
+        
+        <form id="shippingFormPipeline" onsubmit="handleFormSubmissionPipeline(event)">
+          <div class="details-form-group"><label for="custFormName">Full Name *</label><input type="text" id="custFormName" class="details-form-input" required placeholder="Your Full Name"></div>
+          <div class="details-form-group"><label for="custFormEmail">Email Address *</label><input type="email" id="custFormEmail" class="details-form-input" required placeholder="name@domain.com"></div>
+          <div class="details-form-group"><label for="custFormPhone">Phone Number *</label><input type="tel" id="custFormPhone" class="details-form-input" required placeholder="98XXXXXXXX"></div>
+          
+          <div class="details-form-group">
+            <label for="custFormDistrict">Delivery District *</label>
+            <select id="custFormDistrict" class="details-form-input" style="height:40px;" onchange="recalculateCheckoutDeliveryCharge()" required>
+              <option value="" disabled selected>-- Select your District --</option>
+              <optgroup label="Local (Inside Rupandehi)">
+                <option value="Rupandehi">Rupandehi (Butwal, Bhairahawa, etc.)</option>
+              </optgroup>
+              <optgroup label="Neighboring Districts (Lumbini Zone)">
+                <option value="Kapilvastu">Kapilvastu</option>
+                <option value="Nawalparasi">Nawalparasi</option>
+                <option value="Palpa">Palpa</option>
+                <option value="Arghakhanchi">Arghakhanchi</option>
+                <option value="Gulmi">Gulmi</option>
+              </optgroup>
+              <optgroup label="Major Industrial/City Hubs">
+                <option value="Kathmandu">Kathmandu</option>
+                <option value="Lalitpur">Lalitpur</option>
+                <option value="Bhaktapur">Bhaktapur</option>
+                <option value="Kaski">Kaski (Pokhara)</option>
+                <option value="Chitwan">Chitwan</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="details-form-group"><label for="custFormLoc">Exact Shipping Address Location *</label><input type="text" id="custFormLoc" class="details-form-input" required placeholder="Tole, Road, Ward No, City details"></div>
+          <div class="details-form-group"><label for="custFormFamous">Famous Nearby Landmark *</label><input type="text" id="custFormFamous" class="details-form-input" required placeholder="Nearby School, Temple, Hospital, Chowk"></div>
+
+          <div class="checkout-management-box">
+            <label style="font-size:0.8rem; font-weight:700; color:var(--text-main); text-align:left; display:block; padding-left:2px;">Select Payment Strategy Channel:</label>
+            <div class="payment-options-row">
+              <div id="methodeSewa" class="method-selector-card active-cod" onclick="switchCheckoutActivePaymentMethod('eSewa')">eSewa Wallet</div>
+              <div id="methodKhalti" class="method-selector-card" onclick="switchCheckoutActivePaymentMethod('Khalti')">Khalti Card</div>
+              <div id="methodCOD" class="method-selector-card" onclick="switchCheckoutActivePaymentMethod('COD')">Cash on Delivery</div>
+            </div>
+          </div>
+
+          <!-- DYNAMIC SCAN TO PAY QR BOX -->
+          <div id="qrPaymentDetailsSection" style="display:none; background:#f8fafc; border:1px dashed var(--border-color); border-radius:12px; padding:16px; margin-bottom:18px; text-align:left;">
+            <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:12px; gap:8px;">
+              <span id="qrMethodBadge" style="font-size:0.75rem; font-weight:800; text-transform:uppercase; background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:12px;">eSewa Scan &amp; Pay</span>
+              <p style="font-size:0.8rem; color:var(--text-muted);">Scan this QR using your payment wallet, complete the transfer, and fill in details below.</p>
+              
+              <!-- QR Image Display -->
+              <div style="background:#ffffff; border:1px solid #e2e8f0; padding:10px; border-radius:8px; display:inline-block; margin-top:4px; max-width:200px;">
+                <img id="storeDynamicPaymentQrImage" src="" alt="Payment QR" style="width:160px; height:160px; object-fit:contain;" onerror="this.src='zozonepal.png'">
+                <p id="qrPlaceholderMessage" style="font-size:0.75rem; color:var(--nepal-red); font-weight:700; margin-top:4px; display:none;">No QR uploaded yet.<br>Pay to store phone: 98XXXXXXXX</p>
+              </div>
+            </div>
+
+            <div class="details-form-group">
+              <label for="custFormTxnId" style="font-size:0.8rem; font-weight:700; display:flex; justify-content:space-between;">
+                <span>Transaction ID / Reference Code *</span>
+                <span style="color:var(--nepal-blue); font-size:0.7rem;">Enter code from receipt</span>
+              </label>
+              <input type="text" id="custFormTxnId" class="details-form-input" placeholder="e.g. 5A92X789">
+            </div>
+
+            <div class="details-form-group" style="margin-bottom:0;">
+              <label for="custFormScreenshot" style="font-size:0.8rem; font-weight:700;">Upload Payment Screenshot (Optional)</label>
+              <input type="file" id="custFormScreenshot" class="details-form-input" accept="image/*" style="font-size:0.8rem; padding:6px;">
+            </div>
+          </div>
+
+          <!-- PROMO CODE SECTION -->
+          <div style="background:#faf5ff; border:1px solid var(--border-color); border-radius:12px; padding:14px; margin-bottom:18px; text-align:left;">
+            <label style="font-size:0.8rem; font-weight:700; color:var(--text-main); display:block; margin-bottom:6px;">🎁 Have a Coupon / Promo Code?</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="promoCodeInput" class="details-form-input" placeholder="e.g. ZOJO10" style="margin:0; text-transform:uppercase;">
+              <button type="button" class="btn btn-crimson" onclick="executeApplyPromoCodeValue()" style="padding:0 18px; font-size:0.85rem; border-radius:8px; background:var(--nepal-blue); white-space:nowrap;">Apply Code</button>
+            </div>
+            <div id="promoFeedbackMessage" style="font-size:0.75rem; font-weight:600; margin-top:6px; display:none;"></div>
+          </div>
+
+          <div class="checkout-live-summary-box">
+            <div class="live-summary-row"><span>Items Subtotal:</span><span id="chkSubtotal">Rs. 0</span></div>
+            <div class="live-summary-row" id="chkPromoDiscountRow" style="display:none; color:#15803d; font-weight:700;"><span>Promo Discount:</span><span id="chkPromoDiscount">Rs. 0</span></div>
+            <div class="live-summary-row"><span>Logistics Shipping Fee:</span><span id="chkDeliveryFee">Rs. 0</span></div>
+            <div class="live-summary-row live-summary-total"><span>Grand Total Bill:</span><span id="chkGrandTotal">Rs. 0</span></div>
+          </div>
+
+          <button type="submit" class="btn btn-crimson" style="width:100%; padding:14px; font-size:1rem; border-radius:30px; background:var(--nepal-blue);">Confirm Purchase Manifest</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="orderSuccessModalFrame" class="modal-overlay" style="z-index: 1050;">
+    <div class="modal-card" style="border-top:5px solid var(--nepal-blue); box-shadow:0 15px 35px rgba(0,0,0,0.2);">
+      <div style="text-align:center; margin-bottom:10px;">
+        <span style="font-size:2.5rem;">✅</span>
+        <h3 style="font-size:1.25rem; color:var(--nepal-blue); margin-top:4px;">Your order has been placed!</h3>
+        <p style="font-weight:700; color:var(--nepal-red); font-size:0.9rem; margin-top:2px;">Thank you for trusting us!</p>
+      </div>
+      <hr style="border:0; border-top:1px dashed var(--border-color); margin:10px 0;">
+      <h4 style="font-size:0.85rem; color:var(--text-main); margin-bottom:4px; font-weight:700;">Recorded Shipment Details:</h4>
+      <div style="background:var(--input-bg); padding:10px; border-radius:8px; font-size:0.8rem; line-height:1.5; color:var(--text-muted);">
+        <p><strong>Name:</strong> <span id="replyReceiptName"></span></p>
+        <p><strong>Phone:</strong> <span id="replyReceiptPhone"></span></p>
+        <p><strong>Location:</strong> <span id="replyReceiptLoc"></span></p>
+        <p><strong>Landmark:</strong> <span id="replyReceiptFamous"></span></p>
+        <p><strong>Payment:</strong> <span id="replyReceiptMethod"></span></p>
+        <p style="border-top:1px solid var(--border-color); margin-top:6px; padding-top:4px;"><strong>Items:</strong> <span id="replyReceiptItems"></span></p>
+        <p style="font-size:0.95rem; color:var(--nepal-blue); font-weight:800; margin-top:2px;"><strong>Total Amount:</strong> <span id="replyReceiptBill"></span></p>
+      </div>
+      <button class="btn btn-crimson" style="width:100%; margin-top:12px; padding:10px;" onclick="document.getElementById('orderSuccessModalFrame').style.display='none'">Continue Shopping</button>
+    </div>
+  </div>
+
+  <!-- ORDER TRACKING SYSTEM MODAL -->
+  <div id="orderTrackingModal" class="modal-overlay" style="z-index: 1030;">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeOrderTrackingModal()">✕</button>
+      <div style="max-width: 400px; width: 100%; margin: auto; text-align: center;">
+        <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; color: var(--text-main);">🔍 Track My Orders</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Enter your mobile phone number to check current live delivery status and history details.</p>
+        
+        <div class="details-form-group" style="margin-bottom: 12px;">
+          <label for="trackPhoneInput" style="text-align: left;">Your Phone Number *</label>
+          <input type="tel" id="trackPhoneInput" class="details-form-input" placeholder="e.g. 98XXXXXXXX" style="text-align: center; font-size: 1rem; font-weight: 700;">
+        </div>
+        <button class="btn btn-crimson" style="width: 100%; padding: 12px; font-size: 0.95rem; background: var(--nepal-blue);" onclick="executeOrderTrackingLookup()">Search Live Shipments</button>
+        
+        <div id="orderTrackingResultsZone" style="margin-top: 20px; text-align: left; max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <a class="whatsapp-fixed-fab" href="https://wa.me/97798XXXXXXXX" target="_blank" title="Chat via WhatsApp">
+    <svg style="width:24px; height:24px;" viewBox="0 0 24 24"><path fill="#fff" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.817 9.817 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.132 8.132 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.21-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.188 8.188 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.27-8.23m-3.93 5.03c-.22 0-.45.03-.65.1-.2.07-.38.18-.54.34-.33.33-.52.79-.52 1.26 0 .97.43 1.93 1.26 2.76 1.13 1.13 2.58 2.02 4.1 2.53.42.14.85.22 1.28.22.61 0 1.18-.21 1.6-.62.33-.33.52-.78.52-1.26 0-.16-.02-.32-.07-.47-.05-.15-.15-.28-.27-.37l-1.66-.83c-.23-.12-.51-.1-.72.07l-.63.53c-.15.13-.36.16-.54.07-.54-.26-1.04-.62-1.48-1.06-.44-.44-.8-1-1.05-1.55-.09-.17-.06-.39.08-.53l.49-.42c.16-.14.23-.36.18-.57l-.63-1.89c-.08-.24-.26-.43-.5-.5-.14-.04-.28-.06-.42-.06Z"/></svg>
+  </a>
+
+  </div> <!-- Close app-viewport -->
+
+  <footer>
+    <div class="footer-grid-layout">
+      <div class="footer-block">
+        <h4>About Zojo Nepal</h4>
+        <p style="color:#9ca3af; font-size:0.85rem; line-height:1.6;">Your premium contemporary online hub bringing high aesthetic gadget accessories, apparel, and gadgets straight to your door across Nepal.</p>
+      </div>
+      <div class="footer-block">
+        <h4>Social Connections</h4>
+        <ul class="footer-links">
+          <li>📸 <a href="https://instagram.com/zojonepal" target="_blank">Instagram (@zojonepal)</a></li>
+          <li>🎵 <a href="https://tiktok.com/@zojonepal" target="_blank">TikTok (@zojonepal)</a></li>
+        </ul>
+      </div>
+      <div class="footer-block">
+        <h4>Contact Channels</h4>
+        <ul class="footer-links">
+          <li>📞 <a href="tel:+97798XXXXXXXX">+977 98XXXXXXXX</a></li>
+          <li>✉️ <a href="mailto:fitoorbhandari38@gmail.com">fitoorbhandari38@gmail.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-copyright-bar">
+      <p>&copy; 2026 Zojo Nepal. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy, doc, getDoc, getDocs, where, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // CORE CONFIGURATIONS
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
+      authDomain: "turbo-topup-ef79f.firebaseapp.com",
+      projectId: "turbo-topup-ef79f",
+      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
+      messagingSenderId: "90939874619",
+      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
+      measurementId: "G-5GQ9SR14P3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // SYSTEM STATES
+    let globalProductsCatalog = []; // Populated in real-time from Firestore
+    let systemCart = [];
+    let selectedPaymentMethod = "eSewa";
+    let selectedCategoryFilter = "all";
+    let currentSelectedProduct = null;
+    let currentSelectedColor = "";
+    let isUserLoggedInState = false;
+    let temporaryShippingData = {};
+    let currentInteractiveRating = 5;
+    let storeQrSettings = null; // fetched dynamically
+    let appliedPromoCode = "";
+    let appliedDiscountAmount = 0;
+
+    let nepalDeliveryRates = {
+      "Rupandehi": 50, "Kapilvastu": 100, "Nawalparasi": 100, "Palpa": 120, "Arghakhanchi": 130, "Gulmi": 130,
+      "Kathmandu": 150, "Lalitpur": 150, "Bhaktapur": 150, "Kaski": 150, "Chitwan": 140, "Banke": 160,
+      "Parsa": 160, "Morang": 180, "Dang": 150, "Jhapa": 220, "Sunsari": 200, "Surkhet": 200, "Kailali": 220
+    };
+    let calculatedDeliveryChargeAmount = 0;
+
+    // Helper to resolve color hex values for rendering
+    function getColorHex(colorName) {
+      const colors = {
+        "black": "#000000",
+        "white": "#ffffff",
+        "red": "#ef4444",
+        "blue": "#3b82f6",
+        "green": "#22c55e",
+        "yellow": "#eab308",
+        "gray": "#6b7280",
+        "grey": "#6b7280",
+        "pink": "#ec4899",
+        "purple": "#a855f7",
+        "orange": "#f97316",
+        "brown": "#78350f",
+        "silver": "#c0c0c0",
+        "gold": "#d4af37",
+        "navy": "#000080"
+      };
+      return colors[colorName.toLowerCase().trim()] || "#9333ea";
+    }
+
+    // Safely parse colors to always maintain name and hex properties
+    function sanitizeColors(colorsData) {
+      if (!colorsData) {
+        return [{ name: "Standard", hex: "#9333ea" }];
+      }
+      
+      const parsedColors = [];
+      
+      const addRawColor = (colorStr) => {
+        if (typeof colorStr !== 'string') return;
+        colorStr.split(',').forEach(c => {
+          const name = c.trim();
+          if (name) {
+            // Check if already added to avoid duplicates
+            if (!parsedColors.some(pc => pc.name.toLowerCase() === name.toLowerCase())) {
+              parsedColors.push({ name: name, hex: getColorHex(name) });
+            }
+          }
+        });
+      };
+
+      if (typeof colorsData === 'string') {
+        addRawColor(colorsData);
+      } else if (Array.isArray(colorsData)) {
+        colorsData.forEach(c => {
+          if (typeof c === 'string') {
+            addRawColor(c);
+          } else if (c && typeof c === 'object') {
+            const name = (c.name || '').trim();
+            if (name) {
+              if (!parsedColors.some(pc => pc.name.toLowerCase() === name.toLowerCase())) {
+                parsedColors.push({
+                  name: name,
+                  hex: c.hex || getColorHex(name),
+                  imageUrl: c.imageUrl || ""
+                });
+              }
+            }
+          }
+        });
+      }
+
+      if (parsedColors.length === 0) {
+        return [{ name: "Standard", hex: "#9333ea" }];
+      }
+      
+      return parsedColors;
+    }
+
+    let isInventoryLoaded = false;
+    let isBannersLoaded = false;
+
+    function checkAppLoaded() {
+      if (isInventoryLoaded && isBannersLoaded) {
+        const loader = document.getElementById('appGlobalLoadScreen');
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.visibility = 'hidden';
+          setTimeout(() => {
+            loader.style.display = 'none';
+          }, 400);
+        }
+      }
+    }
+
+    // Safety timeout to dismiss loading overlay after 2.5s fallback
+    setTimeout(() => {
+      isInventoryLoaded = true;
+      isBannersLoaded = true;
+      checkAppLoaded();
+    }, 2500);
+
+    // --- 1. CONNECT & LIVE STREAM REAL PRODUCTS FROM FIRESTORE ---
+    function listenToLiveInventory() {
+      const productGrid = document.getElementById('productGrid');
+      
+      onSnapshot(collection(db, "products"), (snapshot) => {
+        const rawProducts = [];
+        snapshot.forEach((doc) => {
+          rawProducts.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Sort client-side: newest first (fallback to Unix epoch if timestamp missing)
+        rawProducts.sort((a, b) => {
+          const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
+          const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : new Date(0);
+          return tB - tA;
+        });
+
+        globalProductsCatalog = rawProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price),
+          oldPrice: p.oldPrice ? Number(p.oldPrice) : null,
+          category: p.category || "all",
+          description: p.description || "Premium imported collection, selected carefully for style and high utility guidelines.",
+          specifications: Array.isArray(p.specifications) ? p.specifications : (p.specifications ? p.specifications.split('\n').map(s => s.trim()).filter(s => s) : []),
+          image: p.imageUrl || "zozonepal.png",
+          images: [p.imageUrl || "zozonepal.png"],
+          colors: sanitizeColors(p.colors)
+        }));
+
+        isInventoryLoaded = true;
+        checkAppLoaded();
+
+        // Trigger safe re-render anytime catalog contents update in Firestore
+        renderProductCatalogGrid();
+      }, (error) => {
+        console.error("Firestore listening block issue:", error);
+        productGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:40px; color:red;">Database connectivity offline. Please check connection.</p>`;
+      });
+    }
+
+    // --- 2. RENDER ENGINE GRID ---
+    window.renderProductCatalogGrid = function() {
+      const targetGrid = document.getElementById('productGrid');
+      if(!targetGrid) return;
+
+      const filteredItems = globalProductsCatalog.filter(p => {
+        if(selectedCategoryFilter === 'all') return true;
+        const cat = (p.category || '').toLowerCase().trim();
+        const filter = selectedCategoryFilter.toLowerCase().trim();
+        
+        if (filter === 'charger') {
+          return cat.includes('charger') || cat.includes('cable') || cat.includes('wire');
+        }
+        if (filter === 'mobile-coolers') {
+          return cat.includes('cooler') || cat.includes('cooling');
+        }
+        if (filter === 'mini-fan') {
+          return cat.includes('fan') || cat.includes('blower');
+        }
+        if (filter === 'mobile-covers') {
+          return cat.includes('cover') || cat.includes('case');
+        }
+        if (filter === 'headphones') {
+          return cat.includes('headphone') || cat.includes('earphone') || cat.includes('buds');
+        }
+        
+        return cat === filter;
+      });
+
+      if (filteredItems.length === 0) {
+        targetGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-muted); font-weight:600;">No items available in this category currently.</p>`;
+        return;
+      }
+
+      targetGrid.innerHTML = filteredItems.map(p => {
+        let actionPriceBlock = '';
+        let buttonText = 'View Product';
+        if(p.oldPrice && p.oldPrice > p.price) {
+          const disc = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+          const savings = p.oldPrice - p.price;
+          actionPriceBlock = `
+            <div class="discount-container">
+              <span style="text-decoration:line-through;">Rs. ${p.oldPrice.toLocaleString()}</span>
+              <span style="color:var(--nepal-red); font-weight:700;">-${disc}%</span>
+            </div>
+          `;
+          buttonText = `Save up to Rs. ${savings.toLocaleString()}`;
+        }
+        
+        return `
+          <div class="product-card">
+            <div class="image-frame" onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">
+              <img src="${p.image}" alt="${p.name}" onerror="this.src='zozonepal.png'">
+            </div>
+            <div class="product-meta">
+              <h3 onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">${p.name}</h3>
+              <p>${p.description}</p>
+              <div class="buy-row">
+                <div class="price-block">
+                  ${actionPriceBlock}
+                  <span class="price">Rs. ${p.price.toLocaleString()}</span>
+                </div>
+                <button class="btn btn-crimson" onclick="openProductDetailPage('${p.id}')" style="font-size:0.8rem; padding:6px 10px; white-space:nowrap;">${buttonText}</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    // --- 3. FILTER LOGIC CONTROL ---
+    window.switchCategoryFilter = function(categoryCode) {
+      selectedCategoryFilter = categoryCode;
+      document.querySelectorAll('.category-pill-btn').forEach(btn => {
+        if(btn.id === `catBtn-${categoryCode}`) {
+          btn.classList.add('active-category');
+        } else {
+          btn.classList.remove('active-category');
+        }
+      });
+      renderProductCatalogGrid();
+    };
+
+    // --- 4. QUICKVIEW ACTION SYSTEM ---
+    window.openProductQuickViewModal = function(productId) {
+      const p = globalProductsCatalog.find(item => item.id === productId);
+      if(!p) return;
+
+      currentSelectedProduct = p;
+      currentSelectedColor = p.colors && p.colors[0] ? p.colors[0].name : "Standard";
+
+      document.getElementById('modalProductName').innerText = p.name;
+      document.getElementById('modalProductDesc').innerText = p.description;
+
+      const priceBox = document.getElementById('modalProductPriceContainer');
+      if (p.oldPrice && p.oldPrice > p.price) {
+        const discPercent = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+        priceBox.innerHTML = `
+          <div style="margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted);">
+              <span style="text-decoration:line-through;">Rs. ${p.oldPrice.toLocaleString()}</span>
+              <span style="color:var(--nepal-red); font-weight:700;">-${discPercent}%</span>
+            </div>
+            <span style="color:var(--nepal-blue); font-size:1.4rem; font-weight:800;">Rs. ${p.price.toLocaleString()}</span>
+          </div>
+        `;
+      } else {
+        priceBox.innerHTML = `<span style="color:var(--nepal-blue); font-size:1.4rem; font-weight:800;">Rs. ${p.price.toLocaleString()}</span>`;
+      }
+
+      document.getElementById('modalMainLargePreview').src = p.image;
+      
+      const thumbsContainer = document.getElementById('modalThumbnailsContainer');
+      thumbsContainer.innerHTML = p.images.map((imgSrc, idx) => `
+        <img class="thumb-nail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" onclick="changeQuickViewImage(this, '${imgSrc}')" onerror="this.src='zozonepal.png'">
+      `).join('');
+
+      const colorsContainer = document.getElementById('modalColorsContainer');
+      colorsContainer.innerHTML = p.colors.map((c, idx) => {
+        const safeName = (c.name || '').replace(/'/g, "\\'");
+        const safeImageUrl = (c.imageUrl || '').replace(/'/g, "\\'");
+        const isActive = idx === 0 ? 'active-color' : '';
+        return `
+          <button class="color-pill-selector ${isActive}" onclick="changeQuickViewColor(this, '${safeName}', '${safeImageUrl}')">
+            <span class="color-circle-preview" style="background-color: ${c.hex};"></span>${c.name}
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('productQuickViewModal').style.display = "flex";
+    };
+
+    window.closeQuickViewModal = function() { document.getElementById('productQuickViewModal').style.display = "none"; };
+    window.changeQuickViewImage = function(elm, src) {
+      document.querySelectorAll('.thumb-nail-item').forEach(t => t.classList.remove('active-thumb'));
+      elm.classList.add('active-thumb');
+      document.getElementById('modalMainLargePreview').src = src;
+    };
+    window.changeQuickViewColor = function(elm, name, colorImageUrl) {
+      document.querySelectorAll('.color-pill-selector').forEach(s => s.classList.remove('active-color'));
+      elm.classList.add('active-color');
+      currentSelectedColor = name;
+      if (colorImageUrl) {
+        document.getElementById('modalMainLargePreview').src = colorImageUrl;
+      } else if (currentSelectedProduct) {
+        document.getElementById('modalMainLargePreview').src = currentSelectedProduct.image;
+      }
+    };
+
+    // --- REDIRECT TO STANDALONE PRODUCT DETAILS PAGE ---
+    window.openProductDetailPage = function(productId) {
+      window.location.href = `product.html?id=${productId}`;
+    };
+
+    // --- 5. SHOPPING BASKET DRIVER ---
+    window.addCurrentConfiguredItemToCart = function() {
+      if(!currentSelectedProduct) return;
+      
+      const cartItemId = `${currentSelectedProduct.id}-${currentSelectedColor}`;
+      const matchingIndex = systemCart.findIndex(item => item.cartId === cartItemId);
+
+      // Find the selected color object to see if it has a custom imageUrl
+      const selectedColorObj = currentSelectedProduct.colors.find(c => c.name === currentSelectedColor);
+      const cartImage = (selectedColorObj && selectedColorObj.imageUrl) ? selectedColorObj.imageUrl : currentSelectedProduct.image;
+
+      if(matchingIndex > -1) {
+        systemCart[matchingIndex].quantity += 1;
+        systemCart[matchingIndex].image = cartImage;
+      } else {
+        systemCart.push({
+          cartId: cartItemId,
+          id: currentSelectedProduct.id,
+          name: currentSelectedProduct.name,
+          price: currentSelectedProduct.price,
+          image: cartImage,
+          color: currentSelectedColor,
+          quantity: 1
+        });
+      }
+
+      closeQuickViewModal();
+      synchronizeShoppingBagUIState();
+      toggleCartSidebar(true);
+    };
+
+    window.modifyCartItemQty = function(cartId, shiftAmount) {
+      const index = systemCart.findIndex(item => item.cartId === cartId);
+      if(index === -1) return;
+
+      systemCart[index].quantity += shiftAmount;
+      if(systemCart[index].quantity <= 0) {
+        systemCart.splice(index, 1);
+      }
+      synchronizeShoppingBagUIState();
+    };
+
+    function synchronizeShoppingBagUIState() {
+      const badge = document.getElementById('navCartCountBadge');
+      const drawerTarget = document.getElementById('cartDrawerItemsTarget');
+      const checkoutArea = document.getElementById('cartDrawerFooterZone');
+      const totalDisplay = document.getElementById('cartDrawerCalculatedSubtotal');
+
+      const totalItemsCount = systemCart.reduce((sum, i) => sum + i.quantity, 0);
+      badge.innerText = totalItemsCount;
+
+      if(systemCart.length === 0) {
+        drawerTarget.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-muted); font-size:0.9rem;">Your selection bag is completely empty.</p>`;
+        checkoutArea.style.display = "none";
+        return;
+      }
+
+      const runningSubtotal = systemCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+      
+      drawerTarget.innerHTML = systemCart.map(item => `
+        <div class="cart-item">
+          <img class="cart-item-img" src="${item.image}" alt="${item.name}" onerror="this.src='zozonepal.png'">
+          <div class="cart-item-details">
+            <h4 style="font-size:0.85rem; font-weight:700;">${item.name}</h4>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin:1px 0;">Color: ${item.color}</p>
+            <p style="font-size:0.8rem; font-weight:600; color:var(--nepal-blue);">Rs. ${item.price.toLocaleString()}</p>
+            <div class="quantity-controls">
+              <button class="qty-btn" onclick="modifyCartItemQty('${item.cartId}', -1)">-</button>
+              <span style="font-size:0.9rem; font-weight:600;">${item.quantity}</span>
+              <button class="qty-btn" onclick="modifyCartItemQty('${item.cartId}', 1)">+</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      totalDisplay.innerText = "Rs. " + runningSubtotal.toLocaleString();
+      checkoutArea.style.display = "block";
+    }
+
+    window.toggleCartSidebar = function(openStatus) {
+      const sidebar = document.getElementById('cartSidebarLayer');
+      if (openStatus) sidebar.classList.add('open');
+      else sidebar.classList.remove('open');
+    };
+
+    // --- 6. CHECKOUT MANAGEMENT PIPELINE ---
+    // --- DYNAMIC STORE QR CODE RETRIEVAL ---
+    async function fetchStoreQrCodes() {
+      try {
+        const qrDoc = await getDoc(doc(db, "settings", "payment_qrs"));
+        if (qrDoc.exists()) {
+          storeQrSettings = qrDoc.data();
+        }
+      } catch (e) {
+        console.error("Error reading payment qrs settings document:", e);
+      }
+    }
+
+    window.renderQrPaymentInstructions = function() {
+      const qrSection = document.getElementById('qrPaymentDetailsSection');
+      const badge = document.getElementById('qrMethodBadge');
+      const qrImg = document.getElementById('storeDynamicPaymentQrImage');
+      const placeholderMsg = document.getElementById('qrPlaceholderMessage');
+      const txnInput = document.getElementById('custFormTxnId');
+
+      if (selectedPaymentMethod === 'COD') {
+        qrSection.style.display = 'none';
+        if (txnInput) txnInput.removeAttribute('required');
+        return;
+      }
+
+      qrSection.style.display = 'block';
+      if (txnInput) txnInput.setAttribute('required', 'true');
+
+      if (selectedPaymentMethod === 'eSewa') {
+        badge.innerText = "eSewa Wallet Scan & Pay";
+        badge.style.background = "#dcfce7";
+        badge.style.color = "#15803d";
+        if (storeQrSettings && storeQrSettings.esewaQr) {
+          qrImg.src = storeQrSettings.esewaQr;
+          qrImg.style.display = "block";
+          placeholderMsg.style.display = "none";
+        } else {
+          qrImg.style.display = "none";
+          placeholderMsg.style.display = "block";
+        }
+      } else if (selectedPaymentMethod === 'Khalti') {
+        badge.innerText = "Khalti Card / Wallet Scan & Pay";
+        badge.style.background = "#f3e8ff";
+        badge.style.color = "#6b21a8";
+        if (storeQrSettings && storeQrSettings.khaltiQr) {
+          qrImg.src = storeQrSettings.khaltiQr;
+          qrImg.style.display = "block";
+          placeholderMsg.style.display = "none";
+        } else {
+          qrImg.style.display = "none";
+          placeholderMsg.style.display = "block";
+        }
+      }
+    };
+
+    window.executeApplyPromoCodeValue = async function() {
+      const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+      const feedback = document.getElementById('promoFeedbackMessage');
+      const subtotal = systemCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+      if (!code) {
+        feedback.style.display = "block";
+        feedback.style.color = "red";
+        feedback.innerText = "Please input a coupon code first.";
+        return;
+      }
+
+      feedback.style.display = "block";
+      feedback.style.color = "var(--text-muted)";
+      feedback.innerText = "⏳ Verifying coupon code...";
+
+      try {
+        const promoQuery = query(collection(db, "promos"), where("code", "==", code), where("isActive", "==", true));
+        const snap = await getDocs(promoQuery);
+
+        if (snap.empty) {
+          feedback.style.color = "red";
+          feedback.innerText = "Invalid or expired Promo Code.";
+          appliedPromoCode = "";
+          appliedDiscountAmount = 0;
+        } else {
+          const promoData = snap.docs[0].data();
+          const minSubtotal = Number(promoData.minimumSubtotal || 0);
+          
+          if (subtotal < minSubtotal) {
+            feedback.style.color = "red";
+            feedback.innerText = `This promo code requires a minimum purchase subtotal of Rs. ${minSubtotal.toLocaleString()}.`;
+            appliedPromoCode = "";
+            appliedDiscountAmount = 0;
+          } else {
+            appliedPromoCode = code;
+            if (promoData.discountType === "percent") {
+              const percent = Number(promoData.discountValue || 0);
+              appliedDiscountAmount = Math.round(subtotal * (percent / 100));
+              feedback.style.color = "green";
+              feedback.innerText = `🎉 Code applied! ${percent}% discount of Rs. ${appliedDiscountAmount.toLocaleString()} saved.`;
+            } else {
+              const amount = Number(promoData.discountValue || 0);
+              appliedDiscountAmount = Math.min(subtotal, amount);
+              feedback.style.color = "green";
+              feedback.innerText = `🎉 Code applied! Rs. ${appliedDiscountAmount.toLocaleString()} discount saved.`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error applying promo:", err);
+        feedback.style.color = "red";
+        feedback.innerText = "Could not verify discount code. Please try again.";
+        appliedPromoCode = "";
+        appliedDiscountAmount = 0;
+      }
+
+      recalculateCheckoutDeliveryCharge();
+    };
+
+    // --- ORDER STATUS TIMELINE LOOKUP ENGINE ---
+    window.openOrderTrackingModal = function() {
+      document.getElementById('dotsMenuDropdown').classList.remove('active');
+      document.getElementById('orderTrackingModal').style.display = 'flex';
+    };
+
+    window.closeOrderTrackingModal = function() {
+      document.getElementById('orderTrackingModal').style.display = 'none';
+      document.getElementById('orderTrackingResultsZone').innerHTML = '';
+      document.getElementById('trackPhoneInput').value = '';
+    };
+
+    window.executeOrderTrackingLookup = async function() {
+      const phone = document.getElementById('trackPhoneInput').value.trim();
+      const resultsContainer = document.getElementById('orderTrackingResultsZone');
+
+      if (!phone) {
+        alert("Please enter your phone number first.");
+        return;
+      }
+
+      resultsContainer.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:10px;">🔍 Locating orders in database...</p>`;
+
+      try {
+        const q = query(collection(db, "transactions"), where("customerPhone", "==", phone));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          resultsContainer.innerHTML = `<p style="text-align:center; color:var(--nepal-red); font-size:0.85rem; font-weight:700; padding:10px;">No matching orders found under phone ${phone}.</p>`;
+          return;
+        }
+
+        let orders = [];
+        snap.forEach(docSnapshot => {
+          orders.push({ id: docSnapshot.id, ...docSnapshot.data() });
+        });
+
+        // Client-side sort by timestamp to avoid indexing constraints
+        orders.sort((a, b) => {
+          const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : 0;
+          const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : 0;
+          return tB - tA; // Newest first
+        });
+
+        resultsContainer.innerHTML = orders.map(order => {
+          const status = order.status || "Pending";
+          const steps = ["Pending", "Processing", "Shipped", "Delivered"];
+          const activeIndex = steps.indexOf(status);
+
+          let dateStr = "N/A";
+          if (order.timestamp) {
+            try {
+              const dObj = typeof order.timestamp.toDate === 'function' ? order.timestamp.toDate() : new Date(order.timestamp);
+              dateStr = dObj.toLocaleString();
+            } catch(e) {}
+          }
+
+          const timelineHtml = steps.map((step, idx) => {
+            const isCompleted = idx <= activeIndex;
+            return `
+              <div class="timeline-node">
+                <div class="timeline-dot ${isCompleted ? 'active' : ''}"></div>
+                <div style="flex:1;">
+                  <strong style="font-size:0.8rem; color:${isCompleted ? 'var(--nepal-blue)' : 'var(--text-muted)'};">${step}</strong>
+                  <p style="font-size:0.7rem; color:var(--text-muted); margin:0;">
+                    ${idx === 0 ? 'Order received' : (idx === 1 ? 'Quality inspection & packaging' : (idx === 2 ? 'Dispatched via logistics' : 'Delivered safely'))}
+                  </p>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:10px; padding:14px; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
+                <div>
+                  <small style="color:var(--text-muted);">Placed: ${dateStr}</small>
+                  <div style="font-weight:700; font-size:0.85rem; color:var(--text-main); margin-top:2px;">📦 Order ID: ${order.id.slice(0, 8)}...</div>
+                </div>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--nepal-blue);">Rs. ${(order.amountPaid || 0).toLocaleString()}</span>
+              </div>
+              <div style="font-size:0.8rem; line-height:1.4; color:var(--text-muted); margin-bottom:10px;">
+                <strong>Items:</strong> <span style="color:#334155;">${order.productName}</span><br>
+                <strong>Method:</strong> <span style="color:#334155;">${order.paymentMethod}</span>
+              </div>
+              <div style="margin-top:12px; border-top:1px solid #f1f5f9; padding-top:10px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-main); display:block; margin-bottom:8px;">Live Shipment Status Timeline:</span>
+                ${timelineHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch(err) {
+        console.error("Error executing tracking:", err);
+        resultsContainer.innerHTML = `<p style="text-align:center; color:red; font-size:0.8rem;">Query error. Check database status.</p>`;
+      }
+    };
+
+    // --- 6. CHECKOUT MANAGEMENT PIPELINE ---
+    window.openCustomerDetailsModal = async function() {
+      if (systemCart.length === 0) return;
+      
+      // Persist cart to localStorage so checkout.html can load it
+      localStorage.setItem("zojo_cart", JSON.stringify(systemCart));
+      
+      // Redirect to the dedicated checkout page
+      window.location.href = "checkout.html";
+    };
+
+    window.closeCustomerDetailsModal = function() { document.getElementById('shippingDetailsModal').style.display = "none"; };
+
+    window.recalculateCheckoutDeliveryCharge = function() {
+      const district = document.getElementById('custFormDistrict').value;
+      const subtotal = systemCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+      
+      calculatedDeliveryChargeAmount = nepalDeliveryRates[district] !== undefined ? nepalDeliveryRates[district] : 150;
+      const finalSubtotalAfterDiscount = Math.max(0, subtotal - appliedDiscountAmount);
+      const grandTotal = finalSubtotalAfterDiscount + calculatedDeliveryChargeAmount;
+
+      document.getElementById('chkSubtotal').innerText = "Rs. " + subtotal.toLocaleString();
+      if (appliedDiscountAmount > 0) {
+        document.getElementById('chkPromoDiscountRow').style.display = "flex";
+        document.getElementById('chkPromoDiscount').innerText = "Rs. -" + appliedDiscountAmount.toLocaleString();
+      } else {
+        document.getElementById('chkPromoDiscountRow').style.display = "none";
+      }
+      document.getElementById('chkDeliveryFee').innerText = "Rs. " + calculatedDeliveryChargeAmount.toLocaleString();
+      document.getElementById('chkGrandTotal').innerText = "Rs. " + grandTotal.toLocaleString();
+    };
+
+    window.switchCheckoutActivePaymentMethod = function(methodCode) {
+      selectedPaymentMethod = methodCode;
+      document.getElementById('methodeSewa').className = "method-selector-card" + (methodCode==='eSewa'?' active-esewa':'');
+      document.getElementById('methodKhalti').className = "method-selector-card" + (methodCode==='Khalti'?' active-khalti':'');
+      document.getElementById('methodCOD').className = "method-selector-card" + (methodCode==='COD'?' active-cod':'');
+      renderQrPaymentInstructions();
+    };
+
+    window.handleFormSubmissionPipeline = async function(event) {
+      event.preventDefault();
+      
+      const selectedDistrictStr = document.getElementById('custFormDistrict').value;
+      const rawLocation = document.getElementById('custFormLoc').value.trim();
+      
+      temporaryShippingData = {
+        name: document.getElementById('custFormName').value.trim(),
+        email: document.getElementById('custFormEmail').value.trim(),
+        phone: document.getElementById('custFormPhone').value.trim(),
+        loc: `${rawLocation}, ${selectedDistrictStr}`,
+        famous: document.getElementById('custFormFamous').value.trim()
+      };
+
+      const btn = event.target.querySelector('button[type="submit"]');
+      const originalBtnText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = "⏳ Saving Order securely...";
+
+      try {
+        let screenshotBase64 = "";
+        let txnIdVal = "";
+
+        if (selectedPaymentMethod !== 'COD') {
+          txnIdVal = document.getElementById('custFormTxnId').value.trim();
+          if (!txnIdVal) {
+            alert("Please enter your Transaction Reference ID.");
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
+            return;
+          }
+
+          const fileInput = document.getElementById('custFormScreenshot');
+          if (fileInput.files && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            screenshotBase64 = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = () => resolve("");
+            });
+          }
+        }
+
+        // Compile detailed items with their colors
+        const orderSummaryString = systemCart.map(item => {return `${item.name} [Color: ${item.color || 'Default'}] (x${item.quantity})`;}).join(', ');
+        const cartItemsSubtotal = systemCart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        const finalCalculatedBill = Math.max(0, cartItemsSubtotal - appliedDiscountAmount) + calculatedDeliveryChargeAmount;
+        let dataPaymentMethodString = selectedPaymentMethod === 'eSewa' ? "eSewa QR" : (selectedPaymentMethod === 'Khalti' ? "Khalti QR" : "Cash on Delivery");
+        
+        await addDoc(collection(db, "transactions"), {
+          productName: orderSummaryString,
+          amountPaid: finalCalculatedBill,
+          userEmail: auth.currentUser ? auth.currentUser.email : "Guest User",
+          customerEmail: temporaryShippingData.email,
+          paymentMethod: dataPaymentMethodString,
+          customerName: temporaryShippingData.name,
+          customerPhone: temporaryShippingData.phone,
+          deliveryLocation: temporaryShippingData.loc,
+          famousPlace: temporaryShippingData.famous,
+          transactionId: txnIdVal,
+          screenshotProof: screenshotBase64,
+          couponApplied: appliedPromoCode,
+          discountGiven: appliedDiscountAmount,
+          status: "Pending",
+          timestamp: serverTimestamp()
+        });
+
+        document.getElementById('replyReceiptName').innerText = temporaryShippingData.name;
+        document.getElementById('replyReceiptPhone').innerText = temporaryShippingData.phone;
+        document.getElementById('replyReceiptLoc').innerText = temporaryShippingData.loc;
+        document.getElementById('replyReceiptFamous').innerText = temporaryShippingData.famous;
+        document.getElementById('replyReceiptMethod').innerText = dataPaymentMethodString + (txnIdVal ? ` (ID: ${txnIdVal})` : "");
+        document.getElementById('replyReceiptItems').innerText = orderSummaryString;
+        document.getElementById('replyReceiptBill').innerText = "Rs. " + finalCalculatedBill.toLocaleString();
+
+        document.getElementById('shippingDetailsModal').style.display = "none";
+        document.getElementById('orderSuccessModalFrame').style.display = "flex";
+
+        systemCart = [];
+        synchronizeShoppingBagUIState();
+      } catch (error) {
+        console.error("Order logging failure context:", error);
+        alert("Fulfillment pipeline encountered a problem. Please re-submit.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = originalBtnText;
+      }
+    };
+
+    // --- 7. AUTH CONTROL INTERACTION ROUTINES ---
+    window.triggerGoogleSignIn = async function() {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (err) {
+        console.error("Authentication popup interface rejected:", err);
+      }
+    };
+
+    window.triggerSignOutUserSession = async function() {
+      try {
+        await signOut(auth);
+        document.getElementById('dotsMenuDropdown').classList.remove('active');
+      } catch (err) {
+        console.error("Sign-out routing crash:", err);
+      }
+    };
+
+    window.toggleDotsDropdown = function() {
+      document.getElementById('dotsMenuDropdown').classList.toggle('active');
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      const box = document.getElementById('userAuthenticationTargetBox');
+      if (user) {
+        isUserLoggedInState = true;
+        box.innerHTML = `
+          <div class="user-profile-zone">
+            <div class="user-avatar-meta">
+              <img class="user-avatar" src="${user.photoURL || 'zozonepal.png'}" alt="Avatar">
+              <span style="overflow:hidden; text-overflow:ellipsis; max-width:140px; white-space:nowrap;">${user.displayName || 'User'}</span>
+            </div>
+            <span class="signout-link" onclick="triggerSignOutUserSession()">Sign Out Securely</span>
+          </div>
+        `;
+      } else {
+        isUserLoggedInState = false;
+        box.innerHTML = `
+          <button class="auth-btn" onclick="triggerGoogleSignIn()">
+            <svg style="width:16px; height:16px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.14 3.01-1.3 4l3.01 2.33c1.76-1.63 2.77-4.02 2.77-6.93z"/><path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.01-2.33c-.83.56-1.9.89-3.22.89-2.48 0-4.58-1.68-5.33-3.94l-3.12 2.42C5.24 22.02 8.39 24 12 24z"/><path fill="#FBBC05" d="M6.67 15.71A7.17 7.17 0 0 1 6.24 12c0-.64.11-1.26.31-1.85L3.43 7.73A11.95 11.95 0 0 0 2 12c0 1.55.3 3.03.83 4.39l3.84-2.68z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.96 1.19 15.24 0 12 0 8.39 0 5.24 1.98 3.43 5.31l3.12 2.42c.75-2.26 2.85-3.94 5.33-3.94z"/></svg>
+            Sign In with Google
+          </button>
+        `;
+      }
+    });
+
+    // --- 8. GLOBAL UTILITIES (HEADER OVERLAYS, SEARCH, & CAROUSELS) ---
+    window.toggleHeaderSearchOverlay = function() {
+      const container = document.getElementById('searchOverlayDrop');
+      container.classList.toggle('active');
+      if(container.classList.contains('active')) {
+        document.getElementById('liveQuerySearchInput').focus();
+      } else {
+        document.getElementById('liveQuerySearchInput').value = "";
+        document.getElementById('searchInlineViewResults').classList.remove('has-query');
+      }
+    };
+
+    window.executeLiveCatalogSearchSearch = function() {
+      const txt = document.getElementById('liveQuerySearchInput').value.toLowerCase().trim();
+      const visualBox = document.getElementById('searchInlineViewResults');
+      
+      if(!txt) {
+        visualBox.classList.remove('has-query');
+        return;
+      }
+      
+      const matched = globalProductsCatalog.filter(p => p.name.toLowerCase().includes(txt) || p.description.toLowerCase().includes(txt));
+      visualBox.classList.add('has-query');
+      
+      if(matched.length === 0) {
+        visualBox.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">No exact product matches discovered.</p>`;
+        return;
+      }
+
+      visualBox.innerHTML = matched.map(p => `
+        <div style="display:flex; align-items:center; gap:12px; background:white; padding:8px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="openProductDetailPage('${p.id}'); toggleHeaderSearchOverlay();">
+          <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.src='zozonepal.png'">
+          <div style="flex:1; text-align:left;">
+            <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main);">${p.name}</h4>
+            <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    // --- DYNAMIC SLIDER COMPONENT DRIVER ---
+    let currentSlideIndex = 0;
+    let slideTimer = null;
+    let maxSlidesCount = 0;
+
+    function updateSliderViewport() {
+      const track = document.getElementById('sliderTrack');
+      if (!track) return;
+      track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+      const dots = document.querySelectorAll('.indicator-dot');
+      dots.forEach((dot, idx) => {
+        if (idx === currentSlideIndex) dot.classList.add('active-dot');
+        else dot.classList.remove('active-dot');
+      });
+    }
+
+    window.slideShift = function(direction) {
+      currentSlideIndex += direction;
+      if (currentSlideIndex >= maxSlidesCount) currentSlideIndex = 0;
+      else if (currentSlideIndex < 0) currentSlideIndex = maxSlidesCount - 1;
+      updateSliderViewport();
+      resetSliderTimer();
+    };
+
+    function resetSliderTimer() {
+      if (slideTimer) clearInterval(slideTimer);
+      slideTimer = setInterval(() => {
+        if (maxSlidesCount > 1) {
+          window.slideShift(1);
+        }
+      }, 5000);
+    }
+
+    // --- REALTIME FIRESTORE LISTENER FEEDS ---
+    function listenToLiveBanners() {
+      const sliderTrack = document.getElementById('sliderTrack');
+      const indicatorsContainer = document.getElementById('sliderIndicatorsContainer');
+      if (!sliderTrack || !indicatorsContainer) return;
+
+      onSnapshot(query(collection(db, "banners"), orderBy("order", "asc")), (snapshot) => {
+        let bannerList = [];
+        snapshot.forEach(doc => bannerList.push(doc.data()));
+
+        if (bannerList.length === 0) {
+          bannerList = [
+            { imageUrl: "zozonepal.png", caption: "Slide 1" },
+            { imageUrl: "zozonepal.png", caption: "Slide 2" },
+            { imageUrl: "zozonepal.png", caption: "Slide 3" }
+          ];
+        }
+
+        maxSlidesCount = bannerList.length;
+
+        sliderTrack.innerHTML = bannerList.map(b => `
+          <div class="slide-panel">
+            <img class="slide-image" src="${b.imageUrl}" alt="${b.caption || 'Slide'}" onerror="this.src='zozonepal.png'">
+          </div>
+        `).join('');
+
+        indicatorsContainer.innerHTML = '';
+        bannerList.forEach((_, idx) => {
+          const dot = document.createElement('div');
+          dot.className = `indicator-dot ${idx === 0 ? 'active-dot' : ''}`;
+          dot.addEventListener('click', () => {
+            currentSlideIndex = idx;
+            updateSliderViewport();
+            resetSliderTimer();
+          });
+          indicatorsContainer.appendChild(dot);
+        });
+
+        currentSlideIndex = 0;
+        updateSliderViewport();
+        resetSliderTimer();
+
+        isBannersLoaded = true;
+        checkAppLoaded();
+      });
+    }
+
+    function listenToLiveFaqs() {
+      const faqWrapper = document.querySelector('.faq-wrapper');
+      if (!faqWrapper) return;
+
+      onSnapshot(query(collection(db, "faqs"), orderBy("order", "asc")), (snapshot) => {
+        let faqList = [];
+        snapshot.forEach(doc => faqList.push(doc.data()));
+
+        if (faqList.length === 0) {
+          faqList = [
+            { question: "How do I place an order on Zojo Nepal?", answer: "To place an order, select your desired item, choose your variant color, and add it to your cart. Click on your shopping cart, choose your payment method, click \"Proceed to Checkout\", and sign in with your Google Account to safely fill out your shipping information." },
+            { question: "What payment methods do you support?", answer: "We officially support Cash on Delivery (COD) for flexible physical transactions, alongside instant mobile digital wallet payouts via eSewa QR code routing and Khalti QR code transfer systems." }
+          ];
+        }
+
+        faqWrapper.innerHTML = faqList.map(f => `
+          <details class="faq-item">
+            <summary class="faq-question">${f.question}</summary>
+            <div class="faq-answer">${f.answer}</div>
+          </details>
+        `).join('');
+      });
+    }
+
+    function listenToLiveDeliveryRates() {
+      onSnapshot(doc(db, "settings", "delivery_rates"), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().rates) {
+          nepalDeliveryRates = docSnap.data().rates;
+        } else {
+          nepalDeliveryRates = {
+            "Rupandehi": 50, "Kapilvastu": 100, "Nawalparasi": 100, "Palpa": 120, "Arghakhanchi": 130, "Gulmi": 130,
+            "Kathmandu": 150, "Lalitpur": 150, "Bhaktapur": 150, "Kaski": 150, "Chitwan": 140, "Banke": 160,
+            "Parsa": 160, "Morang": 180, "Dang": 150, "Jhapa": 220, "Sunsari": 200, "Surkhet": 200, "Kailali": 220
+          };
+        }
+        
+        populateDistrictDropdowns();
+        recalculateCheckoutDeliveryCharge();
+      });
+    }
+
+    function populateDistrictDropdowns() {
+      const mainSelect = document.getElementById('custFormDistrict');
+      const detailSelect = document.getElementById('detailDeliveryDistrictSelect');
+      
+      const optionsHtml = `
+        <option value="" disabled selected>-- Select your District --</option>
+        ${Object.entries(nepalDeliveryRates).map(([dist, rate]) => `
+          <option value="${dist}">${dist} (Rs. ${rate})</option>
+        `).join('')}
+      `;
+
+      if (mainSelect) {
+        const currentVal = mainSelect.value;
+        mainSelect.innerHTML = optionsHtml;
+        if (currentVal && nepalDeliveryRates[currentVal] !== undefined) {
+          mainSelect.value = currentVal;
+        }
+      }
+
+      if (detailSelect) {
+        const currentVal = detailSelect.value || "Rupandehi";
+        detailSelect.innerHTML = Object.keys(nepalDeliveryRates).map(dist => `
+          <option value="${dist}">${dist}</option>
+        `).join('');
+        if (nepalDeliveryRates[currentVal] !== undefined) {
+          detailSelect.value = currentVal;
+        } else if (Object.keys(nepalDeliveryRates).length > 0) {
+          detailSelect.value = Object.keys(nepalDeliveryRates)[0];
+        }
+      }
+    }
+
+    function listenToLiveShopInfo() {
+      onSnapshot(doc(db, "settings", "shop_info"), (docSnap) => {
+        if (docSnap.exists()) {
+          const info = docSnap.data();
+          
+          if (info.phone) {
+            const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
+            phoneLinks.forEach(link => {
+              link.href = `tel:${info.phone}`;
+              link.innerText = info.phone;
+            });
+          }
+          if (info.email) {
+            const emailLinks = document.querySelectorAll('a[href^="mailto:"]');
+            emailLinks.forEach(link => {
+              link.href = `mailto:${info.email}`;
+              link.innerText = info.email;
+            });
+          }
+          if (info.whatsapp) {
+            const waFab = document.querySelector('.whatsapp-fixed-fab');
+            if (waFab) {
+              waFab.href = `https://wa.me/${info.whatsapp.replace(/\+/g, '')}`;
+            }
+          }
+          if (info.instagram) {
+            const instaLinks = document.querySelectorAll('a[href*="instagram.com"]');
+            instaLinks.forEach(link => {
+              link.href = info.instagram;
+            });
+          }
+          if (info.tiktok) {
+            const tiktokLinks = document.querySelectorAll('a[href*="tiktok.com"]');
+            tiktokLinks.forEach(link => {
+              link.href = info.tiktok;
+            });
+          }
+          if (info.about) {
+            const aboutPara = document.querySelector('footer .footer-block p');
+            if (aboutPara) {
+              aboutPara.innerText = info.about;
+            }
+          }
+          if (info.logoUrl) {
+            const logos = document.querySelectorAll('.brand-logo-img');
+            logos.forEach(logo => {
+              logo.src = info.logoUrl;
+            });
+          }
+        }
+      });
+    }
+
+    // Initialize listeners on launch
+    listenToLiveInventory();
+    listenToLiveBanners();
+    listenToLiveFaqs();
+    listenToLiveDeliveryRates();
+    listenToLiveShopInfo();
+  </script>
+</body>
+</html>

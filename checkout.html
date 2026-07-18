@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | Zojo Nepal</title>
+  <style>
+    /* --- 1. DESIGN SYSTEM & CORE CSS VARIABLES --- */
+    :root {
+      --bg-main: #f4f5f8;
+      --bg-card: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --nepal-blue: #9333ea;
+      --nepal-red: #7e22ce;
+      --transition: all 0.25s ease-in-out;
+      --input-bg: #f9fafb;
+      --frame-bg: #f3f4f6;
+      --promo-gradient-start: #f3e8ff;
+      --promo-gradient-end: #ffffff;
+    }
+
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+    
+    body { 
+      background-color: var(--bg-main); 
+      color: var(--text-main); 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+    }
+
+    /* --- 2. HEADER --- */
+    .app-header {
+      background: var(--bg-card);
+      border-bottom: 3px solid var(--nepal-blue);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    @media (min-width: 768px) { 
+      .app-header { padding: 16px 24px; gap: 16px; } 
+    }
+
+    .brand-logo-container { 
+      display: flex; 
+      align-items: center; 
+      cursor: pointer; 
+      flex-shrink: 0;
+    }
+    .brand-logo-img { 
+      height: 42px; 
+      width: auto; 
+      object-fit: contain; 
+    }
+    @media (min-width: 768px) { 
+      .brand-logo-img { height: 65px; } 
+    }
+
+    .nav-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-home-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+    .back-home-link:hover {
+      color: var(--nepal-blue);
+    }
+
+    /* --- 3. CHECKOUT LAYOUT --- */
+    .checkout-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      flex: 1;
+    }
+    @media (min-width: 768px) {
+      .checkout-container { padding: 32px 16px; }
+    }
+
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    @media (min-width: 992px) {
+      .checkout-grid {
+        grid-template-columns: 1.4fr 1fr;
+        align-items: start;
+      }
+    }
+
+    .checkout-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      margin-bottom: 24px;
+    }
+    @media (min-width: 768px) {
+      .checkout-card { padding: 30px; }
+    }
+
+    .checkout-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--bg-main);
+      padding-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* --- FORM FIELDS --- */
+    .details-form-group {
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+    .details-form-group label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .details-form-input {
+      width: 100%;
+      height: 42px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+      transition: var(--transition);
+    }
+    .details-form-input:focus {
+      border-color: var(--nepal-blue);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+    }
+
+    /* --- PAYMENT SELECTOR --- */
+    .payment-options-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+      margin-bottom: 18px;
+    }
+    .method-selector-card {
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (min-width: 480px) {
+      .method-selector-card { font-size: 0.85rem; padding: 14px; }
+    }
+    .method-selector-card.active-esewa {
+      border-color: #22c55e;
+      background: #f0fdf4;
+      color: #15803d;
+    }
+    .method-selector-card.active-khalti {
+      border-color: #a855f7;
+      background: #faf5ff;
+      color: #6b21a8;
+    }
+    .method-selector-card.active-cod {
+      border-color: #3b82f6;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    /* --- SIDEBAR SUMMARY --- */
+    .summary-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      position: sticky;
+      top: 120px;
+    }
+
+    .summary-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      border-bottom: 1.5px solid var(--bg-main);
+      padding-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .summary-item-row {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--bg-main);
+    }
+    .summary-item-img {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      background: var(--frame-bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+    .summary-item-details {
+      flex: 1;
+    }
+    .summary-item-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .summary-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .checkout-live-summary-box {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 2px solid var(--bg-main);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .live-summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .live-summary-total {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-color);
+      margin-top: 6px;
+    }
+
+    /* --- AUTH & SUBMIT BUTTONS --- */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .btn-blue {
+      background: var(--nepal-blue);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
+    }
+    .btn-blue:hover {
+      background: var(--nepal-red);
+    }
+    .btn-outline {
+      background: #ffffff;
+      border: 1.5px solid var(--border-color);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: var(--frame-bg);
+    }
+
+    /* --- SUCCESS VIEW --- */
+    .success-container {
+      max-width: 600px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 24px;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .success-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      border-top: 6px solid var(--nepal-blue);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      padding: 30px;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spinLoader {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulseLogo {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FULL SCREEN BRANDED LOAD OVERLAY -->
+  <div id="appGlobalLoadScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease; gap: 20px;">
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.src='zozonepal.png'">
+      <div style="width: 45px; height: 45px; border: 4px solid #f3e8ff; border-top: 4px solid var(--nepal-blue); border-radius: 50%; animation: spinLoader 0.9s linear infinite;"></div>
+      <p style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.05em; margin: 0; font-family: sans-serif;">Loading Zozo Nepal...</p>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin: -8px 0 0 0; font-family: sans-serif;">Preparing billing data</p>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="brand-logo-container" onclick="window.location.href='index.html'">
+      <img src="zozonepal.png" class="brand-logo-img" id="shopLogoHeader" alt="Zojo Nepal Logo">
+    </div>
+    
+    <div class="nav-actions-right">
+      <a href="index.html" class="back-home-link">🛍️ Continue Shopping</a>
+    </div>
+  </header>
+
+  <!-- MAIN CHECKOUT PORT -->
+  <main class="checkout-container" id="checkoutMainWrapper">
+    <div class="checkout-grid">
+      
+      <!-- COLUMN LEFT: SHIPMENT & PAYMENT DETAILS -->
+      <div>
+        
+        <!-- STEP 1: SHIPPING INFORMATION -->
+        <div class="checkout-card">
+          <h2 class="checkout-title">📍 1. Delivery & Logistics Details</h2>
+          <form id="checkoutShippingForm">
+            <div class="details-form-group">
+              <label for="checkoutName">Full Name *</label>
+              <input type="text" id="checkoutName" class="details-form-input" required placeholder="Enter your complete legal name">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 14px;" id="phoneEmailGrid">
+              <div class="details-form-group">
+                <label for="checkoutPhone">Phone Number *</label>
+                <input type="tel" id="checkoutPhone" class="details-form-input" required placeholder="e.g. 98XXXXXXXX">
+              </div>
+              <div class="details-form-group">
+                <label for="checkoutEmail">Email Address *</label>
+                <input type="email" id="checkoutEmail" class="details-form-input" required placeholder="e.g. name@domain.com">
+              </div>
+            </div>
+
+            <div class="details-form-group">
+              <label for="checkoutDistrict">Delivery District *</label>
+              <select id="checkoutDistrict" class="details-form-input" style="height: 42px; padding: 0 10px;" required>
+                <!-- populated dynamically -->
+              </select>
+            </div>
+
+            <div class="details-form-group">
+              <label for="checkoutAddress">Exact Shipping Address Location *</label>
+              <input type="text" id="checkoutAddress" class="details-form-input" required placeholder="Tole, Road, Ward No, City details">
+            </div>
+
+            <div class="details-form-group">
+              <label for="checkoutLandmark">Famous Nearby Landmark *</label>
+              <input type="text" id="checkoutLandmark" class="details-form-input" required placeholder="Nearby School, Temple, Hospital, Chowk">
+            </div>
+          </form>
+        </div>
+
+        <!-- STEP 2: PAYMENT METHOD STRATEGY -->
+        <div class="checkout-card">
+          <h2 class="checkout-title">💳 2. Payment Strategy Method</h2>
+          
+          <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); text-align: left; display: block;">Select Payment strategy channel:</label>
+          <div class="payment-options-row">
+            <div id="btnPayEsewa" class="method-selector-card active-esewa" onclick="switchCheckoutMethod('eSewa')">eSewa Wallet</div>
+            <div id="btnPayKhalti" class="method-selector-card" onclick="switchCheckoutMethod('Khalti')">Khalti Card</div>
+            <div id="btnPayCOD" class="method-selector-card" onclick="switchCheckoutMethod('COD')">Cash on Delivery</div>
+          </div>
+
+          <!-- Dynamic QR code transfer box -->
+          <div id="paymentQrDetailsArea" style="background:#f8fafc; border:1px dashed var(--border-color); border-radius:12px; padding:18px; margin-bottom:12px; text-align:center;">
+            <span id="checkoutMethodBadge" style="font-size:0.75rem; font-weight:800; text-transform:uppercase; background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:12px; display: inline-block; margin-bottom: 8px;">eSewa Scan &amp; Pay</span>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height: 1.4; margin-bottom: 12px;" id="paymentInstructionsText">Scan this QR using your payment wallet, complete the transfer, and fill in details below.</p>
+            
+            <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:10px; display:inline-block; margin-bottom:14px; max-width:220px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+              <img id="storePaymentQrImage" src="" alt="Payment QR" style="width:160px; height:160px; object-fit:contain;" onerror="this.src='zozonepal.png'">
+              <p id="storePaymentQrPlaceholder" style="font-size:0.75rem; color:var(--nepal-red); font-weight:700; margin-top:4px; display:none;">No QR uploaded yet.<br>Pay to store phone: 98XXXXXXXX</p>
+            </div>
+
+            <div class="details-form-group">
+              <label for="checkoutTxnId" style="font-size:0.85rem; font-weight:700; display:flex; justify-content:space-between;">
+                <span>Transaction ID / Reference Code *</span>
+                <span style="color:var(--nepal-blue); font-size:0.75rem;">Check your wallet receipt</span>
+              </label>
+              <input type="text" id="checkoutTxnId" class="details-form-input" placeholder="e.g. 5A92X789" required>
+            </div>
+
+            <div class="details-form-group" style="margin-bottom:0;">
+              <label id="checkoutScreenshotLabel" for="checkoutScreenshot" style="font-size:0.85rem; font-weight:700;">Upload Payment Screenshot *</label>
+              <input type="file" id="checkoutScreenshot" class="details-form-input" accept="image/*" style="font-size:0.85rem; padding:8px 6px; height: auto;" required>
+            </div>
+          </div>
+
+          <div id="codNoticeBox" style="display:none; background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:16px; margin-bottom:12px; color:#1e40af; font-size:0.85rem; line-height:1.5;">
+            <strong>💵 Cash On Delivery Selected</strong><br>
+            Pay physically to our delivery logistics agent upon parcel arrival. Ensure to have exact change ready.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMN RIGHT: STICKY ORDER SUMMARY & COUPONS -->
+      <div>
+        
+        <!-- COUPON DISCOUNT COMPONENT -->
+        <div class="checkout-card" style="margin-bottom: 20px;">
+          <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">🎁 Coupon / Promo Code</h3>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="checkoutPromoInput" class="details-form-input" placeholder="e.g. ZOJO10" style="margin:0; text-transform:uppercase;">
+            <button type="button" class="btn btn-blue" id="btnApplyPromoCode" style="margin:0; padding:0 18px; font-size:0.85rem; width: auto; white-space:nowrap; border-radius:8px;">Apply Code</button>
+          </div>
+          <div id="checkoutPromoFeedback" style="font-size:0.8rem; font-weight:600; margin-top:8px; display:none;"></div>
+        </div>
+
+        <!-- STICKY ORDER SUMMARY -->
+        <div class="summary-card">
+          <h3 class="summary-title">📦 Order Summary</h3>
+          
+          <!-- Items List Container -->
+          <div id="checkoutItemsListTarget" style="max-height: 240px; overflow-y: auto; margin-bottom: 16px; padding-right: 4px;">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <div class="checkout-live-summary-box">
+            <div class="live-summary-row">
+              <span>Items Subtotal:</span>
+              <strong style="color: var(--text-main);" id="valSubtotal">Rs. 0</strong>
+            </div>
+            <div class="live-summary-row" id="rowPromoDiscount" style="display:none; color:#15803d; font-weight:700;">
+              <span>Promo Discount:</span>
+              <strong id="valPromoDiscount">Rs. 0</strong>
+            </div>
+            <div class="live-summary-row">
+              <span>Logistics Shipping Fee:</span>
+              <strong style="color: var(--text-main);" id="valShippingFee">Rs. 0</strong>
+            </div>
+            <div class="live-summary-row live-summary-total">
+              <span>Grand Total Bill:</span>
+              <span style="color: var(--nepal-blue); font-weight: 800; font-size: 1.2rem;" id="valGrandTotal">Rs. 0</span>
+            </div>
+          </div>
+
+          <!-- IDENTITY VERIFICATION & ACTION ZONE -->
+          <div id="checkoutIdentityArea" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px; text-align: center;">
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+              Google verification is required to confirm identity and safely trace shipment history.
+            </p>
+            <div id="checkoutIdentityStatus" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center;">
+              <div style="width: 25px; height: 25px; border: 3px solid var(--border-color); border-top-color: var(--nepal-blue); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- DELIVERY & SERVICE BENEFITS -->
+        <div class="checkout-card" style="margin-top: 20px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; text-align: left;">
+          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+            🚚 Delivery &amp; Service Benefits
+          </h3>
+          
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.4rem;">🚚</span>
+              <div>
+                <div style="font-weight: 700; color: var(--text-main);">Standard Direct Logistics Delivery</div>
+                <span style="font-size: 0.75rem; color: var(--text-muted);" id="checkoutDeliveryDaysEst">Estimated arrival in 2-3 working days</span>
+              </div>
+            </div>
+            <strong style="color: var(--nepal-blue); font-size: 0.95rem;" id="checkoutDeliveryCostBadge">Rs. 50</strong>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; color: var(--text-muted);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: var(--nepal-blue); font-size: 1rem;">🛡️</span> <span>100% Original Brand Authentic Quality</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: var(--nepal-blue); font-size: 1rem;">↩️</span> <span>7 Days Hassle-Free Returns Guaranteed</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: var(--nepal-blue); font-size: 1rem;">💵</span> <span>Cash on Delivery supports physical cash payouts</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- RECEIPT SUCCESS VIEW -->
+  <div class="success-container" id="orderSuccessWrapper">
+    <div class="success-card">
+      <div style="font-size: 3.5rem; margin-bottom: 12px;">🎉</div>
+      <h2 style="font-size: 1.6rem; color: var(--nepal-blue); font-weight: 800; margin-bottom: 4px;">Purchase Confirmed!</h2>
+      <p style="font-weight: 700; color: var(--nepal-red); font-size: 1rem; margin-bottom: 24px;">Thank you for your order.</p>
+      
+      <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 16px 0;">
+      
+      <h4 style="font-size: 0.9rem; text-align: left; color: var(--text-main); margin-bottom: 8px; font-weight: 700;">Recorded Shipment Invoice:</h4>
+      <div style="background: var(--input-bg); padding: 16px; border-radius: 12px; text-align: left; font-size: 0.85rem; line-height: 1.6; color: var(--text-muted); border: 1px solid var(--border-color); margin-bottom: 24px;">
+        <p><strong>Name:</strong> <span id="recName" style="color: var(--text-main);"></span></p>
+        <p><strong>Phone:</strong> <span id="recPhone" style="color: var(--text-main);"></span></p>
+        <p><strong>Location:</strong> <span id="recLoc" style="color: var(--text-main);"></span></p>
+        <p><strong>Landmark:</strong> <span id="recFamous" style="color: var(--text-main);"></span></p>
+        <p><strong>Payment Channel:</strong> <span id="recMethod" style="color: var(--text-main);"></span></p>
+        <p style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 8px;"><strong>Ordered Items:</strong> <span id="recItems" style="color: var(--text-main);"></span></p>
+        <p style="font-size: 1.05rem; color: var(--nepal-blue); font-weight: 800; margin-top: 6px;"><strong>Amount Settled:</strong> <span id="recAmount"></span></p>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-outline" style="margin: 0;" onclick="window.print()">🖨️ Print Invoice Receipt</button>
+        <button class="btn btn-blue" style="margin: 0; background: var(--nepal-blue);" onclick="window.location.href='index.html'">🛍️ Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <footer style="margin-top: auto; padding: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); background: var(--bg-card);">
+    <p>&copy; 2026 Zojo Nepal. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, doc, getDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // CORE CONFIGURATIONS
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
+      authDomain: "turbo-topup-ef79f.firebaseapp.com",
+      projectId: "turbo-topup-ef79f",
+      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
+      messagingSenderId: "90939874619",
+      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
+      measurementId: "G-5GQ9SR14P3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // STATE
+    let checkoutCart = [];
+    let selectedMethod = "eSewa";
+    let nepalRates = {
+      "Rupandehi": 50, "Kapilvastu": 100, "Nawalparasi": 100, "Palpa": 120, "Arghakhanchi": 130, "Gulmi": 130,
+      "Kathmandu": 150, "Lalitpur": 150, "Bhaktapur": 150, "Kaski": 150, "Chitwan": 140, "Banke": 160,
+      "Parsa": 160, "Morang": 180, "Dang": 150, "Jhapa": 220, "Sunsari": 200, "Surkhet": 200, "Kailali": 220
+    };
+    let calculatedDelivery = 50;
+    let appliedPromo = "";
+    let appliedDiscount = 0;
+    let qrSettings = null;
+    let userSessionState = null;
+
+    // --- 1. INITIALIZE CART FROM STORAGE ---
+    function loadCheckoutCart() {
+      try {
+        const raw = localStorage.getItem("zojo_cart");
+        if (raw) {
+          checkoutCart = JSON.parse(raw);
+        }
+      } catch (e) {
+        console.error("Cart fetch error:", e);
+      }
+
+      if (!checkoutCart || checkoutCart.length === 0) {
+        alert("Your shopping cart bag is empty! Redirecting back...");
+        window.location.href = "index.html";
+        return;
+      }
+
+      renderOrderSummaryItems();
+      recalculateFinalBillTotals();
+    }
+
+    function renderOrderSummaryItems() {
+      const container = document.getElementById("checkoutItemsListTarget");
+      if (!container) return;
+
+      container.innerHTML = checkoutCart.map(item => `
+        <div class="summary-item-row">
+          <img class="summary-item-img" src="${item.image}" alt="${item.name}" onerror="this.src='zozonepal.png'">
+          <div class="summary-item-details">
+            <h4 class="summary-item-name">${item.name}</h4>
+            <p class="summary-item-meta">Color: ${item.color} • Qty: ${item.quantity}</p>
+          </div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); text-align: right;">
+            Rs. ${(item.price * item.quantity).toLocaleString()}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- 2. BILL RECALCULATOR & RATES ---
+    window.recalculateFinalBillTotals = function() {
+      const subtotal = checkoutCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const district = document.getElementById("checkoutDistrict").value || "Rupandehi";
+      
+      calculatedDelivery = nepalRates[district] !== undefined ? nepalRates[district] : 150;
+      
+      const subtotalAfterPromo = Math.max(0, subtotal - appliedDiscount);
+      const grandTotal = subtotalAfterPromo + calculatedDelivery;
+
+      document.getElementById("valSubtotal").innerText = "Rs. " + subtotal.toLocaleString();
+      
+      if (appliedDiscount > 0) {
+        document.getElementById("rowPromoDiscount").style.display = "flex";
+        document.getElementById("valPromoDiscount").innerText = "Rs. -" + appliedDiscount.toLocaleString();
+      } else {
+        document.getElementById("rowPromoDiscount").style.display = "none";
+      }
+
+      document.getElementById("valShippingFee").innerText = "Rs. " + calculatedDelivery.toLocaleString();
+      document.getElementById("valGrandTotal").innerText = "Rs. " + grandTotal.toLocaleString();
+
+      const estDays = district === "Rupandehi" ? "Tomorrow" : "2-3 working days";
+      const daysEstEl = document.getElementById("checkoutDeliveryDaysEst");
+      if (daysEstEl) daysEstEl.innerText = "Estimated arrival: " + estDays;
+      const costBadgeEl = document.getElementById("checkoutDeliveryCostBadge");
+      if (costBadgeEl) costBadgeEl.innerText = "Rs. " + calculatedDelivery.toLocaleString();
+    };
+
+    // --- 3. DYNAMIC METADATA LISTENERS ---
+    async function loadDynamicSettings() {
+      // Fetch rates
+      try {
+        const docSnap = await getDoc(doc(db, "settings", "delivery_rates"));
+        if (docSnap.exists() && docSnap.data().rates) {
+          nepalRates = docSnap.data().rates;
+        }
+      } catch (e) {
+        console.error("Rates fetch error:", e);
+      }
+
+      // Populate dropdown list
+      const districtDropdown = document.getElementById("checkoutDistrict");
+      districtDropdown.innerHTML = `
+        <option value="" disabled>-- Select your District --</option>
+        ${Object.entries(nepalRates).map(([dist, rate]) => `
+          <option value="${dist}" ${dist === 'Rupandehi' ? 'selected' : ''}>${dist} (Rs. ${rate})</option>
+        `).join('')}
+      `;
+
+      districtDropdown.addEventListener("change", recalculateFinalBillTotals);
+
+      // Fetch payment QR
+      try {
+        const qrDoc = await getDoc(doc(db, "settings", "payment_qrs"));
+        if (qrDoc.exists()) {
+          qrSettings = qrDoc.data();
+        }
+      } catch (e) {
+        console.error("QR settings error:", e);
+      }
+
+      // Fetch logo
+      try {
+        const shopInfo = await getDoc(doc(db, "settings", "shop_info"));
+        if (shopInfo.exists() && shopInfo.data().logoUrl) {
+          document.getElementById("shopLogoHeader").src = shopInfo.data().logoUrl;
+        }
+      } catch (e) {}
+
+      renderPaymentDetails();
+    }
+
+    // --- 4. PAYMENT SELECTION ROUTINE ---
+    window.switchCheckoutMethod = function(methodCode) {
+      selectedMethod = methodCode;
+      
+      document.getElementById("btnPayEsewa").className = "method-selector-card" + (methodCode === 'eSewa' ? ' active-esewa' : '');
+      document.getElementById("btnPayKhalti").className = "method-selector-card" + (methodCode === 'Khalti' ? ' active-khalti' : '');
+      document.getElementById("btnPayCOD").className = "method-selector-card" + (methodCode === 'COD' ? ' active-cod' : '');
+
+      renderPaymentDetails();
+    };
+
+    function renderPaymentDetails() {
+      const qrArea = document.getElementById("paymentQrDetailsArea");
+      const codBox = document.getElementById("codNoticeBox");
+      const badge = document.getElementById("checkoutMethodBadge");
+      const qrImg = document.getElementById("storePaymentQrImage");
+      const placeholderMsg = document.getElementById("storePaymentQrPlaceholder");
+      const txnInput = document.getElementById("checkoutTxnId");
+      const screenshotInput = document.getElementById("checkoutScreenshot");
+      const screenshotLabel = document.getElementById("checkoutScreenshotLabel");
+
+      if (selectedMethod === 'COD') {
+        qrArea.style.display = 'none';
+        codBox.style.display = 'block';
+        txnInput.removeAttribute('required');
+        if (screenshotInput) {
+          screenshotInput.removeAttribute('required');
+        }
+        if (screenshotLabel) {
+          screenshotLabel.innerText = "Upload Payment Screenshot (Optional)";
+        }
+        return;
+      }
+
+      qrArea.style.display = 'block';
+      codBox.style.display = 'none';
+      txnInput.setAttribute('required', 'true');
+      if (screenshotInput) {
+        screenshotInput.setAttribute('required', 'true');
+      }
+      if (screenshotLabel) {
+        screenshotLabel.innerText = "Upload Payment Screenshot *";
+      }
+
+      if (selectedMethod === 'eSewa') {
+        badge.innerText = "eSewa Wallet Scan & Pay";
+        badge.style.background = "#dcfce7";
+        badge.style.color = "#15803d";
+        if (qrSettings && qrSettings.esewaQr) {
+          qrImg.src = qrSettings.esewaQr;
+          qrImg.style.display = "block";
+          placeholderMsg.style.display = "none";
+        } else {
+          qrImg.style.display = "none";
+          placeholderMsg.style.display = "block";
+        }
+      } else if (selectedMethod === 'Khalti') {
+        badge.innerText = "Khalti Card / Wallet Scan & Pay";
+        badge.style.background = "#f3e8ff";
+        badge.style.color = "#6b21a8";
+        if (qrSettings && qrSettings.khaltiQr) {
+          qrImg.src = qrSettings.khaltiQr;
+          qrImg.style.display = "block";
+          placeholderMsg.style.display = "none";
+        } else {
+          qrImg.style.display = "none";
+          placeholderMsg.style.display = "block";
+        }
+      }
+    }
+
+    // --- 5. PROMO COUPON VERIFICATION ---
+    document.getElementById("btnApplyPromoCode").addEventListener("click", async () => {
+      const code = document.getElementById("checkoutPromoInput").value.trim().toUpperCase();
+      const feedback = document.getElementById("checkoutPromoFeedback");
+      const subtotal = checkoutCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+      if (!code) {
+        feedback.style.display = "block";
+        feedback.style.color = "red";
+        feedback.innerText = "Please input a coupon code first.";
+        return;
+      }
+
+      feedback.style.display = "block";
+      feedback.style.color = "var(--text-muted)";
+      feedback.innerText = "⏳ Verifying coupon code...";
+
+      try {
+        const promoQuery = query(collection(db, "promos"), where("code", "==", code), where("isActive", "==", true));
+        const snap = await getDocs(promoQuery);
+
+        if (snap.empty) {
+          feedback.style.color = "red";
+          feedback.innerText = "Invalid or expired Promo Code.";
+          appliedPromo = "";
+          appliedDiscount = 0;
+        } else {
+          const promoData = snap.docs[0].data();
+          const minSubtotal = Number(promoData.minimumSubtotal || 0);
+          
+          if (subtotal < minSubtotal) {
+            feedback.style.color = "red";
+            feedback.innerText = `This promo code requires a minimum purchase subtotal of Rs. ${minSubtotal.toLocaleString()}.`;
+            appliedPromo = "";
+            appliedDiscount = 0;
+          } else {
+            appliedPromo = code;
+            if (promoData.discountType === "percent") {
+              const percent = Number(promoData.discountValue || 0);
+              appliedDiscount = Math.round(subtotal * (percent / 100));
+              feedback.style.color = "green";
+              feedback.innerText = `🎉 Code applied! ${percent}% discount of Rs. ${appliedDiscount.toLocaleString()} saved.`;
+            } else {
+              const amount = Number(promoData.discountValue || 0);
+              appliedDiscount = Math.min(subtotal, amount);
+              feedback.style.color = "green";
+              feedback.innerText = `🎉 Code applied! Rs. ${appliedDiscount.toLocaleString()} discount saved.`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error applying promo:", err);
+        feedback.style.color = "red";
+        feedback.innerText = "Could not verify discount code. Please try again.";
+        appliedPromo = "";
+        appliedDiscount = 0;
+      }
+
+      recalculateFinalBillTotals();
+    });
+
+    // --- 6. USER IDENTITY SECTORS ---
+    onAuthStateChanged(auth, (user) => {
+      const identityStatusArea = document.getElementById("checkoutIdentityStatus");
+      if (user) {
+        userSessionState = user;
+        identityStatusArea.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px; background:#f1f5f9; padding:8px 16px; border-radius:30px; border:1px solid var(--border-color); margin-bottom: 8px;">
+            <img src="${user.photoURL || 'zozonepal.png'}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color);" referrerPolicy="no-referrer">
+            <span style="font-size:0.85rem; font-weight:700; color:var(--text-main); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.displayName || user.email}</span>
+          </div>
+          <button class="btn btn-blue" id="btnPlaceOrderConfirm" onclick="triggerCheckoutSubmission(event)">Confirm &amp; Place Order</button>
+          <span style="font-size:0.75rem; color:var(--nepal-blue); cursor:pointer; text-decoration:underline;" onclick="triggerSignOutSession()">Sign Out of ${user.email}</span>
+        `;
+      } else {
+        userSessionState = null;
+        identityStatusArea.innerHTML = `
+          <button class="btn btn-outline" style="background:#ffffff; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="triggerGoogleVerification()">
+            <svg style="width:18px; height:18px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.14 3.01-1.3 4l3.01 2.33c1.76-1.63 2.77-4.02 2.77-6.93z"/><path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.01-2.33c-.83.56-1.9.89-3.22.89-2.48 0-4.58-1.68-5.33-3.94l-3.12 2.42C5.24 22.02 8.39 24 12 24z"/><path fill="#FBBC05" d="M6.67 15.71A7.17 7.17 0 0 1 6.24 12c0-.64.11-1.26.31-1.85L3.43 7.73A11.95 11.95 0 0 0 2 12c0 1.55.3 3.03.83 4.39l3.84-2.68z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.96 1.19 15.24 0 12 0 8.39 0 5.24 1.98 3.43 5.31l3.12 2.42c.75-2.26 2.85-3.94 5.33-3.94z"/></svg>
+            Sign In with Google
+          </button>
+        `;
+      }
+    });
+
+    window.triggerGoogleVerification = async function() {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (e) {
+        console.error("Auth popup failure:", e);
+        alert("Google sign in failed. Please try again.");
+      }
+    };
+
+    window.triggerSignOutSession = async function() {
+      if (confirm("Are you sure you want to sign out?")) {
+        try {
+          await signOut(auth);
+        } catch (e) {
+          console.error("Signout error:", e);
+        }
+      }
+    };
+
+    // --- 7. TRANSACTION SUBMISSION ENGINE ---
+    window.triggerCheckoutSubmission = async function(event) {
+      event.preventDefault();
+
+      // Validate shipping form inputs manually
+      const shippingForm = document.getElementById("checkoutShippingForm");
+      if (!shippingForm.checkValidity()) {
+        shippingForm.reportValidity();
+        return;
+      }
+
+      const nameVal = document.getElementById("checkoutName").value.trim();
+      const phoneVal = document.getElementById("checkoutPhone").value.trim();
+      const emailVal = document.getElementById("checkoutEmail").value.trim();
+      const districtVal = document.getElementById("checkoutDistrict").value;
+      const rawLocation = document.getElementById("checkoutAddress").value.trim();
+      const landmarkVal = document.getElementById("checkoutLandmark").value.trim();
+
+      const btn = document.getElementById("btnPlaceOrderConfirm");
+      const originalText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = "⏳ Logging order securely...";
+
+      try {
+        let screenshotBase64 = "";
+        let txnIdVal = "";
+
+        if (selectedMethod !== 'COD') {
+          txnIdVal = document.getElementById("checkoutTxnId").value.trim();
+          if (!txnIdVal) {
+            alert("Please enter your Transaction Reference ID.");
+            btn.disabled = false;
+            btn.innerText = originalText;
+            return;
+          }
+
+          const fileInput = document.getElementById("checkoutScreenshot");
+          if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            alert("Please upload your payment screenshot proof before placing your order.");
+            btn.disabled = false;
+            btn.innerText = originalText;
+            return;
+          }
+
+          if (fileInput.files && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            screenshotBase64 = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = () => resolve("");
+            });
+          }
+        }
+
+        // Build order details strings
+        const orderSummaryString = checkoutCart.map(item => `${item.name} [Color: ${item.color}] (x${item.quantity})`).join(', ');
+        const cartItemsSubtotal = checkoutCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const finalCalculatedBill = Math.max(0, cartItemsSubtotal - appliedDiscount) + calculatedDelivery;
+        const displayPaymentMethodString = selectedMethod === 'eSewa' ? "eSewa QR" : (selectedMethod === 'Khalti' ? "Khalti QR" : "Cash on Delivery");
+
+        const docRef = await addDoc(collection(db, "transactions"), {
+          productName: orderSummaryString,
+          amountPaid: finalCalculatedBill,
+          userEmail: auth.currentUser ? auth.currentUser.email : "Guest User",
+          customerEmail: emailVal,
+          paymentMethod: displayPaymentMethodString,
+          customerName: nameVal,
+          customerPhone: phoneVal,
+          deliveryLocation: `${rawLocation}, ${districtVal}`,
+          famousPlace: landmarkVal,
+          transactionId: txnIdVal,
+          screenshotProof: screenshotBase64,
+          couponApplied: appliedPromo,
+          discountGiven: appliedDiscount,
+          status: "Pending",
+          timestamp: serverTimestamp()
+        });
+
+        // Set invoice elements
+        document.getElementById("recName").innerText = nameVal;
+        document.getElementById("recPhone").innerText = phoneVal;
+        document.getElementById("recLoc").innerText = `${rawLocation}, ${districtVal}`;
+        document.getElementById("recFamous").innerText = landmarkVal;
+        document.getElementById("recMethod").innerText = displayPaymentMethodString + (txnIdVal ? ` (Ref ID: ${txnIdVal})` : "");
+        document.getElementById("recItems").innerText = orderSummaryString;
+        document.getElementById("recAmount").innerText = "Rs. " + finalCalculatedBill.toLocaleString();
+
+        // Remove cart and show invoice
+        localStorage.removeItem("zojo_cart");
+        document.getElementById("checkoutMainWrapper").style.display = "none";
+        document.getElementById("orderSuccessWrapper").style.display = "block";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+      } catch (err) {
+        console.error("Fulfillment logging error:", err);
+        alert("We encountered an error processing your transaction. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+      }
+    };
+
+    // START CHECKOUT DECORATIONS
+    loadCheckoutCart();
+    loadDynamicSettings().then(() => {
+      const loader = document.getElementById("appGlobalLoadScreen");
+      if (loader) {
+        loader.style.opacity = "0";
+        loader.style.visibility = "hidden";
+        setTimeout(() => {
+          loader.style.display = "none";
+        }, 400);
+      }
+    }).catch(() => {
+      const loader = document.getElementById("appGlobalLoadScreen");
+      if (loader) loader.style.display = "none";
+    });
+
+    // Safety fallback
+    setTimeout(() => {
+      const loader = document.getElementById("appGlobalLoadScreen");
+      if (loader) loader.style.display = "none";
+    }, 2500);
+  </script>
+</body>
+</html>

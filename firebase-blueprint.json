@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Store inventory catalog product",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "oldPrice": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "specifications": { "type": "array" },
+        "colors": { "type": "array" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["name", "price", "imageUrl", "category", "description"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Customer order or payment transactions",
+      "type": "object",
+      "properties": {
+        "productName": { "type": "string" },
+        "amountPaid": { "type": "number" },
+        "userEmail": { "type": "string" },
+        "customerEmail": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "deliveryLocation": { "type": "string" },
+        "famousPlace": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "screenshotProof": { "type": "string" },
+        "couponApplied": { "type": "string" },
+        "discountGiven": { "type": "number" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "object" }
+      },
+      "required": ["productName", "amountPaid", "customerName", "customerPhone", "deliveryLocation", "paymentMethod", "status"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "General shop parameters and configurations",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "instagram": { "type": "string" },
+        "tiktok": { "type": "string" },
+        "about": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "esewaQr": { "type": "string" },
+        "khaltiQr": { "type": "string" }
+      }
+    },
+    "Promo": {
+      "title": "Promo",
+      "description": "Store discount coupons",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "type": { "type": "string" },
+        "value": { "type": "number" },
+        "minimumSubtotal": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["code", "type", "value", "isActive"]
+    },
+    "Banner": {
+      "title": "Banner",
+      "description": "Dynamic carousel banners",
+      "type": "object",
+      "properties": {
+        "imageUrl": { "type": "string" },
+        "linkUrl": { "type": "string" }
+      },
+      "required": ["imageUrl"]
+    },
+    "Faq": {
+      "title": "Faq",
+      "description": "Help Desk FAQ question and answers",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["question", "answer"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Registered administrators list",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product collection"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Transactions / orders collection"
+    },
+    "/settings/{settingsId}": {
+      "schema": "Setting",
+      "description": "General configuration parameters"
+    },
+    "/promos/{promoId}": {
+      "schema": "Promo",
+      "description": "Discount promo codes"
+    },
+    "/banners/{bannerId}": {
+      "schema": "Banner",
+      "description": "Homepage carousel slides"
+    },
+    "/faqs/{faqId}": {
+      "schema": "Faq",
+      "description": "Help desk FAQs"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Store administrators"
+    }
+  }
+}

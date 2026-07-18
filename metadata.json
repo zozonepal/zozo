@@ -1,0 +1,6 @@
+{
+  "name": "Zojo Nepal",
+  "description": "Zojo Nepal - Premium Gadget Accessories and Tech Shopping",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

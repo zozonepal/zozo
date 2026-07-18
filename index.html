@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zozo Nepal</title>
-   <link rel="icon" type="image/png" href="zozonepal.png">
+  <link rel="icon" type="image/png" href="zozonepal.png">
   
   
   <style>
@@ -318,6 +318,13 @@
       overflow: hidden;
       background: var(--frame-bg);
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-y;
+      cursor: grab;
+    }
+    .hero-slider-container:active {
+      cursor: grabbing;
     }
     @media (min-width: 480px) { .hero-slider-container { height: 300px; } }
     @media (min-width: 768px) { .hero-slider-container { height: 420px; margin-bottom: 30px; } }
@@ -329,7 +336,7 @@
       transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .slide-panel { min-width: 100%; height: 100%; position: relative; overflow: hidden; }
-    .slide-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .slide-image { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; -webkit-user-drag: none; }
 
     .slider-nav-arrow {
       position: absolute;
@@ -775,7 +782,7 @@
   <!-- FULL SCREEN BRANDED LOAD OVERLAY -->
   <div id="appGlobalLoadScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease; gap: 20px;">
     <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.onerror=null; this.src='zozonepal.png'">
+      <img src="zozonepal.png" alt="Zozo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.onerror=null; this.src='zozonepal.png'">
       <div style="width: 45px; height: 45px; border: 4px solid #f3e8ff; border-top: 4px solid var(--nepal-blue); border-radius: 50%; animation: spinLoader 0.9s linear infinite;"></div>
       <p style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.05em; margin: 0; font-family: sans-serif;">Loading Zozo Nepal...</p>
       <p style="font-size: 0.75rem; color: var(--text-muted); margin: -8px 0 0 0; font-family: sans-serif;">Please wait a moment</p>
@@ -784,7 +791,7 @@
 
   <header class="app-header">
     <div class="brand-logo-container" onclick="location.reload()">
-      <img src="zozonepal.png" class="brand-logo-img" alt="Zojo Nepal Logo">
+      <img src="zozonepal.png" class="brand-logo-img" alt="Zozo Nepal Logo">
     </div>
     
     <div class="nav-actions-right">
@@ -849,7 +856,7 @@
         <h3 class="faq-title">Frequently Asked Questions (FAQ)</h3>
         <div class="faq-wrapper">
           <details class="faq-item">
-            <summary class="faq-question">How do I place an order on Zojo Nepal?</summary>
+            <summary class="faq-question">How do I place an order on Zozo Nepal?</summary>
             <div class="faq-answer">
               To place an order, select your desired item, choose your variant color, and add it to your cart. Click on your shopping cart, choose your payment method, click "Proceed to Checkout", and sign in with your Google Account to safely fill out your shipping information.
             </div>
@@ -981,7 +988,7 @@
           <div style="background:#faf5ff; border:1px solid var(--border-color); border-radius:12px; padding:14px; margin-bottom:18px; text-align:left;">
             <label style="font-size:0.8rem; font-weight:700; color:var(--text-main); display:block; margin-bottom:6px;">🎁 Have a Coupon / Promo Code?</label>
             <div style="display:flex; gap:8px;">
-              <input type="text" id="promoCodeInput" class="details-form-input" placeholder="e.g. ZOJO10" style="margin:0; text-transform:uppercase;">
+              <input type="text" id="promoCodeInput" class="details-form-input" placeholder="e.g. ZOZO10" style="margin:0; text-transform:uppercase;">
               <button type="button" class="btn btn-crimson" onclick="executeApplyPromoCodeValue()" style="padding:0 18px; font-size:0.85rem; border-radius:8px; background:var(--nepal-blue); white-space:nowrap;">Apply Code</button>
             </div>
             <div id="promoFeedbackMessage" style="font-size:0.75rem; font-weight:600; margin-top:6px; display:none;"></div>
@@ -1050,20 +1057,20 @@
   <footer>
     <div class="footer-grid-layout">
       <div class="footer-block">
-        <h4>About Zojo Nepal</h4>
+        <h4>About Zozo Nepal</h4>
         <p style="color:#9ca3af; font-size:0.85rem; line-height:1.6;">Your premium contemporary online hub bringing high aesthetic gadget accessories, apparel, and gadgets straight to your door across Nepal.</p>
       </div>
       <div class="footer-block">
         <h4>Social Connections</h4>
         <ul class="footer-links">
-          <li>📸 <a href="https://www.instagram.com/zozonepal/" target="_blank">Instagram (@zozonepal)</a></li>
-          <li>🎵 <a href="https://www.tiktok.com/@zozo.nepal" target="_blank">TikTok (@zozo.nepal)</a></li>
+          <li>📸 <a href="https://instagram.com/zozonepal" target="_blank">Instagram (@zozonepal)</a></li>
+          <li>🎵 <a href="https://tiktok.com/@zozonepal" target="_blank">TikTok (@zozonepal)</a></li>
         </ul>
       </div>
       <div class="footer-block">
         <h4>Contact Channels</h4>
         <ul class="footer-links">
-          <li>📞 <a href="tel:+9779766706246">+977 9766706246</a></li>
+          <li>📞 <a href="tel:9766706246">9766706246</a></li>
           <li>✉️ <a href="mailto:zozonepal5@gmail.com">zozonepal5@gmail.com</a></li>
         </ul>
       </div>
@@ -1079,15 +1086,15 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // CORE CONFIGURATIONS
-const firebaseConfig = {
-  apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
-  authDomain: "zozonepal-5.firebaseapp.com",
-  projectId: "zozonepal-5",
-  storageBucket: "zozonepal-5.firebasestorage.app",
-  messagingSenderId: "766838521942",
-  appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
-  measurementId: "G-PYD84CLYP5"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
+      authDomain: "turbo-topup-ef79f.firebaseapp.com",
+      projectId: "turbo-topup-ef79f",
+      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
+      messagingSenderId: "90939874619",
+      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
+      measurementId: "G-5GQ9SR14P3"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -1240,7 +1247,7 @@ const firebaseConfig = {
         }));
 
         try {
-          localStorage.setItem("zojo_products_cache", JSON.stringify(globalProductsCatalog));
+          localStorage.setItem("zozo_products_cache", JSON.stringify(globalProductsCatalog));
         } catch (e) {
           console.error("Failed to cache products:", e);
         }
@@ -1715,7 +1722,7 @@ const firebaseConfig = {
       if (systemCart.length === 0) return;
       
       // Persist cart to localStorage so checkout.html can load it
-      localStorage.setItem("zojo_cart", JSON.stringify(systemCart));
+      localStorage.setItem("zozo_cart", JSON.stringify(systemCart));
       
       // Redirect to the dedicated checkout page
       window.location.href = "checkout.html";
@@ -1959,6 +1966,126 @@ const firebaseConfig = {
       }, 5000);
     }
 
+    function initSliderGestures() {
+      const container = document.querySelector('.hero-slider-container');
+      const track = document.getElementById('sliderTrack');
+      if (!container || !track) return;
+
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      let isHorizontalSwipe = null;
+      let trackWidth = 0;
+
+      container.addEventListener('dragstart', (e) => e.preventDefault());
+
+      function getEventX(e) {
+        if (e.touches && e.touches.length > 0) {
+          return e.touches[0].clientX;
+        }
+        return e.clientX;
+      }
+
+      function onStart(e) {
+        if (maxSlidesCount <= 1) return;
+        if (e.type === 'mousedown' && e.button !== 0) return;
+
+        isDragging = true;
+        isHorizontalSwipe = null;
+        startX = getEventX(e);
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+        currentX = startX;
+        currentY = startY;
+        trackWidth = container.offsetWidth;
+
+        track.style.transition = 'none';
+        if (slideTimer) clearInterval(slideTimer);
+      }
+
+      function onMove(e) {
+        if (!isDragging) return;
+
+        currentX = getEventX(e);
+        currentY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const diffX = currentX - startX;
+        const diffY = currentY - startY;
+
+        if (isHorizontalSwipe === null) {
+          if (Math.abs(diffX) > Math.abs(diffY)) {
+            isHorizontalSwipe = true;
+          } else if (Math.abs(diffY) > Math.abs(diffX)) {
+            isHorizontalSwipe = false;
+          }
+        }
+
+        if (isHorizontalSwipe === false) {
+          isDragging = false;
+          track.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
+          updateSliderViewport();
+          resetSliderTimer();
+          return;
+        }
+
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+
+        const currentOffset = -currentSlideIndex * trackWidth;
+        const targetOffset = currentOffset + diffX;
+
+        let finalOffset = targetOffset;
+        if (targetOffset > 0) {
+          finalOffset = targetOffset * 0.3;
+        } else if (targetOffset < -(maxSlidesCount - 1) * trackWidth) {
+          const limit = -(maxSlidesCount - 1) * trackWidth;
+          const over = targetOffset - limit;
+          finalOffset = limit + over * 0.3;
+        }
+
+        track.style.transform = `translateX(${finalOffset}px)`;
+      }
+
+      function onEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+
+        track.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
+
+        const diffX = currentX - startX;
+        const threshold = trackWidth * 0.15;
+
+        if (diffX < -threshold) {
+          if (currentSlideIndex < maxSlidesCount - 1) {
+            currentSlideIndex++;
+          } else {
+            currentSlideIndex = 0;
+          }
+        } else if (diffX > threshold) {
+          if (currentSlideIndex > 0) {
+            currentSlideIndex--;
+          } else {
+            currentSlideIndex = maxSlidesCount - 1;
+          }
+        }
+
+        updateSliderViewport();
+        resetSliderTimer();
+      }
+
+      container.addEventListener('mousedown', onStart);
+      container.addEventListener('touchstart', onStart, { passive: true });
+
+      window.addEventListener('mousemove', onMove, { passive: false });
+      window.addEventListener('touchmove', onMove, { passive: false });
+
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+      window.addEventListener('touchcancel', onEnd);
+    }
+
     // --- REALTIME FIRESTORE LISTENER FEEDS ---
     function listenToLiveBanners() {
       const sliderTrack = document.getElementById('sliderTrack');
@@ -2016,7 +2143,7 @@ const firebaseConfig = {
 
         if (faqList.length === 0) {
           faqList = [
-            { question: "How do I place an order on Zojo Nepal?", answer: "To place an order, select your desired item, choose your variant color, and add it to your cart. Click on your shopping cart, choose your payment method, click \"Proceed to Checkout\", and sign in with your Google Account to safely fill out your shipping information." },
+            { question: "How do I place an order on Zozo Nepal?", answer: "To place an order, select your desired item, choose your variant color, and add it to your cart. Click on your shopping cart, choose your payment method, click \"Proceed to Checkout\", and sign in with your Google Account to safely fill out your shipping information." },
             { question: "What payment methods do you support?", answer: "We officially support Cash on Delivery (COD) for flexible physical transactions, alongside instant mobile digital wallet payouts via eSewa QR code routing and Khalti QR code transfer systems." }
           ];
         }
@@ -2138,6 +2265,7 @@ const firebaseConfig = {
     listenToLiveFaqs();
     listenToLiveDeliveryRates();
     listenToLiveShopInfo();
+    initSliderGestures();
   </script>
 </body>
 </html>

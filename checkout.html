@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout | Zozo Nepal</title>
-   <link rel="icon" type="image/png" href="zozonepal.png">
+  <link rel="icon" type="image/png" href="zozonepal.png">
   <style>
     /* --- 1. DESIGN SYSTEM & CORE CSS VARIABLES --- */
     :root {
@@ -365,7 +365,7 @@
   <!-- FULL SCREEN BRANDED LOAD OVERLAY -->
   <div id="appGlobalLoadScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease; gap: 20px;">
     <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.onerror=null; this.src='zozonepal.png'">
+      <img src="zozonepal.png" alt="Zozo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.onerror=null; this.src='zozonepal.png'">
       <div style="width: 45px; height: 45px; border: 4px solid #f3e8ff; border-top: 4px solid var(--nepal-blue); border-radius: 50%; animation: spinLoader 0.9s linear infinite;"></div>
       <p style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.05em; margin: 0; font-family: sans-serif;">Loading Zozo Nepal...</p>
       <p style="font-size: 0.75rem; color: var(--text-muted); margin: -8px 0 0 0; font-family: sans-serif;">Preparing billing data</p>
@@ -375,7 +375,7 @@
   <!-- HEADER -->
   <header class="app-header">
     <div class="brand-logo-container" onclick="window.location.href='index.html'">
-      <img src="zozonepal.png" class="brand-logo-img" id="shopLogoHeader" alt="Zojo Nepal Logo">
+      <img src="zozonepal.png" class="brand-logo-img" id="shopLogoHeader" alt="Zozo Nepal Logo">
     </div>
     
     <div class="nav-actions-right">
@@ -479,7 +479,7 @@
         <div class="checkout-card" style="margin-bottom: 20px;">
           <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">🎁 Coupon / Promo Code</h3>
           <div style="display:flex; gap:8px;">
-            <input type="text" id="checkoutPromoInput" class="details-form-input" placeholder="e.g. ZOJO10" style="margin:0; text-transform:uppercase;">
+            <input type="text" id="checkoutPromoInput" class="details-form-input" placeholder="e.g. ZOZO10" style="margin:0; text-transform:uppercase;">
             <button type="button" class="btn btn-blue" id="btnApplyPromoCode" style="margin:0; padding:0 18px; font-size:0.85rem; width: auto; white-space:nowrap; border-radius:8px;">Apply Code</button>
           </div>
           <div id="checkoutPromoFeedback" style="font-size:0.8rem; font-weight:600; margin-top:8px; display:none;"></div>
@@ -569,17 +569,15 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // CORE CONFIGURATIONS
-const firebaseConfig = {
-  apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
-  authDomain: "zozonepal-5.firebaseapp.com",
-  projectId: "zozonepal-5",
-  storageBucket: "zozonepal-5.firebasestorage.app",
-  messagingSenderId: "766838521942",
-  appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
-  measurementId: "G-PYD84CLYP5"
-};
-
-
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
+      authDomain: "turbo-topup-ef79f.firebaseapp.com",
+      projectId: "turbo-topup-ef79f",
+      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
+      messagingSenderId: "90939874619",
+      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
+      measurementId: "G-5GQ9SR14P3"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -603,7 +601,7 @@ const firebaseConfig = {
     // --- 1. INITIALIZE CART FROM STORAGE ---
     function loadCheckoutCart() {
       try {
-        const raw = localStorage.getItem("zojo_cart");
+        const raw = localStorage.getItem("zozo_cart");
         if (raw) {
           checkoutCart = JSON.parse(raw);
         }
@@ -976,7 +974,7 @@ const firebaseConfig = {
         document.getElementById("recAmount").innerText = "Rs. " + finalCalculatedBill.toLocaleString();
 
         // Remove cart and show invoice
-        localStorage.removeItem("zojo_cart");
+        localStorage.removeItem("zozo_cart");
         document.getElementById("checkoutMainWrapper").style.display = "none";
         document.getElementById("orderSuccessWrapper").style.display = "block";
         window.scrollTo({ top: 0, behavior: "smooth" });

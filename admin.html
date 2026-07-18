@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zozo Nepal - Master Control Hub</title>
-     <link rel="icon" type="image/png" href="zozonepal.png">
+  <title>Zozo Nepal - Master Control Hub</title>
+  <link rel="icon" type="image/png" href="zozonepal.png">
   
   <style>
     :root {
@@ -419,7 +419,7 @@
     <!-- MASTER HEADER -->
     <header class="master-header">
       <div class="brand-title-area">
-        <h1>🛠️ Zojo Nepal Masters Hub</h1>
+        <h1>🛠️ Zozo Nepal Masters Hub</h1>
         <p>Operational control tower for catalog, promos, delivery logistics, resources, and orders.</p>
       </div>
       <div class="header-actions">
@@ -549,7 +549,7 @@
             <form id="promoCreationForm">
               <div class="form-group">
                 <label>Coupon Code Name *</label>
-                <input type="text" id="promoCode" class="form-control" placeholder="e.g. WELCOME, ZOJO15" style="text-transform: uppercase;" required>
+                <input type="text" id="promoCode" class="form-control" placeholder="e.g. WELCOME, ZOZO15" style="text-transform: uppercase;" required>
               </div>
 
               <div class="form-group">
@@ -707,31 +707,31 @@
             <form id="shopInfoForm">
               <div class="form-group">
                 <label>Support Contact Phone Number</label>
-                <input type="text" id="shopPhone" class="form-control" placeholder="+977 98XXXXXXXX">
+                <input type="text" id="shopPhone" class="form-control" placeholder="9766706246">
               </div>
 
               <div class="form-group">
                 <label>Support Contact Email Address</label>
-                <input type="email" id="shopEmail" class="form-control" placeholder="fitoorbhandari38@gmail.com">
+                <input type="email" id="shopEmail" class="form-control" placeholder="zozonepal5@gmail.com">
               </div>
 
               <div class="form-group">
-                <label>WhatsApp Contact Number (No spacing/characters, e.g. 97798XXXXXXXX)</label>
-                <input type="text" id="shopWhatsapp" class="form-control" placeholder="97798XXXXXXXX">
+                <label>WhatsApp Contact Number (No spacing/characters, e.g. 9766706246)</label>
+                <input type="text" id="shopWhatsapp" class="form-control" placeholder="9766706246">
               </div>
 
               <div class="form-group">
                 <label>Instagram Page Link</label>
-                <input type="url" id="shopInstagram" class="form-control" placeholder="https://instagram.com/zojonepal">
+                <input type="url" id="shopInstagram" class="form-control" placeholder="https://instagram.com/zozonepal">
               </div>
 
               <div class="form-group">
                 <label>TikTok Profile Link</label>
-                <input type="url" id="shopTiktok" class="form-control" placeholder="https://tiktok.com/@zojonepal">
+                <input type="url" id="shopTiktok" class="form-control" placeholder="https://tiktok.com/@zozonepal">
               </div>
 
               <div class="form-group">
-                <label>About Zojo Nepal (Footer Description Summary)</label>
+                <label>About Zozo Nepal (Footer Description Summary)</label>
                 <textarea id="shopAbout" class="form-control" style="height: 90px;" placeholder="Our premium brand summary..."></textarea>
               </div>
 
@@ -782,15 +782,15 @@
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
-  authDomain: "zozonepal-5.firebaseapp.com",
-  projectId: "zozonepal-5",
-  storageBucket: "zozonepal-5.firebasestorage.app",
-  messagingSenderId: "766838521942",
-  appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
-  measurementId: "G-PYD84CLYP5"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
+      authDomain: "turbo-topup-ef79f.firebaseapp.com",
+      projectId: "turbo-topup-ef79f",
+      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
+      messagingSenderId: "90939874619",
+      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
+      measurementId: "G-5GQ9SR14P3"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -861,7 +861,7 @@ const firebaseConfig = {
         document.getElementById('authGateStatusText').innerHTML = `
           <div style="background: #fee2e2; border: 1px solid #fecaca; border-radius: 12px; padding: 14px; margin-bottom: 20px; color: #991b1b; text-align: left; font-size: 0.85rem; line-height: 1.5;">
             <strong>🚫 Access Denied</strong><br>
-            The Google account <strong>${email}</strong> is not registered as an administrator for Zojo Nepal.<br><br>
+            The Google account <strong>${email}</strong> is not registered as an administrator for Zozo Nepal.<br><br>
             Please sign out and sign in using an authorized account.
           </div>
         `;

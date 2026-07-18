@@ -363,7 +363,7 @@
   <!-- FULL SCREEN BRANDED LOAD OVERLAY -->
   <div id="appGlobalLoadScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease; gap: 20px;">
     <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.src='zozonepal.png'">
+      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.onerror=null; this.src='zozonepal.png'">
       <div style="width: 45px; height: 45px; border: 4px solid #f3e8ff; border-top: 4px solid var(--nepal-blue); border-radius: 50%; animation: spinLoader 0.9s linear infinite;"></div>
       <p style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.05em; margin: 0; font-family: sans-serif;">Loading Zozo Nepal...</p>
       <p style="font-size: 0.75rem; color: var(--text-muted); margin: -8px 0 0 0; font-family: sans-serif;">Preparing billing data</p>
@@ -444,7 +444,7 @@
             <p style="font-size:0.85rem; color:var(--text-muted); line-height: 1.4; margin-bottom: 12px;" id="paymentInstructionsText">Scan this QR using your payment wallet, complete the transfer, and fill in details below.</p>
             
             <div style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:10px; display:inline-block; margin-bottom:14px; max-width:220px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
-              <img id="storePaymentQrImage" src="" alt="Payment QR" style="width:160px; height:160px; object-fit:contain;" onerror="this.src='zozonepal.png'">
+              <img id="storePaymentQrImage" src="" alt="Payment QR" style="width:160px; height:160px; object-fit:contain;" onerror="this.onerror=null; this.src='zozonepal.png'">
               <p id="storePaymentQrPlaceholder" style="font-size:0.75rem; color:var(--nepal-red); font-weight:700; margin-top:4px; display:none;">No QR uploaded yet.<br>Pay to store phone: 98XXXXXXXX</p>
             </div>
 
@@ -523,35 +523,7 @@
 
         </div>
 
-        <!-- DELIVERY & SERVICE BENEFITS -->
-        <div class="checkout-card" style="margin-top: 20px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; text-align: left;">
-          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
-            🚚 Delivery &amp; Service Benefits
-          </h3>
-          
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 14px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 1.4rem;">🚚</span>
-              <div>
-                <div style="font-weight: 700; color: var(--text-main);">Standard Direct Logistics Delivery</div>
-                <span style="font-size: 0.75rem; color: var(--text-muted);" id="checkoutDeliveryDaysEst">Estimated arrival in 2-3 working days</span>
-              </div>
-            </div>
-            <strong style="color: var(--nepal-blue); font-size: 0.95rem;" id="checkoutDeliveryCostBadge">Rs. 50</strong>
-          </div>
 
-          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; color: var(--text-muted);">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="color: var(--nepal-blue); font-size: 1rem;">🛡️</span> <span>100% Original Brand Authentic Quality</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="color: var(--nepal-blue); font-size: 1rem;">↩️</span> <span>7 Days Hassle-Free Returns Guaranteed</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="color: var(--nepal-blue); font-size: 1rem;">💵</span> <span>Cash on Delivery supports physical cash payouts</span>
-            </div>
-          </div>
-        </div>
 
       </div>
 
@@ -651,7 +623,7 @@
 
       container.innerHTML = checkoutCart.map(item => `
         <div class="summary-item-row">
-          <img class="summary-item-img" src="${item.image}" alt="${item.name}" onerror="this.src='zozonepal.png'">
+          <img class="summary-item-img" src="${item.image}" alt="${item.name}" onerror="this.onerror=null; this.src='zozonepal.png'">
           <div class="summary-item-details">
             <h4 class="summary-item-name">${item.name}</h4>
             <p class="summary-item-meta">Color: ${item.color} • Qty: ${item.quantity}</p>

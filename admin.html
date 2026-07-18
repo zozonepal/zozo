@@ -1158,17 +1158,38 @@ const firebaseConfig = {
           const specsRaw = document.getElementById('pSpecs').value.trim();
           const specsArray = specsRaw ? specsRaw.split('\n').map(s => s.trim()).filter(s => s) : [];
 
-          await addDoc(collection(db, "products"), {
-            name: document.getElementById('pName').value,
+          // Defensively map specifications to a flat 1-dimensional array of plain primitive strings
+          const cleanSpecs = Array.isArray(specsArray) 
+            ? specsArray.map(s => String(s || "").trim()).filter(s => s !== "")
+            : [];
+
+          // Defensively map colors to a flat 1-dimensional array of plain objects with only string properties
+          const cleanColors = Array.isArray(colorsArray)
+            ? colorsArray.map(c => ({
+                name: String(c.name || "Standard").trim(),
+                hex: String(c.hex || "#9333ea").trim(),
+                imageUrl: String(c.imageUrl || "").trim()
+              }))
+            : [{ name: "Standard", hex: "#9333ea", imageUrl: "" }];
+
+          const payload = {
+            name: String(document.getElementById('pName').value).trim(),
             price: Number(document.getElementById('pPrice').value),
             oldPrice: document.getElementById('pOldPrice').value ? Number(document.getElementById('pOldPrice').value) : null,
-            imageUrl: compressedImageString, 
-            category: document.getElementById('pCategory').value,
-            description: document.getElementById('pDescription').value,
-            specifications: specsArray,
-            colors: colorsArray,
+            imageUrl: String(compressedImageString || "").trim(), 
+            category: String(document.getElementById('pCategory').value).trim(),
+            description: String(document.getElementById('pDescription').value).trim(),
+            specifications: cleanSpecs,
+            colors: cleanColors,
             timestamp: new Date()
+          };
+
+          console.log("Submitting Product Payload to Firestore:", {
+            ...payload,
+            imageUrl: payload.imageUrl ? `${payload.imageUrl.substring(0, 50)}... [Length: ${payload.imageUrl.length}]` : ""
           });
+
+          await addDoc(collection(db, "products"), payload);
 
           alert("Catalog item deployed successfully!");
           document.getElementById('productUploadForm').reset();

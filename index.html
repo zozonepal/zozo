@@ -480,6 +480,7 @@
       color: var(--text-main);
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
       height: 2.8em; 
@@ -493,6 +494,7 @@
       margin-bottom: 12px; 
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
       height: 2.8em; 
@@ -772,7 +774,7 @@
   <!-- FULL SCREEN BRANDED LOAD OVERLAY -->
   <div id="appGlobalLoadScreen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease; gap: 20px;">
     <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.src='zozonepal.png'">
+      <img src="zozonepal.png" alt="Zojo Nepal Logo" style="height: 80px; width: auto; object-fit: contain; animation: pulseLogo 1.8s infinite ease-in-out;" onerror="this.onerror=null; this.src='zozonepal.png'">
       <div style="width: 45px; height: 45px; border: 4px solid #f3e8ff; border-top: 4px solid var(--nepal-blue); border-radius: 50%; animation: spinLoader 0.9s linear infinite;"></div>
       <p style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.05em; margin: 0; font-family: sans-serif;">Loading Zozo Nepal...</p>
       <p style="font-size: 0.75rem; color: var(--text-muted); margin: -8px 0 0 0; font-family: sans-serif;">Please wait a moment</p>
@@ -821,9 +823,9 @@
     <div id="homeMainView">
       <div class="hero-slider-container">
         <div id="sliderTrack" class="slider-track">
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 1" onerror="this.src='zozonepal.png'"></div>
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 2" onerror="this.src='zozonepal.png'"></div>
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 3" onerror="this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 1" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 2" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 3" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
         </div>
         <button class="slider-nav-arrow nav-arrow-left" onclick="slideShift(-1)">&#10094;</button>
         <button class="slider-nav-arrow nav-arrow-right" onclick="slideShift(1)">&#10095;</button>
@@ -955,7 +957,7 @@
               
               <!-- QR Image Display -->
               <div style="background:#ffffff; border:1px solid #e2e8f0; padding:10px; border-radius:8px; display:inline-block; margin-top:4px; max-width:200px;">
-                <img id="storeDynamicPaymentQrImage" src="" alt="Payment QR" style="width:160px; height:160px; object-fit:contain;" onerror="this.src='zozonepal.png'">
+                <img id="storeDynamicPaymentQrImage" src="" alt="Payment QR" style="width:160px; height:160px; object-fit:contain;" onerror="this.onerror=null; this.src='zozonepal.png'">
                 <p id="qrPlaceholderMessage" style="font-size:0.75rem; color:var(--nepal-red); font-weight:700; margin-top:4px; display:none;">No QR uploaded yet.<br>Pay to store phone: 98XXXXXXXX</p>
               </div>
             </div>
@@ -1076,15 +1078,16 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // CORE CONFIGURATIONS
-    const firebaseConfig = {
-      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
-      authDomain: "turbo-topup-ef79f.firebaseapp.com",
-      projectId: "turbo-topup-ef79f",
-      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
-      messagingSenderId: "90939874619",
-      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
-      measurementId: "G-5GQ9SR14P3"
-    };
+  const firebaseConfig = {
+  apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
+  authDomain: "zozonepal-5.firebaseapp.com",
+  projectId: "zozonepal-5",
+  storageBucket: "zozonepal-5.firebasestorage.app",
+  messagingSenderId: "766838521942",
+  appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
+  measurementId: "G-PYD84CLYP5"
+};
+
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -1299,7 +1302,7 @@
         return `
           <div class="product-card">
             <div class="image-frame" onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">
-              <img src="${p.image}" alt="${p.name}" onerror="this.src='zozonepal.png'">
+              <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.src='zozonepal.png'">
             </div>
             <div class="product-meta">
               <h3 onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">${p.name}</h3>
@@ -1361,7 +1364,7 @@
       
       const thumbsContainer = document.getElementById('modalThumbnailsContainer');
       thumbsContainer.innerHTML = p.images.map((imgSrc, idx) => `
-        <img class="thumb-nail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" onclick="changeQuickViewImage(this, '${imgSrc}')" onerror="this.src='zozonepal.png'">
+        <img class="thumb-nail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" onclick="changeQuickViewImage(this, '${imgSrc}')" onerror="this.onerror=null; this.src='zozonepal.png'">
       `).join('');
 
       const colorsContainer = document.getElementById('modalColorsContainer');
@@ -1462,7 +1465,7 @@
       
       drawerTarget.innerHTML = systemCart.map(item => `
         <div class="cart-item">
-          <img class="cart-item-img" src="${item.image}" alt="${item.name}" onerror="this.src='zozonepal.png'">
+          <img class="cart-item-img" src="${item.image}" alt="${item.name}" onerror="this.onerror=null; this.src='zozonepal.png'">
           <div class="cart-item-details">
             <h4 style="font-size:0.85rem; font-weight:700;">${item.name}</h4>
             <p style="font-size:0.75rem; color:var(--text-muted); margin:1px 0;">Color: ${item.color}</p>
@@ -1908,7 +1911,7 @@
 
       visualBox.innerHTML = matched.map(p => `
         <div style="display:flex; align-items:center; gap:12px; background:white; padding:8px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="openProductDetailPage('${p.id}'); toggleHeaderSearchOverlay();">
-          <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.src='zozonepal.png'">
+          <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.onerror=null; this.src='zozonepal.png'">
           <div style="flex:1; text-align:left;">
             <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main);">${p.name}</h4>
             <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
@@ -1972,7 +1975,7 @@
 
         sliderTrack.innerHTML = bannerList.map(b => `
           <div class="slide-panel">
-            <img class="slide-image" src="${b.imageUrl}" alt="${b.caption || 'Slide'}" onerror="this.src='zozonepal.png'">
+            <img class="slide-image" src="${b.imageUrl}" alt="${b.caption || 'Slide'}" onerror="this.onerror=null; this.src='zozonepal.png'">
           </div>
         `).join('');
 

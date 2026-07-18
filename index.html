@@ -1085,16 +1085,15 @@
     import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy, doc, getDoc, getDocs, where, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // CORE CONFIGURATIONS
-    const firebaseConfig = {
-      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
-      authDomain: "turbo-topup-ef79f.firebaseapp.com",
-      projectId: "turbo-topup-ef79f",
-      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
-      messagingSenderId: "90939874619",
-      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
-      measurementId: "G-5GQ9SR14P3"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
+  authDomain: "zozonepal-5.firebaseapp.com",
+  projectId: "zozonepal-5",
+  storageBucket: "zozonepal-5.firebasestorage.app",
+  messagingSenderId: "766838521942",
+  appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
+  measurementId: "G-PYD84CLYP5"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);

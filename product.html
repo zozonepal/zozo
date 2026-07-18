@@ -771,16 +771,14 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // CORE CONFIGURATIONS
-{ const firebaseConfig = {
-  apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
-  authDomain: "zozonepal-5.firebaseapp.com",
-  projectId: "zozonepal-5",
-  storageBucket: "zozonepal-5.firebasestorage.app",
-  messagingSenderId: "766838521942",
-  appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
-  measurementId: "G-PYD84CLYP5"
-};
-
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavVnTtTNoOfqZwP0KKiFK_GGjjz7bpI0",
+      authDomain: "turbo-topup-ef79f.firebaseapp.com",
+      projectId: "turbo-topup-ef79f",
+      storageBucket: "turbo-topup-ef79f.firebasestorage.app",
+      messagingSenderId: "90939874619",
+      appId: "1:90939874619:web:423c1b9ba143150d82ab1e",
+      measurementId: "G-5GQ9SR14P3"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -917,6 +915,27 @@
         return;
       }
 
+      // Try loading from local products cache first for instant UI response
+      let cachedProduct = null;
+      try {
+        const cachedCatalogRaw = localStorage.getItem("zojo_products_cache");
+        if (cachedCatalogRaw) {
+          const cachedCatalog = JSON.parse(cachedCatalogRaw);
+          cachedProduct = cachedCatalog.find(p => p.id === targetProductId);
+        }
+      } catch (e) {
+        console.error("Cache retrieval issue:", e);
+      }
+
+      if (cachedProduct) {
+        currentSelectedProduct = cachedProduct;
+        if (!currentSelectedColor) {
+          currentSelectedColor = cachedProduct.colors && cachedProduct.colors[0] ? cachedProduct.colors[0].name : "Standard";
+        }
+        renderDetailPageContent(cachedProduct);
+        dismissGlobalLoaderScreen();
+      }
+
       const productDocRef = doc(db, "products", targetProductId);
       onSnapshot(productDocRef, (docSnap) => {
         if (!docSnap.exists()) {
@@ -948,7 +967,9 @@
         dismissGlobalLoaderScreen();
       }, (error) => {
         console.error("Error syncing product info:", error);
-        alert("Failed to sync live product data. Please check connection.");
+        if (!cachedProduct) {
+          alert("Failed to sync live product data. Please check connection.");
+        }
       });
     }
 

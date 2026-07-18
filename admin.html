@@ -782,7 +782,7 @@
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
   authDomain: "zozonepal-5.firebaseapp.com",
   projectId: "zozonepal-5",
@@ -978,37 +978,74 @@ const firebaseConfig = {
             const img = new Image();
             img.src = event.target.result;
             img.onload = () => {
-              const canvas = document.createElement('canvas');
-              let width = img.width;
-              let height = img.height;
+              const maxAllowedBytes = 900000; // Safeguard below Firestore 1MB document limit
+              
+              // Helper to attempt compression with varying scale, format, and quality
+              function attemptEncode(scale, format, quality) {
+                const canvas = document.createElement('canvas');
+                let width = img.width * scale;
+                let height = img.height * scale;
 
-              // Increase resolution limit to preserve high quality
-              if (width > maxWidth) {
-                height *= maxWidth / width;
-                width = maxWidth;
+                if (width > maxWidth) {
+                  height *= maxWidth / width;
+                  width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                if (format === 'image/jpeg') {
+                  // JPEG does not support transparency, fill canvas with white first
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillRect(0, 0, width, height);
+                } else {
+                  ctx.clearRect(0, 0, width, height);
+                }
+                
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                if (format === 'image/jpeg') {
+                  return canvas.toDataURL('image/jpeg', quality);
+                } else {
+                  return canvas.toDataURL('image/png');
+                }
               }
-              
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              
-              // Clear canvas to keep transparent backgrounds (for PNGs)
-              ctx.clearRect(0, 0, width, height);
-              ctx.drawImage(img, 0, 0, width, height);
-              
-              // Determine best export format and quality
-              let mimeType = 'image/jpeg';
-              let quality = 0.92; // 92% is high-quality industry standard
 
-              if (file.type === 'image/png' || file.name?.toLowerCase().endsWith('.png')) {
-                // Keep PNG to preserve transparency and avoid black backgrounds
-                mimeType = 'image/png';
-                const compressedBase64 = canvas.toDataURL(mimeType);
-                resolve(compressedBase64);
-              } else {
-                const compressedBase64 = canvas.toDataURL(mimeType, quality);
-                resolve(compressedBase64);
+              // Determine if the input is a PNG
+              const isPng = file.type === 'image/png' || file.name?.toLowerCase().endsWith('.png');
+              let base64 = "";
+
+              if (isPng) {
+                // Iteratively try PNG at decreasing scales to preserve transparency if possible
+                const pngScales = [1.0, 0.8, 0.6];
+                for (let scale of pngScales) {
+                  base64 = attemptEncode(scale, 'image/png');
+                  if (base64.length <= maxAllowedBytes) {
+                    resolve(base64);
+                    return;
+                  }
+                }
+                // If PNG is still too large (e.g. detailed lossless graphic), convert to highly-compressible JPEG
               }
+
+              // Try JPEG encoding with dynamic fallback (decreasing quality then scales)
+              const jpegScales = [1.0, 0.8, 0.6, 0.4];
+              const jpegQualities = [0.92, 0.82, 0.70, 0.50];
+
+              for (let scale of jpegScales) {
+                for (let quality of jpegQualities) {
+                  base64 = attemptEncode(scale, 'image/jpeg', quality);
+                  if (base64.length <= maxAllowedBytes) {
+                    resolve(base64);
+                    return;
+                  }
+                }
+              }
+
+              // absolute fallback: low resolution, low quality JPEG to guarantee success
+              base64 = attemptEncode(0.2, 'image/jpeg', 0.3);
+              resolve(base64);
             };
           };
           reader.onerror = error => reject(error);

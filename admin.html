@@ -782,16 +782,15 @@
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  const firebaseConfig = {
-  apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
-  authDomain: "zozonepal-5.firebaseapp.com",
-  projectId: "zozonepal-5",
-  storageBucket: "zozonepal-5.firebasestorage.app",
-  messagingSenderId: "766838521942",
-  appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
-  measurementId: "G-PYD84CLYP5"
-};
-
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
+      authDomain: "zozonepal-5.firebaseapp.com",
+      projectId: "zozonepal-5",
+      storageBucket: "zozonepal-5.firebasestorage.app",
+      messagingSenderId: "766838521942",
+      appId: "1:766838521942:web:4dd163a3cf52631c3b3bf7",
+      measurementId: "G-PYD84CLYP5"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);

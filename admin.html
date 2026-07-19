@@ -923,7 +923,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc, updateDoc, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -1041,7 +1041,7 @@
           `;
 
           const email = user.email ? user.email.toLowerCase().trim() : "";
-          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com");
+          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com" || email === "fitoorbhandari38@gmail.com");
 
           if (!isAuthorizedAdmin) {
             try {

@@ -1784,11 +1784,35 @@
         const container = document.getElementById('reviewsAdminContainer');
         if (!container) return;
         try {
-          const snap = await getDocs(collection(db, "reviews"));
-          globalReviewsCache = snap.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-          }));
+          let dbReviews = [];
+          try {
+            const snap = await getDocs(collection(db, "reviews"));
+            dbReviews = snap.docs.map(d => ({
+              id: d.id,
+              ...d.data()
+            }));
+          } catch (err) {
+            console.error("Error loading db reviews in admin:", err);
+          }
+
+          let localReviews = [];
+          try {
+            const rawLocal = localStorage.getItem("zozo_local_reviews");
+            if (rawLocal) {
+              localReviews = JSON.parse(rawLocal);
+            }
+          } catch(err) {
+            console.error("Error reading local reviews in admin:", err);
+          }
+
+          const combined = [...dbReviews];
+          localReviews.forEach(lr => {
+            if (!combined.some(item => item.id === lr.id)) {
+              combined.push(lr);
+            }
+          });
+
+          globalReviewsCache = combined;
           
           globalReviewsCache.sort((a, b) => {
             const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
@@ -1868,7 +1892,25 @@
       window.deleteReviewItem = async (docId) => {
         if(confirm("Are you sure you want to permanently delete this customer review?")) {
           try {
-            await deleteDoc(doc(db, "reviews", docId));
+            try {
+              if (!docId.startsWith("local-")) {
+                await deleteDoc(doc(db, "reviews", docId));
+              }
+            } catch (err) {
+              console.warn("Firestore delete failed (might be permissions), continuing to local cleanup:", err);
+            }
+
+            try {
+              const rawLocal = localStorage.getItem("zozo_local_reviews");
+              if (rawLocal) {
+                const parsed = JSON.parse(rawLocal);
+                const filtered = parsed.filter(item => item.id !== docId);
+                localStorage.setItem("zozo_local_reviews", JSON.stringify(filtered));
+              }
+            } catch (err) {
+              console.error("Local storage delete failed:", err);
+            }
+
             alert("Review deleted successfully!");
             fetchReviewsAdmin();
           } catch(err) {

@@ -112,9 +112,24 @@
         "timestamp": { "type": "object" }
       },
       "required": ["productId", "name", "text", "rating"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product categories",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "emoji": { "type": "string" }
+      },
+      "required": ["code", "name"]
     }
   },
   "firestore": {
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Product categories collection"
+    },
     "/products/{productId}": {
       "schema": "Product",
       "description": "Product collection"

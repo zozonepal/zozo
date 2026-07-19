@@ -873,7 +873,7 @@
       </div>
     </div>
 
-      <div class="categories-filter-bar">
+      <div class="categories-filter-bar" id="categoriesFilterBar">
         <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
         <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
         <button id="catBtn-headphones" class="category-pill-btn" onclick="switchCategoryFilter('headphones')">🎧 Headphones</button>
@@ -1325,6 +1325,48 @@
         console.error("Firestore listening block issue:", error);
         productGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:40px; color:red;">Database connectivity offline. Please check connection.</p>`;
       });
+    }
+
+    // --- 1B. CONNECT & LIVE STREAM REAL CATEGORIES FROM FIRESTORE ---
+    let globalCategories = [];
+    function listenToLiveCategories() {
+      onSnapshot(collection(db, "categories"), (snapshot) => {
+        const cats = [];
+        snapshot.forEach((doc) => {
+          cats.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // If categories collection is empty, use the default categories
+        if (cats.length === 0) {
+          globalCategories = [
+            { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
+            { code: 'headphones', name: 'Headphones', emoji: '🎧' },
+            { code: 'charger', name: 'Chargers', emoji: '🔌' },
+            { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
+            { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' }
+          ];
+        } else {
+          globalCategories = cats;
+        }
+        
+        renderCategoryFilterBar();
+      }, (error) => {
+        console.error("Firestore listening categories issue:", error);
+      });
+    }
+
+    function renderCategoryFilterBar() {
+      const container = document.getElementById('categoriesFilterBar');
+      if (!container) return;
+      
+      let html = `<button id="catBtn-all" class="category-pill-btn ${selectedCategoryFilter === 'all' ? 'active-category' : ''}" onclick="switchCategoryFilter('all')">🛍️ All Products</button>`;
+      
+      globalCategories.forEach(cat => {
+        const isActive = selectedCategoryFilter === cat.code;
+        html += `<button id="catBtn-${cat.code}" class="category-pill-btn ${isActive ? 'active-category' : ''}" onclick="switchCategoryFilter('${cat.code}')">${cat.emoji || '📦'} ${cat.name}</button>`;
+      });
+      
+      container.innerHTML = html;
     }
 
     // --- PRODUCT CARD HTML MAKER ---
@@ -2528,6 +2570,7 @@
 
     // Initialize listeners on launch
     listenToLiveInventory();
+    listenToLiveCategories();
     listenToLiveBanners();
     listenToLiveFaqs();
     listenToLiveDeliveryRates();

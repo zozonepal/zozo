@@ -435,10 +435,10 @@
     .catalog-grid { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
-      gap: 8px; 
+      gap: 12px; 
     }
     @media (min-width: 768px) { 
-      .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; } 
+      .catalog-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; } 
     }
     
     .product-card {
@@ -856,25 +856,18 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #fee2e2; padding-bottom: 8px;">
             <h2 style="font-size: 1.3rem; font-weight: 800; color: #dc2626; margin: 0; display: flex; align-items: center; gap: 8px;">🔥 Hot Products <span style="font-size: 0.75rem; background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Trending</span></h2>
           </div>
-          <div id="hotProductsGrid" class="catalog-grid" style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px;"></div>
+          <div id="hotProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
         </section>
-
+ 
         <!-- Gaming Products Section -->
         <section id="section-gamingProducts" style="display: none; background: #fafafc; border: 1px solid #e0e7ff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.03);">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #e0e7ff; padding-bottom: 8px;">
             <h2 style="font-size: 1.3rem; font-weight: 800; color: #3730a3; margin: 0; display: flex; align-items: center; gap: 8px;">🎮 Gaming Gear Special <span style="font-size: 0.75rem; background: #e0e7ff; color: #4f46e5; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Pro Gamer</span></h2>
           </div>
-          <div id="gamingProductsGrid" class="catalog-grid" style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px;"></div>
-        </section>
-
-        <!-- Special Offers Section -->
-        <section id="section-specialOffers" style="display: none; background: #fcfdfa; border: 1px solid #d1fae5; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.03);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #d1fae5; padding-bottom: 8px;">
-            <h2 style="font-size: 1.3rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 8px;">🎁 Special Offers <span style="font-size: 0.75rem; background: #d1fae5; color: #10b981; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Best Buy</span></h2>
-          </div>
-          <div id="specialOffersGrid" class="catalog-grid" style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px;"></div>
+          <div id="gamingProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
         </section>
       </div>
+    </div>
 
       <div class="categories-filter-bar">
         <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
@@ -1370,11 +1363,9 @@
     window.renderSpecialSections = function() {
       const hotGrid = document.getElementById('hotProductsGrid');
       const gamingGrid = document.getElementById('gamingProductsGrid');
-      const specialGrid = document.getElementById('specialOffersGrid');
 
       const hotSec = document.getElementById('section-hotProducts');
       const gamingSec = document.getElementById('section-gamingProducts');
-      const specialSec = document.getElementById('section-specialOffers');
 
       // 1. Hot Products
       const hotItems = globalProductsCatalog.filter(p => p.isHot);
@@ -1392,15 +1383,6 @@
         gamingSec.style.display = 'block';
       } else if (gamingSec) {
         gamingSec.style.display = 'none';
-      }
-
-      // 3. Special Offers
-      const specialItems = globalProductsCatalog.filter(p => p.isSpecialOffer);
-      if (specialItems.length > 0 && specialGrid && specialSec) {
-        specialGrid.innerHTML = specialItems.map(p => createProductCardHtml(p)).join('');
-        specialSec.style.display = 'block';
-      } else if (specialSec) {
-        specialSec.style.display = 'none';
       }
     };
 

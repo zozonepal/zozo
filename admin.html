@@ -527,9 +527,6 @@
                   <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
                     <input type="checkbox" id="pIsGaming"> 🎮 Gaming Product
                   </label>
-                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
-                    <input type="checkbox" id="pIsSpecialOffer"> 🎁 Special Offer
-                  </label>
                 </div>
               </div>
 
@@ -847,7 +844,6 @@
                 <select id="popupOfferType" class="form-control">
                   <option value="Combo Offer">🍱 Combo Offer</option>
                   <option value="Hot Deals">🔥 Hot Deals</option>
-                  <option value="Special Offer">🎁 Special Offer</option>
                   <option value="Gaming Gear Special">🎮 Gaming Gear Special</option>
                 </select>
               </div>
@@ -1343,7 +1339,6 @@
             colors: cleanColors,
             isHot: document.getElementById('pIsHot').checked,
             isGaming: document.getElementById('pIsGaming').checked,
-            isSpecialOffer: document.getElementById('pIsSpecialOffer').checked,
             timestamp: new Date()
           };
 
@@ -1358,7 +1353,6 @@
           document.getElementById('productUploadForm').reset();
           document.getElementById('pIsHot').checked = false;
           document.getElementById('pIsGaming').checked = false;
-          document.getElementById('pIsSpecialOffer').checked = false;
           colorImagesMap = {};
           updateColorImagesUploader();
           fetchInventoryProducts();
@@ -1410,7 +1404,6 @@
             const colorsStr = item.colors ? (Array.isArray(item.colors) ? item.colors.map(c => c.name || 'Standard').join(', ') : item.colors) : 'Standard';
             const isHot = !!item.isHot;
             const isGaming = !!item.isGaming;
-            const isSpecialOffer = !!item.isSpecialOffer;
 
             return `
               <div class="feed-item" style="background:#ffffff; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
@@ -1436,9 +1429,6 @@
                   </button>
                   <button class="action-btn" style="padding: 2px 6px; font-size: 0.7rem; background: ${isGaming ? '#3b82f6' : '#e2e8f0'}; color: ${isGaming ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer;" onclick="toggleProductSectionFlag('${item.id}', 'isGaming', ${isGaming})">
                     🎮 Gaming
-                  </button>
-                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.7rem; background: ${isSpecialOffer ? '#10b981' : '#e2e8f0'}; color: ${isSpecialOffer ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer;" onclick="toggleProductSectionFlag('${item.id}', 'isSpecialOffer', ${isSpecialOffer})">
-                    🎁 Special
                   </button>
                 </div>
               </div>

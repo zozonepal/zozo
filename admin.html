@@ -437,6 +437,7 @@
         <button class="tab-trigger" onclick="switchAdminTab('delivery')">📍 Delivery Rates</button>
         <button class="tab-trigger" onclick="switchAdminTab('banners')">🖼️ Carousel Banners</button>
         <button class="tab-trigger" onclick="switchAdminTab('faqs')">❓ FAQ Manager</button>
+        <button class="tab-trigger" onclick="switchAdminTab('reviews')">⭐ Reviews</button>
         <button class="tab-trigger" onclick="switchAdminTab('settings')">⚙️ Shop Settings</button>
       </div>
     </div>
@@ -697,6 +698,31 @@
         </div>
       </section>
 
+      <!-- ================== TAB: REVIEWS ================== -->
+      <section id="tabPane-reviews" class="tab-pane">
+        <div class="panel-card">
+          <h2>
+            <span>⭐ Customer Reviews & Feedback</span>
+            <button class="btn btn-outline" style="font-size:0.8rem; padding: 4px 10px;" onclick="fetchReviewsAdmin()">🔄 Refresh Reviews</button>
+          </h2>
+          <p class="sub-label">Moderate customer feedback on your catalog products. Erase reviews or view submissions in real time.</p>
+          <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="reviewSearchInput" class="form-control" style="width: 250px; height: 36px; background:#ffffff;" placeholder="Search by name, product or review text..." oninput="filterReviewsAdmin()">
+            <select id="reviewRatingFilter" class="form-control" style="width: 150px; height: 36px; background:#ffffff;" onchange="filterReviewsAdmin()">
+              <option value="All">All Ratings</option>
+              <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+              <option value="4">⭐⭐⭐⭐ (4)</option>
+              <option value="3">⭐⭐⭐ (3)</option>
+              <option value="2">⭐⭐ (2)</option>
+              <option value="1">⭐ (1)</option>
+            </select>
+          </div>
+          <div id="reviewsAdminContainer" style="display: flex; flex-direction: column; gap: 14px;">
+            <p style="text-align: center; color: var(--text-muted); padding: 30px;">Syncing reviews stream...</p>
+          </div>
+        </div>
+      </section>
+
       <!-- ================== TAB: SETTINGS ================== -->
       <section id="tabPane-settings" class="tab-pane">
         <div class="dashboard-grid">
@@ -796,6 +822,9 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
+
+    let globalProductsCache = [];
+    let globalReviewsCache = [];
 
     document.addEventListener("DOMContentLoaded", () => {
       
@@ -955,15 +984,16 @@
         }
       });
 
-      function refreshAllFeeds() {
+      async function refreshAllFeeds() {
         fetchCustomerOrders();
-        fetchInventoryProducts();
+        await fetchInventoryProducts();
         fetchStoreQrsAdmin();
         fetchPromosAdmin();
         fetchDeliveryRatesAdmin();
         fetchBannersAdmin();
         fetchFaqsAdmin();
         fetchShopInfoAdmin();
+        fetchReviewsAdmin();
       }
 
       document.getElementById('refreshAllFeedsBtn').addEventListener('click', refreshAllFeeds);
@@ -1254,6 +1284,7 @@
             id: docSnapshot.id,
             ...docSnapshot.data()
           }));
+          globalProductsCache = rawProducts;
 
           // Sort client-side (newest first, fallback to Unix epoch if timestamp missing)
           rawProducts.sort((a, b) => {
@@ -1746,6 +1777,104 @@
         if(confirm("Erase this FAQ item from helper desk?")) {
           await deleteDoc(doc(db, "faqs", docId));
           fetchFaqsAdmin();
+        }
+      };
+
+      async function fetchReviewsAdmin() {
+        const container = document.getElementById('reviewsAdminContainer');
+        if (!container) return;
+        try {
+          const snap = await getDocs(collection(db, "reviews"));
+          globalReviewsCache = snap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+          }));
+          
+          globalReviewsCache.sort((a, b) => {
+            const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
+            const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : new Date(0);
+            return tB - tA;
+          });
+
+          renderReviewsAdmin(globalReviewsCache);
+        } catch(e) {
+          console.error("Error fetching reviews:", e);
+          container.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-muted);">Error syncing reviews: ${e.message}</p>`;
+        }
+      }
+      window.fetchReviewsAdmin = fetchReviewsAdmin;
+
+      function renderReviewsAdmin(reviewsList) {
+        const container = document.getElementById('reviewsAdminContainer');
+        if (!container) return;
+
+        if (reviewsList.length === 0) {
+          container.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-muted);">No reviews found.</p>`;
+          return;
+        }
+
+        container.innerHTML = reviewsList.map(item => {
+          const matchedProduct = globalProductsCache.find(p => p.id === item.productId);
+          const pName = matchedProduct ? matchedProduct.name : `Product ID: ${item.productId}`;
+          
+          const ratingStars = "⭐".repeat(item.rating || 5);
+          const reviewDate = item.timestamp 
+            ? (typeof item.timestamp.toDate === 'function' ? item.timestamp.toDate().toLocaleString() : new Date(item.timestamp).toLocaleString())
+            : "Unknown date";
+
+          return `
+            <div class="feed-item" style="flex-direction:column; align-items:stretch; background:#ffffff; gap:8px; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <strong style="color:var(--text-main); font-size:1rem;">${item.name || 'Anonymous'}</strong>
+                  <span style="color:#f59e0b; margin-left: 8px;">${ratingStars}</span>
+                  <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
+                    Reviewing: <span style="font-weight:600; color:var(--nepal-blue);">${pName}</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <small style="color:var(--text-muted); font-size:0.75rem; display:block;">${reviewDate}</small>
+                </div>
+              </div>
+              <p style="font-size:0.85rem; color:var(--text-main); line-height:1.4; margin: 4px 0; white-space: pre-wrap;">${item.text}</p>
+              <div style="text-align:right; margin-top:4px;">
+                <button class="action-btn btn-danger" style="padding:4px 10px; font-size:0.75rem; display:inline-block;" onclick="deleteReviewItem('${item.id}')">Erase Review</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      window.filterReviewsAdmin = () => {
+        const queryText = document.getElementById('reviewSearchInput').value.toLowerCase().trim();
+        const ratingVal = document.getElementById('reviewRatingFilter').value;
+
+        const filtered = globalReviewsCache.filter(item => {
+          const matchedProduct = globalProductsCache.find(p => p.id === item.productId);
+          const pName = matchedProduct ? matchedProduct.name.toLowerCase() : '';
+          const nameMatch = (item.name || '').toLowerCase().includes(queryText);
+          const textMatch = (item.text || '').toLowerCase().includes(queryText);
+          const prodMatch = pName.includes(queryText);
+          const queryMatch = nameMatch || textMatch || prodMatch;
+
+          const ratingMatch = ratingVal === 'All' || String(item.rating) === ratingVal;
+
+          return queryMatch && ratingMatch;
+        });
+
+        renderReviewsAdmin(filtered);
+      };
+
+      window.deleteReviewItem = async (docId) => {
+        if(confirm("Are you sure you want to permanently delete this customer review?")) {
+          try {
+            await deleteDoc(doc(db, "reviews", docId));
+            alert("Review deleted successfully!");
+            fetchReviewsAdmin();
+          } catch(err) {
+            console.error("Error deleting review:", err);
+            alert("Could not delete review: " + err.message);
+          }
         }
       };
 

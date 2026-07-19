@@ -99,6 +99,19 @@
         "role": { "type": "string" }
       },
       "required": ["email"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Product customer feedback reviews",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "name": { "type": "string" },
+        "text": { "type": "string" },
+        "rating": { "type": "number" },
+        "timestamp": { "type": "object" }
+      },
+      "required": ["productId", "name", "text", "rating"]
     }
   },
   "firestore": {
@@ -129,6 +142,10 @@
     "/admins/{adminId}": {
       "schema": "Admin",
       "description": "Store administrators"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Product customer feedback reviews"
     }
   }
 }

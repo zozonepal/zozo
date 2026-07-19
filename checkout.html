@@ -948,6 +948,7 @@
 
         const docRef = await addDoc(collection(db, "transactions"), {
           productName: orderSummaryString,
+          productIds: checkoutCart.map(item => item.id),
           amountPaid: finalCalculatedBill,
           userEmail: auth.currentUser ? auth.currentUser.email : "Guest User",
           customerEmail: emailVal,

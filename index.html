@@ -827,6 +827,15 @@
     </div>
   </header>
 
+  <!-- DELIVERED REVIEW NOTIFICATION BANNER -->
+  <div id="deliveredReviewNotificationBanner" style="display:none; background: linear-gradient(135deg, var(--nepal-blue), #4f46e5); color:#ffffff; padding:12px 16px; text-align:center; font-size:0.85rem; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.1); position:relative; z-index:99; font-family:sans-serif;">
+    <div style="max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; padding-right: 32px;">
+      <span>🎉 Good news! Your order has been delivered successfully. Please share your valuable experience with us!</span>
+      <button id="notificationBannerReviewBtn" class="btn" style="background:#ffffff; color:var(--nepal-blue); font-weight:700; font-size:0.75rem; padding:6px 12px; border-radius:20px; border:none; cursor:pointer;" onclick="">⭐ Review Our Product</button>
+    </div>
+    <button style="position:absolute; right:16px; top:50%; transform:translateY(-50%); background:none; border:none; color:#ffffff; font-size:1.2rem; cursor:pointer; line-height:1;" onclick="document.getElementById('deliveredReviewNotificationBanner').style.display='none'">&times;</button>
+  </div>
+
   <div id="app-viewport">
     <div id="homeMainView">
       <div class="hero-slider-container">
@@ -1257,6 +1266,11 @@
 
         // Trigger safe re-render anytime catalog contents update in Firestore
         renderProductCatalogGrid();
+
+        // Check for delivered orders notification
+        if (typeof window.checkForDeliveredOrdersNotification === 'function') {
+          window.checkForDeliveredOrdersNotification();
+        }
       }, (error) => {
         console.error("Firestore listening block issue:", error);
         productGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:40px; color:red;">Database connectivity offline. Please check connection.</p>`;
@@ -1639,6 +1653,8 @@
         return;
       }
 
+      localStorage.setItem("lastTrackedPhone", phone);
+
       resultsContainer.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:10px;">🔍 Locating orders in database...</p>`;
 
       try {
@@ -1690,6 +1706,8 @@
             `;
           }).join('');
 
+          let targetProdId = order.productIds && order.productIds[0] ? order.productIds[0] : (globalProductsCatalog && globalProductsCatalog[0] ? globalProductsCatalog[0].id : '');
+
           return `
             <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:10px; padding:14px; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
               <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
@@ -1707,13 +1725,85 @@
                 <span style="font-size:0.75rem; font-weight:700; color:var(--text-main); display:block; margin-bottom:8px;">Live Shipment Status Timeline:</span>
                 ${timelineHtml}
               </div>
+              ${status === "Delivered" ? `
+                <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-color); text-align: center;">
+                  <p style="font-size: 0.8rem; font-weight: 700; color: #1e293b; margin-bottom: 6px;">🎉 Your order has been delivered!</p>
+                  <button class="btn" style="background:var(--nepal-blue); color:#ffffff; font-size:0.75rem; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;" onclick="window.location.href='product.html?id=${targetProdId}'">⭐ Review Our Product</button>
+                </div>
+              ` : ''}
             </div>
           `;
         }).join('');
 
+        // Trigger dynamic banner update
+        if (typeof window.checkForDeliveredOrdersNotification === 'function') {
+          window.checkForDeliveredOrdersNotification();
+        }
+
       } catch(err) {
         console.error("Error executing tracking:", err);
         resultsContainer.innerHTML = `<p style="text-align:center; color:red; font-size:0.8rem;">Query error. Check database status.</p>`;
+      }
+    };
+
+    // --- AUTOMATIC REVIEW NOTIFICATION FOR DELIVERED ORDERS ---
+    window.checkForDeliveredOrdersNotification = async function() {
+      const lastPhone = localStorage.getItem("lastTrackedPhone");
+      if (!lastPhone) return;
+
+      try {
+        const q = query(collection(db, "transactions"), where("customerPhone", "==", lastPhone));
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+
+        let deliveredOrders = [];
+        snap.forEach(docSnapshot => {
+          const order = { id: docSnapshot.id, ...docSnapshot.data() };
+          if (order.status === "Delivered") {
+            deliveredOrders.push(order);
+          }
+        });
+
+        if (deliveredOrders.length > 0) {
+          deliveredOrders.sort((a, b) => {
+            const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : 0;
+            const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : 0;
+            return tB - tA;
+          });
+
+          const latestDelivered = deliveredOrders[0];
+          const banner = document.getElementById('deliveredReviewNotificationBanner');
+          const btn = document.getElementById('notificationBannerReviewBtn');
+          if (banner && btn) {
+            banner.style.display = 'block';
+            
+            let targetProductId = "";
+            if (latestDelivered.productIds && Array.isArray(latestDelivered.productIds) && latestDelivered.productIds.length > 0) {
+              targetProductId = latestDelivered.productIds[0];
+            }
+            
+            if (targetProductId) {
+              btn.innerText = `⭐ Review ${latestDelivered.productName.split('[')[0].trim() || 'Product'}`;
+              btn.onclick = () => {
+                window.location.href = `product.html?id=${targetProductId}`;
+              };
+            } else {
+              btn.innerText = `⭐ Review Product`;
+              btn.onclick = () => {
+                if (globalProductsCatalog && globalProductsCatalog.length > 0) {
+                  const match = globalProductsCatalog.find(p => latestDelivered.productName.toLowerCase().includes(p.name.toLowerCase()));
+                  const targetId = match ? match.id : globalProductsCatalog[0].id;
+                  window.location.href = `product.html?id=${targetId}`;
+                } else {
+                  window.location.href = '#catalogSection';
+                  banner.style.display = 'none';
+                }
+              };
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error checking delivered orders:", err);
       }
     };
 
@@ -1809,6 +1899,7 @@
         
         await addDoc(collection(db, "transactions"), {
           productName: orderSummaryString,
+          productIds: systemCart.map(item => item.id),
           amountPaid: finalCalculatedBill,
           userEmail: auth.currentUser ? auth.currentUser.email : "Guest User",
           customerEmail: temporaryShippingData.email,

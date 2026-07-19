@@ -438,6 +438,7 @@
         <button class="tab-trigger" onclick="switchAdminTab('banners')">🖼️ Carousel Banners</button>
         <button class="tab-trigger" onclick="switchAdminTab('faqs')">❓ FAQ Manager</button>
         <button class="tab-trigger" onclick="switchAdminTab('reviews')">⭐ Reviews</button>
+        <button class="tab-trigger" onclick="switchAdminTab('popup')">✨ Promo Popup</button>
         <button class="tab-trigger" onclick="switchAdminTab('settings')">⚙️ Shop Settings</button>
       </div>
     </div>
@@ -515,6 +516,21 @@
               <div id="colorImagesUploadContainer" style="display: none; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1.5px dashed var(--border-color); margin-bottom: 14px;">
                 <label style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); display:block; margin-bottom:8px;">📸 Upload Specific Variant Color Images</label>
                 <div id="colorImagesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+              </div>
+
+              <div class="form-group" style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 14px;">
+                <label style="font-weight: 700; color: var(--text-main); display: block; margin-bottom: 8px;">📌 Feature Sections Affiliation</label>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" id="pIsHot"> 🔥 Hot Product
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" id="pIsGaming"> 🎮 Gaming Product
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" id="pIsSpecialOffer"> 🎁 Special Offer
+                  </label>
+                </div>
               </div>
 
               <div class="form-group">
@@ -800,6 +816,83 @@
         </div>
       </section>
 
+      <!-- ================== TAB: PROMO POPUP ================== -->
+      <section id="tabPane-popup" class="tab-pane">
+        <div class="dashboard-grid">
+          <!-- Setup Promo Popup Form -->
+          <div class="panel-card">
+            <h2>✨ Manipulate Home Page Promo Popup</h2>
+            <p class="sub-label">Configure a high-impact modal dialog popup shown to customers when they first load your store home page.</p>
+            <form id="promoPopupForm">
+              <div class="form-group" style="display: flex; align-items: center; gap: 10px; background: #f0fdf4; padding: 12px; border-radius: 8px;">
+                <label style="margin-bottom:0; font-weight:700; color:#166534;">Show Popup to Visitors:</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="popupEnabled" checked>
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label>Offer Headline / Title *</label>
+                <input type="text" id="popupTitle" class="form-control" placeholder="⚡ SUPER COMBO OFFER!" required>
+              </div>
+
+              <div class="form-group">
+                <label>Offer Subtitle / Description *</label>
+                <textarea id="popupSubtitle" class="form-control" style="height: 60px;" placeholder="Get a custom mobile case free when you buy any Premium Mobile Cooler today! Use code ZOZOGO." required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Offer / Promo Type</label>
+                <select id="popupOfferType" class="form-control">
+                  <option value="Combo Offer">🍱 Combo Offer</option>
+                  <option value="Hot Deals">🔥 Hot Deals</option>
+                  <option value="Special Offer">🎁 Special Offer</option>
+                  <option value="Gaming Gear Special">🎮 Gaming Gear Special</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Promo Action Button Text *</label>
+                <input type="text" id="popupActionText" class="form-control" placeholder="Grab Deal Now!" required>
+              </div>
+
+              <div class="form-group">
+                <label>Promo Action Redirection Link / Target *</label>
+                <input type="text" id="popupActionLink" class="form-control" placeholder="e.g. #catalogSection or a Product Detail ID" value="#catalogSection" required>
+                <p style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Use <strong>#catalogSection</strong> to scroll to catalog, or paste a Product ID to jump straight to detail page.</p>
+              </div>
+
+              <div class="form-group">
+                <label>Upload Custom Promo Display Image (Optional)</label>
+                <input type="file" id="popupImgFile" class="form-control" accept="image/*">
+                <div id="popupImgPreviewZone" style="display:none; margin-top:10px;">
+                  <img id="popupAdminImgPreview" src="" style="max-height:140px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color);">
+                </div>
+              </div>
+
+              <button type="submit" id="savePopupBtn" class="submit-btn" style="background: var(--nepal-blue); margin-top: 10px;">💾 Save Popup Configuration</button>
+            </form>
+          </div>
+
+          <!-- Preview Area -->
+          <div class="panel-card" style="background:#0f172a; color:#ffffff;">
+            <h2 style="color:#ffffff;">👁️ Admin Live Layout Preview</h2>
+            <p class="sub-label" style="color:#94a3b8;">This shows a miniature mockup of how the visitor promo popup will look.</p>
+            
+            <div style="background:#ffffff; color:#000000; padding:20px; border-radius:12px; max-width:320px; margin:20px auto; box-shadow:0 10px 25px rgba(0,0,0,0.5); text-align:center; position:relative;">
+              <span id="previewPopupBadge" style="position:absolute; top:12px; left:12px; background:var(--nepal-blue); color:#ffffff; font-size:0.6rem; font-weight:800; padding:3px 8px; border-radius:20px; text-transform:uppercase;">Combo Offer</span>
+              <div style="font-weight:900; font-size:1.1rem; color:var(--text-main); margin-top:20px; margin-bottom:8px;" id="previewPopupTitle">⚡ SUPER COMBO OFFER!</div>
+              <div style="font-size:0.75rem; color:#64748b; margin-bottom:12px; line-height:1.4;" id="previewPopupSubtitle">Get a custom mobile case free when you buy any Premium Mobile Cooler today! Use code ZOZOGO.</div>
+              <div id="previewPopupImgContainer" style="display:none; margin-bottom:12px;">
+                <img id="previewPopupImg" src="" style="width:100%; height:110px; object-fit:cover; border-radius:6px;">
+              </div>
+              <button class="btn btn-crimson" style="width:100%; font-size:0.8rem; padding:8px;" id="previewPopupBtn">Grab Deal Now!</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -994,6 +1087,7 @@
         fetchFaqsAdmin();
         fetchShopInfoAdmin();
         fetchReviewsAdmin();
+        fetchPromoPopupAdmin();
       }
 
       document.getElementById('refreshAllFeedsBtn').addEventListener('click', refreshAllFeeds);
@@ -1247,6 +1341,9 @@
             description: String(document.getElementById('pDescription').value).trim(),
             specifications: cleanSpecs,
             colors: cleanColors,
+            isHot: document.getElementById('pIsHot').checked,
+            isGaming: document.getElementById('pIsGaming').checked,
+            isSpecialOffer: document.getElementById('pIsSpecialOffer').checked,
             timestamp: new Date()
           };
 
@@ -1259,6 +1356,9 @@
 
           alert("Catalog item deployed successfully!");
           document.getElementById('productUploadForm').reset();
+          document.getElementById('pIsHot').checked = false;
+          document.getElementById('pIsGaming').checked = false;
+          document.getElementById('pIsSpecialOffer').checked = false;
           colorImagesMap = {};
           updateColorImagesUploader();
           fetchInventoryProducts();
@@ -1270,6 +1370,19 @@
           btn.innerText = "🚀 Deploy Product Live";
         }
       });
+
+      window.toggleProductSectionFlag = async (docId, flagName, currentValue) => {
+        try {
+          const productRef = doc(db, "products", docId);
+          await updateDoc(productRef, {
+            [flagName]: !currentValue
+          });
+          fetchInventoryProducts();
+        } catch (err) {
+          console.error("Error updating product flag:", err);
+          alert("Could not update product section status.");
+        }
+      };
 
       async function fetchInventoryProducts() {
         const container = document.getElementById('productsListContainer');
@@ -1295,20 +1408,39 @@
 
           container.innerHTML = rawProducts.map(item => {
             const colorsStr = item.colors ? (Array.isArray(item.colors) ? item.colors.map(c => c.name || 'Standard').join(', ') : item.colors) : 'Standard';
+            const isHot = !!item.isHot;
+            const isGaming = !!item.isGaming;
+            const isSpecialOffer = !!item.isSpecialOffer;
+
             return `
-              <div class="feed-item" style="background:#ffffff;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                  <img src="${item.imageUrl}" style="width:45px; height:45px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);">
-                  <div>
-                    <strong style="font-size:0.95rem; color:var(--text-main);">${item.name}</strong>
-                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
-                      <span style="color:var(--nepal-blue); font-weight:800;">Rs. ${item.price}</span> 
-                      &bull; <span class="badge badge-blue" style="font-size:0.6rem;">${item.category}</span>
+              <div class="feed-item" style="background:#ffffff; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="${item.imageUrl}" style="width:45px; height:45px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);">
+                    <div>
+                      <strong style="font-size:0.95rem; color:var(--text-main);">${item.name}</strong>
+                      <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
+                        <span style="color:var(--nepal-blue); font-weight:800;">Rs. ${item.price}</span> 
+                        &bull; <span class="badge badge-blue" style="font-size:0.6rem;">${item.category}</span>
+                      </div>
+                      <small style="font-size:0.75rem; color:gray; display:block; margin-top:1px;">Colors: ${colorsStr}</small>
                     </div>
-                    <small style="font-size:0.75rem; color:gray; display:block; margin-top:1px;">Colors: ${colorsStr}</small>
                   </div>
+                  <button class="action-btn btn-danger" style="padding: 4px 10px; font-size:0.75rem;" onclick="deleteCatalogProduct('${item.id}')">Remove</button>
                 </div>
-                <button class="action-btn btn-danger" style="padding: 4px 10px; font-size:0.75rem;" onclick="deleteCatalogProduct('${item.id}')">Remove</button>
+                
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; align-items: center;">
+                  <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Sections:</span>
+                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.7rem; background: ${isHot ? '#ef4444' : '#e2e8f0'}; color: ${isHot ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer;" onclick="toggleProductSectionFlag('${item.id}', 'isHot', ${isHot})">
+                    🔥 Hot
+                  </button>
+                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.7rem; background: ${isGaming ? '#3b82f6' : '#e2e8f0'}; color: ${isGaming ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer;" onclick="toggleProductSectionFlag('${item.id}', 'isGaming', ${isGaming})">
+                    🎮 Gaming
+                  </button>
+                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.7rem; background: ${isSpecialOffer ? '#10b981' : '#e2e8f0'}; color: ${isSpecialOffer ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer;" onclick="toggleProductSectionFlag('${item.id}', 'isSpecialOffer', ${isSpecialOffer})">
+                    🎁 Special
+                  </button>
+                </div>
               </div>
             `;
           }).join('');
@@ -2033,6 +2165,117 @@
           alert("Could not update QR code. Make sure file size is reasonable.");
         }
       };
+
+      // --- 8. PROMO POPUP PERSISTENCE & MANAGEMENT ---
+      let promoPopupImgString = "";
+
+      const pForm = document.getElementById('promoPopupForm');
+      const pTitle = document.getElementById('popupTitle');
+      const pSubtitle = document.getElementById('popupSubtitle');
+      const pOfferType = document.getElementById('popupOfferType');
+      const pActionText = document.getElementById('popupActionText');
+      const pActionLink = document.getElementById('popupActionLink');
+      const pEnabled = document.getElementById('popupEnabled');
+      const pImgFile = document.getElementById('popupImgFile');
+
+      if (pForm) {
+        // Live mock preview syncs
+        pTitle.addEventListener('input', () => {
+          document.getElementById('previewPopupTitle').innerText = pTitle.value || "⚡ SUPER COMBO OFFER!";
+        });
+        pSubtitle.addEventListener('input', () => {
+          document.getElementById('previewPopupSubtitle').innerText = pSubtitle.value || "";
+        });
+        pOfferType.addEventListener('change', () => {
+          document.getElementById('previewPopupBadge').innerText = pOfferType.value || "Combo Offer";
+        });
+        pActionText.addEventListener('input', () => {
+          document.getElementById('previewPopupBtn').innerText = pActionText.value || "Grab Deal Now!";
+        });
+
+        pImgFile.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          try {
+            const compressed = await compressAndConvertImage(file, 800);
+            promoPopupImgString = compressed;
+            
+            document.getElementById('popupAdminImgPreview').src = compressed;
+            document.getElementById('popupImgPreviewZone').style.display = 'block';
+            
+            document.getElementById('previewPopupImg').src = compressed;
+            document.getElementById('previewPopupImgContainer').style.display = 'block';
+          } catch (err) {
+            console.error("Promo image load issue:", err);
+            alert("Could not load display image.");
+          }
+        });
+
+        pForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('savePopupBtn');
+          btn.disabled = true;
+          btn.innerText = "⏳ Saving Popup Configuration...";
+
+          try {
+            const payload = {
+              enabled: pEnabled.checked,
+              title: pTitle.value.trim(),
+              subtitle: pSubtitle.value.trim(),
+              offerType: pOfferType.value,
+              actionText: pActionText.value.trim(),
+              actionLink: pActionLink.value.trim(),
+              imageUrl: promoPopupImgString,
+              updatedAt: new Date()
+            };
+
+            await setDoc(doc(db, "settings", "promo_popup"), payload);
+            alert("Promo Popup configured successfully!");
+          } catch (err) {
+            console.error("Popup save failed:", err);
+            alert("Failed to save popup settings: " + err.message);
+          } finally {
+            btn.disabled = false;
+            btn.innerText = "💾 Save Popup Configuration";
+          }
+        });
+      }
+
+      async function fetchPromoPopupAdmin() {
+        try {
+          const snap = await getDoc(doc(db, "settings", "promo_popup"));
+          if (snap.exists() && pForm) {
+            const data = snap.data();
+            pEnabled.checked = !!data.enabled;
+            pTitle.value = data.title || "";
+            pSubtitle.value = data.subtitle || "";
+            pOfferType.value = data.offerType || "Combo Offer";
+            pActionText.value = data.actionText || "Grab Deal Now!";
+            pActionLink.value = data.actionLink || "#catalogSection";
+            promoPopupImgString = data.imageUrl || "";
+
+            // Sync live previews
+            document.getElementById('previewPopupTitle').innerText = data.title || "⚡ SUPER COMBO OFFER!";
+            document.getElementById('previewPopupSubtitle').innerText = data.subtitle || "";
+            document.getElementById('previewPopupBadge').innerText = data.offerType || "Combo Offer";
+            document.getElementById('previewPopupBtn').innerText = data.actionText || "Grab Deal Now!";
+
+            if (data.imageUrl) {
+              document.getElementById('popupAdminImgPreview').src = data.imageUrl;
+              document.getElementById('popupImgPreviewZone').style.display = 'block';
+              
+              document.getElementById('previewPopupImg').src = data.imageUrl;
+              document.getElementById('previewPopupImgContainer').style.display = 'block';
+            } else {
+              document.getElementById('popupImgPreviewZone').style.display = 'none';
+              document.getElementById('previewPopupImgContainer').style.display = 'none';
+            }
+          }
+        } catch (err) {
+          console.error("Error loading promo popup config:", err);
+        }
+      }
+      window.fetchPromoPopupAdmin = fetchPromoPopupAdmin;
 
       document.getElementById('esewaQrFileInput').addEventListener('change', (e) => handleStoreQrCodeUpload(e, 'esewa'));
       document.getElementById('khaltiQrFileInput').addEventListener('change', (e) => handleStoreQrCodeUpload(e, 'khalti'));

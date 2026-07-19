@@ -849,6 +849,33 @@
         <div class="slider-indicators" id="sliderIndicatorsContainer"></div>
       </div>
 
+      <!-- FEATURED SPECIAL SECTIONS (DYNAMICAL) -->
+      <div id="specialFeaturedSectionsContainer" style="display: flex; flex-direction: column; gap: 28px; margin: 24px 0;">
+        <!-- Hot Products Section -->
+        <section id="section-hotProducts" style="display: none; background: #fffcfc; border: 1px solid #fee2e2; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.03);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #fee2e2; padding-bottom: 8px;">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #dc2626; margin: 0; display: flex; align-items: center; gap: 8px;">🔥 Hot Products <span style="font-size: 0.75rem; background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Trending</span></h2>
+          </div>
+          <div id="hotProductsGrid" class="catalog-grid" style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px;"></div>
+        </section>
+
+        <!-- Gaming Products Section -->
+        <section id="section-gamingProducts" style="display: none; background: #fafafc; border: 1px solid #e0e7ff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.03);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #e0e7ff; padding-bottom: 8px;">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #3730a3; margin: 0; display: flex; align-items: center; gap: 8px;">🎮 Gaming Gear Special <span style="font-size: 0.75rem; background: #e0e7ff; color: #4f46e5; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Pro Gamer</span></h2>
+          </div>
+          <div id="gamingProductsGrid" class="catalog-grid" style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px;"></div>
+        </section>
+
+        <!-- Special Offers Section -->
+        <section id="section-specialOffers" style="display: none; background: #fcfdfa; border: 1px solid #d1fae5; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.03);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #d1fae5; padding-bottom: 8px;">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 8px;">🎁 Special Offers <span style="font-size: 0.75rem; background: #d1fae5; color: #10b981; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Best Buy</span></h2>
+          </div>
+          <div id="specialOffersGrid" class="catalog-grid" style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px;"></div>
+        </section>
+      </div>
+
       <div class="categories-filter-bar">
         <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
         <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
@@ -900,6 +927,28 @@
       </div>
 
       <button class="btn btn-crimson" style="width:100%; margin-top:10px; font-size:0.9rem; padding:12px;" onclick="addCurrentConfiguredItemToCart()">🛒 Add Item to Selection Bag</button>
+    </div>
+  </div>
+
+  <!-- PROMOTION POPUP MODAL -->
+  <div id="promoPopupModal" class="modal-overlay" style="display:none; align-items:center; justify-content:center; z-index:9999;">
+    <div class="modal-card" style="max-width:420px; padding:24px; text-align:center; position:relative; border-radius:16px;">
+      <button class="modal-close" onclick="closePromoPopupModal()" style="top:12px; right:12px; font-size:1.2rem;">✕</button>
+      
+      <!-- Offer Badge -->
+      <div id="promoPopupBadge" style="display:inline-block; margin:0 auto 10px; background:var(--nepal-blue); color:#ffffff; font-size:0.7rem; font-weight:800; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">Combo Offer</div>
+      
+      <h2 id="promoPopupTitle" style="font-size:1.4rem; font-weight:900; color:var(--text-main); margin-bottom:8px; line-height:1.2;">⚡ SUPER COMBO OFFER!</h2>
+      
+      <p id="promoPopupSubtitle" style="font-size:0.85rem; color:var(--text-muted); line-height:1.4; margin-bottom:16px;"></p>
+      
+      <!-- Optional Image Container -->
+      <div id="promoPopupImgContainer" style="display:none; margin-bottom:16px; max-height:180px; overflow:hidden; border-radius:8px;">
+        <img id="promoPopupImg" src="" style="width:100%; height:100%; object-fit:cover;" alt="Special Promo">
+      </div>
+      
+      <!-- CTA Action Button -->
+      <button id="promoPopupActionBtn" class="btn btn-crimson" style="width:100%; font-size:0.9rem; padding:10px 14px; font-weight:700; border-radius:8px; cursor:pointer;" onclick="handlePromoPopupAction()">Grab Deal Now!</button>
     </div>
   </div>
 
@@ -1252,7 +1301,10 @@
           specifications: Array.isArray(p.specifications) ? p.specifications : (p.specifications ? p.specifications.split('\n').map(s => s.trim()).filter(s => s) : []),
           image: p.imageUrl || "zozonepal.png",
           images: [p.imageUrl || "zozonepal.png"],
-          colors: sanitizeColors(p.colors)
+          colors: sanitizeColors(p.colors),
+          isHot: !!p.isHot,
+          isGaming: !!p.isGaming,
+          isSpecialOffer: !!p.isSpecialOffer
         }));
 
         try {
@@ -1266,6 +1318,7 @@
 
         // Trigger safe re-render anytime catalog contents update in Firestore
         renderProductCatalogGrid();
+        renderSpecialSections();
 
         // Check for delivered orders notification
         if (typeof window.checkForDeliveredOrdersNotification === 'function') {
@@ -1276,6 +1329,80 @@
         productGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:40px; color:red;">Database connectivity offline. Please check connection.</p>`;
       });
     }
+
+    // --- PRODUCT CARD HTML MAKER ---
+    window.createProductCardHtml = function(p) {
+      let actionPriceBlock = '';
+      let buttonText = 'View Product';
+      if(p.oldPrice && p.oldPrice > p.price) {
+        const disc = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+        const savings = p.oldPrice - p.price;
+        actionPriceBlock = `
+          <div class="discount-container">
+            <span style="text-decoration:line-through;">Rs. ${p.oldPrice.toLocaleString()}</span>
+            <span style="color:var(--nepal-red); font-weight:700;">-${disc}%</span>
+          </div>
+        `;
+        buttonText = `Save Rs. ${savings.toLocaleString()}`;
+      }
+      
+      return `
+        <div class="product-card" id="card-${p.id}">
+          <div class="image-frame" onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">
+            <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.src='zozonepal.png'">
+          </div>
+          <div class="product-meta">
+            <h3 onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">${p.name}</h3>
+            <p>${p.description}</p>
+            <div class="buy-row">
+              <div class="price-block">
+                ${actionPriceBlock}
+                <span class="price">Rs. ${p.price.toLocaleString()}</span>
+              </div>
+              <button class="btn btn-crimson" onclick="openProductDetailPage('${p.id}')" style="font-size:0.8rem; padding:6px 10px; white-space:nowrap;">${buttonText}</button>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    // --- RENDER FEATURED SPECIAL SECTIONS ---
+    window.renderSpecialSections = function() {
+      const hotGrid = document.getElementById('hotProductsGrid');
+      const gamingGrid = document.getElementById('gamingProductsGrid');
+      const specialGrid = document.getElementById('specialOffersGrid');
+
+      const hotSec = document.getElementById('section-hotProducts');
+      const gamingSec = document.getElementById('section-gamingProducts');
+      const specialSec = document.getElementById('section-specialOffers');
+
+      // 1. Hot Products
+      const hotItems = globalProductsCatalog.filter(p => p.isHot);
+      if (hotItems.length > 0 && hotGrid && hotSec) {
+        hotGrid.innerHTML = hotItems.map(p => createProductCardHtml(p)).join('');
+        hotSec.style.display = 'block';
+      } else if (hotSec) {
+        hotSec.style.display = 'none';
+      }
+
+      // 2. Gaming Products
+      const gamingItems = globalProductsCatalog.filter(p => p.isGaming);
+      if (gamingItems.length > 0 && gamingGrid && gamingSec) {
+        gamingGrid.innerHTML = gamingItems.map(p => createProductCardHtml(p)).join('');
+        gamingSec.style.display = 'block';
+      } else if (gamingSec) {
+        gamingSec.style.display = 'none';
+      }
+
+      // 3. Special Offers
+      const specialItems = globalProductsCatalog.filter(p => p.isSpecialOffer);
+      if (specialItems.length > 0 && specialGrid && specialSec) {
+        specialGrid.innerHTML = specialItems.map(p => createProductCardHtml(p)).join('');
+        specialSec.style.display = 'block';
+      } else if (specialSec) {
+        specialSec.style.display = 'none';
+      }
+    };
 
     // --- 2. RENDER ENGINE GRID ---
     window.renderProductCatalogGrid = function() {
@@ -1311,40 +1438,7 @@
         return;
       }
 
-      targetGrid.innerHTML = filteredItems.map(p => {
-        let actionPriceBlock = '';
-        let buttonText = 'View Product';
-        if(p.oldPrice && p.oldPrice > p.price) {
-          const disc = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
-          const savings = p.oldPrice - p.price;
-          actionPriceBlock = `
-            <div class="discount-container">
-              <span style="text-decoration:line-through;">Rs. ${p.oldPrice.toLocaleString()}</span>
-              <span style="color:var(--nepal-red); font-weight:700;">-${disc}%</span>
-            </div>
-          `;
-          buttonText = `Save up to Rs. ${savings.toLocaleString()}`;
-        }
-        
-        return `
-          <div class="product-card">
-            <div class="image-frame" onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">
-              <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.src='zozonepal.png'">
-            </div>
-            <div class="product-meta">
-              <h3 onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">${p.name}</h3>
-              <p>${p.description}</p>
-              <div class="buy-row">
-                <div class="price-block">
-                  ${actionPriceBlock}
-                  <span class="price">Rs. ${p.price.toLocaleString()}</span>
-                </div>
-                <button class="btn btn-crimson" onclick="openProductDetailPage('${p.id}')" style="font-size:0.8rem; padding:6px 10px; white-space:nowrap;">${buttonText}</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
+      targetGrid.innerHTML = filteredItems.map(p => createProductCardHtml(p)).join('');
     };
 
     // --- 3. FILTER LOGIC CONTROL ---
@@ -2350,12 +2444,109 @@
       });
     }
 
+    // --- PROMO POPUP VISITOR LOADING & TRIGGERING ---
+    let promoPopupConfig = null;
+
+    function listenToPromoPopup() {
+      onSnapshot(doc(db, "settings", "promo_popup"), (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          promoPopupConfig = data;
+          
+          // Check if popup is enabled and not yet shown in this session
+          if (data.enabled && !sessionStorage.getItem("promoPopupShown")) {
+            showPromoPopupModal(data);
+          }
+        }
+      });
+    }
+
+    function showPromoPopupModal(data) {
+      const titleEl = document.getElementById('promoPopupTitle');
+      const subtitleEl = document.getElementById('promoPopupSubtitle');
+      if (titleEl) titleEl.innerText = data.title || "⚡ SPECIAL PROMO!";
+      if (subtitleEl) subtitleEl.innerText = data.subtitle || "";
+      
+      const badge = document.getElementById('promoPopupBadge');
+      if (badge) {
+        badge.innerText = data.offerType || "Special Offer";
+      }
+
+      const imgContainer = document.getElementById('promoPopupImgContainer');
+      const imgEl = document.getElementById('promoPopupImg');
+      if (data.imageUrl && imgContainer && imgEl) {
+        imgEl.src = data.imageUrl;
+        imgContainer.style.display = 'block';
+      } else if (imgContainer) {
+        imgContainer.style.display = 'none';
+      }
+
+      const actionBtn = document.getElementById('promoPopupActionBtn');
+      if (actionBtn) {
+        actionBtn.innerText = data.actionText || "Grab Deal Now!";
+      }
+
+      const modal = document.getElementById('promoPopupModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        // Set flag so we don't annoy users on every refresh during the same session
+        sessionStorage.setItem("promoPopupShown", "true");
+      }
+    }
+
+    window.closePromoPopupModal = function() {
+      const modal = document.getElementById('promoPopupModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    };
+
+    window.handlePromoPopupAction = function() {
+      closePromoPopupModal();
+      if (promoPopupConfig && promoPopupConfig.actionLink) {
+        const link = promoPopupConfig.actionLink.trim();
+        if (link.startsWith('#')) {
+          const targetEl = document.getElementById(link.substring(1));
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            // Check if catalog section or categories bar
+            const catalog = document.getElementById('productGrid') || document.querySelector('.categories-filter-bar');
+            if (catalog) {
+              catalog.scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        } else {
+          // If it's a product ID, go to detail page
+          if (link.length > 5 && !link.includes('/') && !link.includes('.')) {
+            // Check if there is an active card for this product ID
+            const activeCard = document.getElementById(`card-${link}`);
+            if (activeCard) {
+              activeCard.scrollIntoView({ behavior: 'smooth' });
+              // Highlight the product card temporarily
+              activeCard.style.outline = '4px solid var(--nepal-blue)';
+              activeCard.style.borderRadius = '12px';
+              setTimeout(() => {
+                activeCard.style.outline = 'none';
+              }, 2500);
+            } else {
+              // Open modal details page
+              openProductDetailPage(link);
+            }
+          } else {
+            window.location.href = link;
+          }
+        }
+      }
+    };
+
     // Initialize listeners on launch
     listenToLiveInventory();
     listenToLiveBanners();
     listenToLiveFaqs();
     listenToLiveDeliveryRates();
     listenToLiveShopInfo();
+    listenToPromoPopup();
     initSliderGestures();
   </script>
 </body>

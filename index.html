@@ -1600,9 +1600,14 @@
       }
 
       closeQuickViewModal();
+      saveCartToLocalStorage();
       synchronizeShoppingBagUIState();
       toggleCartSidebar(true);
     };
+
+    function saveCartToLocalStorage() {
+      localStorage.setItem("zozo_cart", JSON.stringify(systemCart));
+    }
 
     window.modifyCartItemQty = function(cartId, shiftAmount) {
       const index = systemCart.findIndex(item => item.cartId === cartId);
@@ -1612,6 +1617,7 @@
       if(systemCart[index].quantity <= 0) {
         systemCart.splice(index, 1);
       }
+      saveCartToLocalStorage();
       synchronizeShoppingBagUIState();
     };
 
@@ -2127,6 +2133,7 @@
         document.getElementById('orderSuccessModalFrame').style.display = "flex";
 
         systemCart = [];
+        saveCartToLocalStorage();
         synchronizeShoppingBagUIState();
       } catch (error) {
         console.error("Order logging failure context:", error);
@@ -2645,7 +2652,20 @@
       }
     };
 
+    function loadInitialShoppingBag() {
+      try {
+        const raw = localStorage.getItem("zozo_cart");
+        if (raw) {
+          systemCart = JSON.parse(raw);
+        }
+      } catch (e) {
+        console.error("Cart retrieval issue:", e);
+      }
+      synchronizeShoppingBagUIState();
+    }
+
     // Initialize listeners on launch
+    loadInitialShoppingBag();
     listenToLiveInventory();
     listenToLiveCategories();
     listenToLiveBanners();

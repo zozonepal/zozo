@@ -1041,7 +1041,7 @@
           `;
 
           const email = user.email ? user.email.toLowerCase().trim() : "";
-          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com" || email === "fitoorbhandari38@gmail.com");
+          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com");
 
           if (!isAuthorizedAdmin) {
             try {
@@ -1327,8 +1327,12 @@
         onSnapshot(collection(db, "categories"), async (snapshot) => {
           if (snapshot.empty) {
             console.log("Seeding default categories...");
-            for (const cat of defaultCategories) {
-              await addDoc(collection(db, "categories"), cat);
+            try {
+              for (const cat of defaultCategories) {
+                await addDoc(collection(db, "categories"), cat);
+              }
+            } catch (err) {
+              console.warn("Seeding categories failed (likely due to missing rules on the server):", err);
             }
             return;
           }
@@ -1339,6 +1343,12 @@
           });
           globalCategoriesCache = cats;
 
+          renderAdminCategoriesList();
+          renderAdminCategorySelector();
+        }, (error) => {
+          console.error("Firestore listening categories issue in admin:", error);
+          // Safe fallback to default categories so the UI is still completely usable
+          globalCategoriesCache = defaultCategories;
           renderAdminCategoriesList();
           renderAdminCategorySelector();
         });

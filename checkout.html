@@ -466,7 +466,12 @@
 
           <div id="codNoticeBox" style="display:none; background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:16px; margin-bottom:12px; color:#1e40af; font-size:0.85rem; line-height:1.5;">
             <strong>💵 Cash On Delivery Selected</strong><br>
-            Pay physically to our delivery logistics agent upon parcel arrival. Ensure to have exact change ready.
+            To confirm your Cash on Delivery (COD) order, you must pay the delivery charge in advance via eSewa or Khalti QR. The remaining product amount will be paid in cash upon delivery.<br><br>
+            <label style="font-size:0.8rem; font-weight:700; color:#1e40af; display:block; margin-bottom:8px;">Select Advance Payment Wallet for Delivery Charge:</label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <button type="button" id="codAdvanceEsewa" class="method-selector-card" onclick="switchCodAdvanceMethod('eSewa')" style="padding:8px; font-size:0.85rem; width:100%;">eSewa Wallet</button>
+              <button type="button" id="codAdvanceKhalti" class="method-selector-card" onclick="switchCodAdvanceMethod('Khalti')" style="padding:8px; font-size:0.85rem; width:100%;">Khalti Wallet</button>
+            </div>
           </div>
         </div>
 
@@ -710,6 +715,12 @@
       renderPaymentDetails();
     }
 
+    let codAdvanceMethod = "eSewa";
+    window.switchCodAdvanceMethod = function(method) {
+      codAdvanceMethod = method;
+      renderPaymentDetails();
+    };
+
     // --- 4. PAYMENT SELECTION ROUTINE ---
     window.switchCheckoutMethod = function(methodCode) {
       selectedMethod = methodCode;
@@ -730,22 +741,60 @@
       const txnInput = document.getElementById("checkoutTxnId");
       const screenshotInput = document.getElementById("checkoutScreenshot");
       const screenshotLabel = document.getElementById("checkoutScreenshotLabel");
+      const instructions = document.getElementById("paymentInstructionsText");
+
+      const codAdvEsewa = document.getElementById("codAdvanceEsewa");
+      const codAdvKhalti = document.getElementById("codAdvanceKhalti");
 
       if (selectedMethod === 'COD') {
-        qrArea.style.display = 'none';
         codBox.style.display = 'block';
-        txnInput.removeAttribute('required');
+        qrArea.style.display = 'block';
+        txnInput.setAttribute('required', 'true');
         if (screenshotInput) {
-          screenshotInput.removeAttribute('required');
+          screenshotInput.setAttribute('required', 'true');
         }
         if (screenshotLabel) {
-          screenshotLabel.innerText = "Upload Payment Screenshot (Optional)";
+          screenshotLabel.innerText = "Upload Delivery Payment Screenshot *";
+        }
+
+        if (codAdvEsewa && codAdvKhalti) {
+          codAdvEsewa.className = "method-selector-card" + (codAdvanceMethod === 'eSewa' ? ' active-esewa' : '');
+          codAdvKhalti.className = "method-selector-card" + (codAdvanceMethod === 'Khalti' ? ' active-khalti' : '');
+        }
+
+        const activeMethod = codAdvanceMethod;
+        if (activeMethod === 'eSewa') {
+          badge.innerText = `eSewa - Advance Delivery (Rs. ${calculatedDelivery})`;
+          badge.style.background = "#dcfce7";
+          badge.style.color = "#15803d";
+          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDelivery}</strong> via eSewa. The remaining balance can be paid in cash upon delivery.`;
+          if (qrSettings && qrSettings.esewaQr) {
+            qrImg.src = qrSettings.esewaQr;
+            qrImg.style.display = "block";
+            placeholderMsg.style.display = "none";
+          } else {
+            qrImg.style.display = "none";
+            placeholderMsg.style.display = "block";
+          }
+        } else {
+          badge.innerText = `Khalti - Advance Delivery (Rs. ${calculatedDelivery})`;
+          badge.style.background = "#f3e8ff";
+          badge.style.color = "#6b21a8";
+          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDelivery}</strong> via Khalti. The remaining balance can be paid in cash upon delivery.`;
+          if (qrSettings && qrSettings.khaltiQr) {
+            qrImg.src = qrSettings.khaltiQr;
+            qrImg.style.display = "block";
+            placeholderMsg.style.display = "none";
+          } else {
+            qrImg.style.display = "none";
+            placeholderMsg.style.display = "block";
+          }
         }
         return;
       }
 
-      qrArea.style.display = 'block';
       codBox.style.display = 'none';
+      qrArea.style.display = 'block';
       txnInput.setAttribute('required', 'true');
       if (screenshotInput) {
         screenshotInput.setAttribute('required', 'true');
@@ -758,6 +807,7 @@
         badge.innerText = "eSewa Wallet Scan & Pay";
         badge.style.background = "#dcfce7";
         badge.style.color = "#15803d";
+        instructions.innerHTML = "Scan this QR using your eSewa app, transfer the full amount, and enter the transaction ID below.";
         if (qrSettings && qrSettings.esewaQr) {
           qrImg.src = qrSettings.esewaQr;
           qrImg.style.display = "block";
@@ -770,6 +820,7 @@
         badge.innerText = "Khalti Card / Wallet Scan & Pay";
         badge.style.background = "#f3e8ff";
         badge.style.color = "#6b21a8";
+        instructions.innerHTML = "Scan this QR using your Khalti app, transfer the full amount, and enter the transaction ID below.";
         if (qrSettings && qrSettings.khaltiQr) {
           qrImg.src = qrSettings.khaltiQr;
           qrImg.style.display = "block";
@@ -912,39 +963,37 @@
         let screenshotBase64 = "";
         let txnIdVal = "";
 
-        if (selectedMethod !== 'COD') {
-          txnIdVal = document.getElementById("checkoutTxnId").value.trim();
-          if (!txnIdVal) {
-            alert("Please enter your Transaction Reference ID.");
-            btn.disabled = false;
-            btn.innerText = originalText;
-            return;
-          }
+        txnIdVal = document.getElementById("checkoutTxnId").value.trim();
+        if (!txnIdVal) {
+          alert("Please enter your Transaction Reference ID.");
+          btn.disabled = false;
+          btn.innerText = originalText;
+          return;
+        }
 
-          const fileInput = document.getElementById("checkoutScreenshot");
-          if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-            alert("Please upload your payment screenshot proof before placing your order.");
-            btn.disabled = false;
-            btn.innerText = originalText;
-            return;
-          }
+        const fileInput = document.getElementById("checkoutScreenshot");
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+          alert("Please upload your payment screenshot proof before placing your order.");
+          btn.disabled = false;
+          btn.innerText = originalText;
+          return;
+        }
 
-          if (fileInput.files && fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            screenshotBase64 = await new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = () => resolve("");
-            });
-          }
+        if (fileInput.files && fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          screenshotBase64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => resolve("");
+          });
         }
 
         // Build order details strings
         const orderSummaryString = checkoutCart.map(item => `${item.name} [Color: ${item.color}] (x${item.quantity})`).join(', ');
         const cartItemsSubtotal = checkoutCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const finalCalculatedBill = Math.max(0, cartItemsSubtotal - appliedDiscount) + calculatedDelivery;
-        const displayPaymentMethodString = selectedMethod === 'eSewa' ? "eSewa QR" : (selectedMethod === 'Khalti' ? "Khalti QR" : "Cash on Delivery");
+        const displayPaymentMethodString = selectedMethod === 'eSewa' ? "eSewa QR" : (selectedMethod === 'Khalti' ? "Khalti QR" : `COD (Delivery Paid via ${codAdvanceMethod})`);
 
         const docRef = await addDoc(collection(db, "transactions"), {
           productName: orderSummaryString,

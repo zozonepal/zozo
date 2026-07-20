@@ -1012,11 +1012,22 @@
             </div>
           </div>
 
+          <!-- COD ADVANCE NOTICE & WALLET SELECTION -->
+          <div id="indexCodNoticeBox" style="display:none; background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:16px; margin-bottom:12px; color:#1e40af; font-size:0.85rem; line-height:1.5; text-align:left;">
+            <strong>💵 Cash On Delivery Selected</strong><br>
+            To confirm your Cash on Delivery (COD) order, you must pay the delivery charge in advance via eSewa or Khalti QR. The remaining product amount will be paid in cash upon delivery.<br><br>
+            <label style="font-size:0.8rem; font-weight:700; color:#1e40af; display:block; margin-bottom:8px;">Select Advance Payment Wallet for Delivery Charge:</label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <button type="button" id="indexCodAdvanceEsewa" class="method-selector-card" onclick="switchIndexCodAdvanceMethod('eSewa')" style="padding:8px; font-size:0.85rem; width:100%;">eSewa Wallet</button>
+              <button type="button" id="indexCodAdvanceKhalti" class="method-selector-card" onclick="switchIndexCodAdvanceMethod('Khalti')" style="padding:8px; font-size:0.85rem; width:100%;">Khalti Wallet</button>
+            </div>
+          </div>
+
           <!-- DYNAMIC SCAN TO PAY QR BOX -->
           <div id="qrPaymentDetailsSection" style="display:none; background:#f8fafc; border:1px dashed var(--border-color); border-radius:12px; padding:16px; margin-bottom:18px; text-align:left;">
             <div style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:12px; gap:8px;">
               <span id="qrMethodBadge" style="font-size:0.75rem; font-weight:800; text-transform:uppercase; background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:12px;">eSewa Scan &amp; Pay</span>
-              <p style="font-size:0.8rem; color:var(--text-muted);">Scan this QR using your payment wallet, complete the transfer, and fill in details below.</p>
+              <p style="font-size:0.8rem; color:var(--text-muted);" id="indexPaymentInstructionsText">Scan this QR using your payment wallet, complete the transfer, and fill in details below.</p>
               
               <!-- QR Image Display -->
               <div style="background:#ffffff; border:1px solid #e2e8f0; padding:10px; border-radius:8px; display:inline-block; margin-top:4px; max-width:200px;">
@@ -1030,12 +1041,12 @@
                 <span>Transaction ID / Reference Code *</span>
                 <span style="color:var(--nepal-blue); font-size:0.7rem;">Enter code from receipt</span>
               </label>
-              <input type="text" id="custFormTxnId" class="details-form-input" placeholder="e.g. 5A92X789">
+              <input type="text" id="custFormTxnId" class="details-form-input" placeholder="e.g. 5A92X789" required>
             </div>
 
             <div class="details-form-group" style="margin-bottom:0;">
-              <label for="custFormScreenshot" style="font-size:0.8rem; font-weight:700;">Upload Payment Screenshot (Optional)</label>
-              <input type="file" id="custFormScreenshot" class="details-form-input" accept="image/*" style="font-size:0.8rem; padding:6px;">
+              <label id="custFormScreenshotLabel" for="custFormScreenshot" style="font-size:0.8rem; font-weight:700;">Upload Payment Screenshot *</label>
+              <input type="file" id="custFormScreenshot" class="details-form-input" accept="image/*" style="font-size:0.8rem; padding:6px;" required>
             </div>
           </div>
 
@@ -1352,6 +1363,15 @@
         renderCategoryFilterBar();
       }, (error) => {
         console.error("Firestore listening categories issue:", error);
+        // Robust fallback to default list so frontend stays fully operational
+        globalCategories = [
+          { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
+          { code: 'headphones', name: 'Headphones', emoji: '🎧' },
+          { code: 'charger', name: 'Chargers', emoji: '🔌' },
+          { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
+          { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' }
+        ];
+        renderCategoryFilterBar();
       });
     }
 
@@ -1651,26 +1671,77 @@
       }
     }
 
+    let indexCodAdvanceMethod = "eSewa";
+    window.switchIndexCodAdvanceMethod = function(method) {
+      indexCodAdvanceMethod = method;
+      renderQrPaymentInstructions();
+    };
+
     window.renderQrPaymentInstructions = function() {
       const qrSection = document.getElementById('qrPaymentDetailsSection');
       const badge = document.getElementById('qrMethodBadge');
       const qrImg = document.getElementById('storeDynamicPaymentQrImage');
       const placeholderMsg = document.getElementById('qrPlaceholderMessage');
       const txnInput = document.getElementById('custFormTxnId');
+      const screenshotLabel = document.getElementById('custFormScreenshotLabel');
+      const indexCodBox = document.getElementById('indexCodNoticeBox');
+      const instructions = document.getElementById('indexPaymentInstructionsText');
+
+      const codAdvEsewa = document.getElementById('indexCodAdvanceEsewa');
+      const codAdvKhalti = document.getElementById('indexCodAdvanceKhalti');
 
       if (selectedPaymentMethod === 'COD') {
-        qrSection.style.display = 'none';
-        if (txnInput) txnInput.removeAttribute('required');
+        indexCodBox.style.display = 'block';
+        qrSection.style.display = 'block';
+        if (txnInput) txnInput.setAttribute('required', 'true');
+        if (screenshotLabel) screenshotLabel.innerText = "Upload Delivery Payment Screenshot *";
+
+        if (codAdvEsewa && codAdvKhalti) {
+          codAdvEsewa.className = "method-selector-card" + (indexCodAdvanceMethod === 'eSewa' ? ' active-esewa' : '');
+          codAdvKhalti.className = "method-selector-card" + (indexCodAdvanceMethod === 'Khalti' ? ' active-khalti' : '');
+        }
+
+        const activeMethod = indexCodAdvanceMethod;
+        if (activeMethod === 'eSewa') {
+          badge.innerText = `eSewa - Advance Delivery (Rs. ${calculatedDeliveryChargeAmount})`;
+          badge.style.background = "#dcfce7";
+          badge.style.color = "#15803d";
+          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDeliveryChargeAmount}</strong> via eSewa. The remaining balance can be paid in cash upon delivery.`;
+          if (storeQrSettings && storeQrSettings.esewaQr) {
+            qrImg.src = storeQrSettings.esewaQr;
+            qrImg.style.display = "block";
+            placeholderMsg.style.display = "none";
+          } else {
+            qrImg.style.display = "none";
+            placeholderMsg.style.display = "block";
+          }
+        } else {
+          badge.innerText = `Khalti - Advance Delivery (Rs. ${calculatedDeliveryChargeAmount})`;
+          badge.style.background = "#f3e8ff";
+          badge.style.color = "#6b21a8";
+          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDeliveryChargeAmount}</strong> via Khalti. The remaining balance can be paid in cash upon delivery.`;
+          if (storeQrSettings && storeQrSettings.khaltiQr) {
+            qrImg.src = storeQrSettings.khaltiQr;
+            qrImg.style.display = "block";
+            placeholderMsg.style.display = "none";
+          } else {
+            qrImg.style.display = "none";
+            placeholderMsg.style.display = "block";
+          }
+        }
         return;
       }
 
+      indexCodBox.style.display = 'none';
       qrSection.style.display = 'block';
       if (txnInput) txnInput.setAttribute('required', 'true');
+      if (screenshotLabel) screenshotLabel.innerText = "Upload Payment Screenshot *";
 
       if (selectedPaymentMethod === 'eSewa') {
         badge.innerText = "eSewa Wallet Scan & Pay";
         badge.style.background = "#dcfce7";
         badge.style.color = "#15803d";
+        instructions.innerHTML = "Scan this QR using your payment wallet, complete the transfer, and fill in details below.";
         if (storeQrSettings && storeQrSettings.esewaQr) {
           qrImg.src = storeQrSettings.esewaQr;
           qrImg.style.display = "block";
@@ -1683,6 +1754,7 @@
         badge.innerText = "Khalti Card / Wallet Scan & Pay";
         badge.style.background = "#f3e8ff";
         badge.style.color = "#6b21a8";
+        instructions.innerHTML = "Scan this QR using your payment wallet, complete the transfer, and fill in details below.";
         if (storeQrSettings && storeQrSettings.khaltiQr) {
           qrImg.src = storeQrSettings.khaltiQr;
           qrImg.style.display = "block";
@@ -1992,32 +2064,37 @@
         let screenshotBase64 = "";
         let txnIdVal = "";
 
-        if (selectedPaymentMethod !== 'COD') {
-          txnIdVal = document.getElementById('custFormTxnId').value.trim();
-          if (!txnIdVal) {
-            alert("Please enter your Transaction Reference ID.");
-            btn.disabled = false;
-            btn.innerText = originalBtnText;
-            return;
-          }
+        txnIdVal = document.getElementById('custFormTxnId').value.trim();
+        if (!txnIdVal) {
+          alert("Please enter your Transaction Reference ID.");
+          btn.disabled = false;
+          btn.innerText = originalBtnText;
+          return;
+        }
 
-          const fileInput = document.getElementById('custFormScreenshot');
-          if (fileInput.files && fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            screenshotBase64 = await new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = () => resolve("");
-            });
-          }
+        const fileInput = document.getElementById('custFormScreenshot');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+          alert("Please upload your payment screenshot proof before placing your order.");
+          btn.disabled = false;
+          btn.innerText = originalBtnText;
+          return;
+        }
+
+        if (fileInput.files && fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          screenshotBase64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => resolve("");
+          });
         }
 
         // Compile detailed items with their colors
         const orderSummaryString = systemCart.map(item => {return `${item.name} [Color: ${item.color || 'Default'}] (x${item.quantity})`;}).join(', ');
         const cartItemsSubtotal = systemCart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
         const finalCalculatedBill = Math.max(0, cartItemsSubtotal - appliedDiscountAmount) + calculatedDeliveryChargeAmount;
-        let dataPaymentMethodString = selectedPaymentMethod === 'eSewa' ? "eSewa QR" : (selectedPaymentMethod === 'Khalti' ? "Khalti QR" : "Cash on Delivery");
+        let dataPaymentMethodString = selectedPaymentMethod === 'eSewa' ? "eSewa QR" : (selectedPaymentMethod === 'Khalti' ? "Khalti QR" : `COD (Delivery Paid via ${indexCodAdvanceMethod})`);
         
         await addDoc(collection(db, "transactions"), {
           productName: orderSummaryString,

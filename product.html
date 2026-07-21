@@ -1215,9 +1215,27 @@
       window.location.href = "checkout.html";
     };
 
+    function safeSetItem(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.code === 22 || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+          console.warn("Storage quota exceeded, clearing products cache and retrying...");
+          localStorage.removeItem("zozo_products_cache");
+          try {
+            localStorage.setItem(key, value);
+          } catch (retryError) {
+            console.error("Failed to save even after clearing products cache:", retryError);
+          }
+        } else {
+          console.error("Storage error:", e);
+        }
+      }
+    }
+
     // Save cart to local storage
     function saveCartToLocalStorage() {
-      localStorage.setItem("zozo_cart", JSON.stringify(systemCart));
+      safeSetItem("zozo_cart", JSON.stringify(systemCart));
     }
 
     // Modify cart item inside sidebar
@@ -1417,7 +1435,7 @@
         const rawLocal = localStorage.getItem("zozo_local_reviews") || "[]";
         const parsed = JSON.parse(rawLocal);
         parsed.push(newReviewItem);
-        localStorage.setItem("zozo_local_reviews", JSON.stringify(parsed));
+        safeSetItem("zozo_local_reviews", JSON.stringify(parsed));
       } catch (err) {
         console.error("Local storage review save error:", err);
       }
@@ -1474,43 +1492,126 @@
     });
 
     // --- SEARCH BAR PIPELINE ---
+    // --- SEARCH BAR PIPELINE ---
     window.toggleHeaderSearchOverlay = function() {
       const container = document.getElementById('searchOverlayDrop');
       container.classList.toggle('active');
       if(container.classList.contains('active')) {
         document.getElementById('liveQuerySearchInput').focus();
+        window.executeLiveCatalogSearchSearch();
       } else {
         document.getElementById('liveQuerySearchInput').value = "";
         document.getElementById('searchInlineViewResults').classList.remove('has-query');
       }
     };
 
+    window.applyPresetSearchTerm = function(term) {
+      const input = document.getElementById('liveQuerySearchInput');
+      input.value = term;
+      input.focus();
+      window.executeLiveCatalogSearchSearch();
+    };
+
     window.executeLiveCatalogSearchSearch = function() {
       const txt = document.getElementById('liveQuerySearchInput').value.toLowerCase().trim();
       const visualBox = document.getElementById('searchInlineViewResults');
       
-      if(!txt) {
-        visualBox.classList.remove('has-query');
-        return;
-      }
-      
-      const matched = globalProductsCatalog.filter(p => p.name.toLowerCase().includes(txt) || p.description.toLowerCase().includes(txt));
       visualBox.classList.add('has-query');
-      
-      if(matched.length === 0) {
-        visualBox.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">No exact product matches discovered.</p>`;
+
+      const commonTerms = [
+        { label: "🔌 Chargers", query: "charger" },
+        { label: "📱 Mobile Covers", query: "cover" },
+        { label: "❄️ Coolers", query: "cooler" },
+        { label: "🎧 Earbuds", query: "earbuds" },
+        { label: "🌬️ Mini Fans", query: "fan" },
+        { label: "🎮 Gaming Gear", query: "gaming" },
+        { label: "⚡ Power King", query: "power" }
+      ];
+
+      let commonTermsHtml = `
+        <div style="margin-bottom: 16px;">
+          <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px 0; text-align: left;">🎯 Common Search Terms</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            ${commonTerms.map(item => `
+              <button type="button" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center;" onclick="window.applyPresetSearchTerm('${item.query}')">
+                ${item.label}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      if (!txt) {
+        // If there's no query, display common search terms AND popular products
+        const hotItems = globalProductsCatalog.slice(0, 3);
+        const popularProductsHtml = hotItems.length > 0 ? `
+          <div>
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🔥 Featured Products</h4>
+            <div>
+              ${hotItems.map(p => `
+                <div style="display:flex; align-items:center; gap:12px; background:white; padding:8px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="window.location.href='product.html?id=${p.id}'; window.toggleHeaderSearchOverlay();">
+                  <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.onerror=null; this.src='zozonepal.png'">
+                  <div style="flex:1; text-align:left;">
+                    <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main);">${p.name}</h4>
+                    <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : '';
+
+        visualBox.innerHTML = commonTermsHtml + popularProductsHtml;
         return;
       }
 
-      visualBox.innerHTML = matched.map(p => `
-        <div style="display:flex; align-items:center; gap:12px; background:white; padding:8px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="window.location.href='product.html?id=${p.id}'">
-          <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.onerror=null; this.src='zozonepal.png'">
-          <div style="flex:1; text-align:left;">
-            <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main);">${p.name}</h4>
-            <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
+      const matched = globalProductsCatalog.filter(p => p.name.toLowerCase().includes(txt) || p.description.toLowerCase().includes(txt));
+      const matchingTerms = commonTerms.filter(item => item.query.includes(txt) || item.label.toLowerCase().includes(txt));
+      
+      let matchedTermsHtml = '';
+      if (matchingTerms.length > 0) {
+        matchedTermsHtml = `
+          <div style="margin-bottom: 16px;">
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px 0; text-align: left;">💡 Live Suggestions</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              ${matchingTerms.map(item => `
+                <button type="button" style="background: rgba(79, 70, 229, 0.05); border: 1px solid rgba(79, 70, 229, 0.2); color: var(--nepal-blue); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="window.applyPresetSearchTerm('${item.query}')">
+                  ${item.label}
+                </button>
+              `).join('')}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }
+
+      let matchedProductsHtml = '';
+      if (matched.length === 0) {
+        matchedProductsHtml = `
+          <div>
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🛍️ Matching Products</h4>
+            <p style="font-size:0.85rem; color:var(--text-muted); text-align:left; padding:10px 0;">No exact product matches discovered.</p>
+          </div>
+        `;
+      } else {
+        matchedProductsHtml = `
+          <div>
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🛍️ Matching Products (${matched.length})</h4>
+            <div>
+              ${matched.map(p => `
+                <div style="display:flex; align-items:center; gap:12px; background:white; padding:8px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="window.location.href='product.html?id=${p.id}'; window.toggleHeaderSearchOverlay();">
+                  <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.onerror=null; this.src='zozonepal.png'">
+                  <div style="flex:1; text-align:left;">
+                    <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main);">${p.name}</h4>
+                    <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      visualBox.innerHTML = matchedTermsHtml + matchedProductsHtml;
     };
 
     // --- ORDER TRACKING ---
@@ -1534,7 +1635,7 @@
         return;
       }
 
-      localStorage.setItem("lastTrackedPhone", phone);
+      safeSetItem("lastTrackedPhone", phone);
 
       resultsContainer.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:10px;">🔍 Locating orders in database...</p>`;
 

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Allow: /favicon.ico
+Allow: /zozonepal.png
+Allow: /favicon.png
+
+Sitemap: https://www.zozonepal.com/sitemap.xml

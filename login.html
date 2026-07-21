@@ -9,15 +9,15 @@
   
   <style>
     :root {
-      --daraz-orange: #f57224;
-      --daraz-dark-orange: #df4c05;
-      --bg-slate: #f4f5f8;
-      --text-main: #212121;
-      --text-muted: #757575;
-      --border-color: #e0e0e0;
-      --blue-link: #1a73e8;
-      --error-red: #d32f2f;
       --nepal-blue: #9333ea;
+      --nepal-red: #7e22ce;
+      --nepal-light: #f3e8ff;
+      --bg-slate: #f4f5f8;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --blue-link: #9333ea;
+      --error-red: #ef4444;
     }
 
     * {
@@ -38,27 +38,28 @@
 
     /* --- TOP BAR HEADER --- */
     .header-top-nav {
-      background-color: #f7f7f7;
-      padding: 4px 24px;
+      background-color: #f3f4f6;
+      padding: 6px 24px;
       font-size: 0.75rem;
-      color: #666;
+      color: #4b5563;
       display: flex;
       justify-content: flex-end;
       gap: 16px;
-      border-bottom: 1px solid #e5e5e5;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     .header-top-nav a {
-      color: #666;
+      color: #4b5563;
       text-decoration: none;
+      font-weight: 500;
     }
 
     .header-top-nav a:hover {
-      color: var(--daraz-orange);
+      color: var(--nepal-blue);
     }
 
     .app-header {
-      background-color: var(--daraz-dark-orange);
+      background-color: var(--nepal-red);
       padding: 12px 24px;
       display: flex;
       align-items: center;
@@ -67,6 +68,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .header-left {
@@ -76,8 +78,13 @@
     }
 
     .brand-logo {
-      height: 40px;
+      height: 44px;
       cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .brand-logo:hover {
+      transform: scale(1.05);
     }
 
     .search-bar-container {
@@ -85,8 +92,9 @@
       max-width: 700px;
       display: flex;
       background: white;
-      border-radius: 4px;
+      border-radius: 6px;
       overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .search-input {
@@ -98,23 +106,24 @@
     }
 
     .search-button {
-      background: #ffe1d2;
+      background: var(--nepal-light);
       border: none;
       padding: 10px 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background-color 0.2s;
     }
 
     .search-button:hover {
-      background: #fcd5c3;
+      background: #e9d5ff;
     }
 
     .search-button svg {
       width: 18px;
       height: 18px;
-      fill: var(--daraz-orange);
+      fill: var(--nepal-blue);
     }
 
     .header-actions {
@@ -130,13 +139,15 @@
       align-items: center;
       gap: 6px;
       text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
     }
 
     /* --- PAGE CONTENT BODY WITH HERO BACKDROP --- */
     .login-container-wrapper {
       flex: 1;
       position: relative;
-      background: linear-gradient(135deg, #7e22ce 0%, #f57224 100%);
+      background: linear-gradient(135deg, var(--nepal-blue) 0%, var(--nepal-red) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -219,8 +230,8 @@
     }
 
     .tab-item.active {
-      color: var(--daraz-orange);
-      border-bottom-color: var(--daraz-orange);
+      color: var(--nepal-blue);
+      border-bottom-color: var(--nepal-blue);
       font-weight: 600;
     }
 
@@ -242,7 +253,7 @@
     }
 
     .form-input:focus {
-      border-color: var(--daraz-orange);
+      border-color: var(--nepal-blue);
     }
 
     /* Password field specific styling */
@@ -272,7 +283,7 @@
     }
 
     .forgot-password-link:hover {
-      color: var(--daraz-orange);
+      color: var(--nepal-blue);
       text-decoration: underline;
     }
 
@@ -291,7 +302,7 @@
     /* Login Submit button */
     .login-btn {
       width: 100%;
-      background-color: var(--daraz-orange);
+      background-color: var(--nepal-blue);
       color: white;
       border: none;
       border-radius: 6px;
@@ -308,11 +319,11 @@
     }
 
     .login-btn:hover {
-      background-color: var(--daraz-dark-orange);
+      background-color: var(--nepal-red);
     }
 
     .login-btn:disabled {
-      background-color: #ffb088;
+      background-color: #c084fc;
       cursor: not-allowed;
     }
 
@@ -509,7 +520,7 @@
 
       <!-- VIEW 2: SIGN UP VIEW -->
       <div id="signupFormSection" style="display: none;">
-        <h3 style="margin-bottom: 20px; font-weight: 600; text-align: center; color: var(--daraz-dark-orange);">Create Your Account</h3>
+        <h3 style="margin-bottom: 20px; font-weight: 600; text-align: center; color: var(--nepal-red);">Create Your Account</h3>
         <form id="mainSignupForm" onsubmit="handleFormSignup(event)">
           <div class="form-group">
             <input type="text" id="signupFullName" class="form-input" placeholder="Please enter your Full Name" required>

@@ -36,6 +36,7 @@ export default defineConfig({
         product: path.resolve(__dirname, 'product.html'),
         checkout: path.resolve(__dirname, 'checkout.html'),
         admin: path.resolve(__dirname, 'admin.html'),
+        login: path.resolve(__dirname, 'login.html'),
       },
     },
   },

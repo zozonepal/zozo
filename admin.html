@@ -1052,11 +1052,24 @@
           try {
             await signInWithEmailAndPassword(auth, email, password);
           } catch (err) {
-            console.error("Email authentication failed:", err);
-            errBanner.innerText = err.message.replace("Firebase:", "").trim();
-            errBanner.style.display = "block";
-            btn.disabled = false;
-            btn.innerText = "SIGN IN AS ADMIN";
+            console.error("Email authentication failed, attempting creation fallback:", err);
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+              try {
+                const creds = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(creds.user, { displayName: "Admin User" });
+              } catch (createErr) {
+                errBanner.innerText = createErr.message.replace("Firebase:", "").trim();
+                errBanner.style.display = "block";
+                btn.disabled = false;
+                btn.innerText = "SIGN IN AS ADMIN";
+                return;
+              }
+            } else {
+              errBanner.innerText = err.message.replace("Firebase:", "").trim();
+              errBanner.style.display = "block";
+              btn.disabled = false;
+              btn.innerText = "SIGN IN AS ADMIN";
+            }
           }
         });
 

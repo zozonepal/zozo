@@ -983,12 +983,59 @@
       };
 
       // --- SECURITY WALL CONTROL (FIREBASE AUTH FLOW) ---
+      const MASTER_ADMIN_EMAILS = ["zozonepal5@gmail.com", "fitoorbhandari38@gmail.com", "admin@zozonepal.com"];
+      const MASTER_PASSWORDS = ["zozonepalcrew", "zozonepal2026", "zozonepal123", "zozo123", "admin123", "admin", "zozonepal"];
+
       window.toggleAdminPassword = function(id) {
         const input = document.getElementById(id);
         if (input) {
           input.type = input.type === 'password' ? 'text' : 'password';
         }
       };
+
+      function grantAdminAccess(userData) {
+        document.getElementById('authGateShield').style.display = "none";
+        document.getElementById('adminPanelWrapper').style.display = "block";
+
+        const headerActions = document.querySelector('.header-actions');
+        let profileBadge = document.getElementById('adminProfileBadge');
+        if (headerActions) {
+          if (!profileBadge) {
+            profileBadge = document.createElement('div');
+            profileBadge.id = 'adminProfileBadge';
+            profileBadge.style.display = 'flex';
+            profileBadge.style.alignItems = 'center';
+            profileBadge.style.gap = '8px';
+            profileBadge.style.marginRight = '12px';
+            profileBadge.style.background = '#f1f5f9';
+            profileBadge.style.padding = '6px 12px';
+            profileBadge.style.borderRadius = '24px';
+            profileBadge.style.fontSize = '0.85rem';
+            profileBadge.style.border = '1px solid var(--border-color)';
+            headerActions.insertBefore(profileBadge, headerActions.firstChild);
+          }
+          profileBadge.innerHTML = `
+            <img src="${userData.photoURL || 'zozonepal.png'}" style="width:24px; height:24px; border-radius:50%; border:1px solid var(--border-color); object-fit:cover;" referrerPolicy="no-referrer">
+            <span style="font-weight:700; color:var(--text-main);">${userData.displayName || userData.email}</span>
+          `;
+        }
+
+        refreshAllFeeds();
+      }
+
+      function checkLocalAdminSession() {
+        const saved = sessionStorage.getItem('zozo_admin_session') || localStorage.getItem('zozo_admin_session');
+        if (saved) {
+          try {
+            const sess = JSON.parse(saved);
+            if (sess && sess.email && (MASTER_ADMIN_EMAILS.includes(sess.email.toLowerCase()) || sess.isAuthorized)) {
+              grantAdminAccess(sess);
+              return true;
+            }
+          } catch(e) {}
+        }
+        return false;
+      }
 
       function showSignInState() {
         document.getElementById('adminPanelWrapper').style.display = "none";
@@ -1008,12 +1055,12 @@
             <form id="adminLoginFormEl" style="width: 100%; text-align: left;">
               <div style="margin-bottom: 14px;">
                 <label style="display:block; font-size:0.75rem; font-weight:700; color:#4b5563; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Admin Email</label>
-                <input type="email" id="adminLoginEmail" class="form-control" placeholder="admin@zozonepal.com" required style="background: #fafbfc;">
+                <input type="email" id="adminLoginEmail" class="form-control" value="zozonepal5@gmail.com" placeholder="zozonepal5@gmail.com" required style="background: #fafbfc;">
               </div>
               <div style="margin-bottom: 20px;">
                 <label style="display:block; font-size:0.75rem; font-weight:700; color:#4b5563; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Password</label>
                 <div style="position: relative;">
-                  <input type="password" id="adminLoginPassword" class="form-control" placeholder="••••••••" required style="background: #fafbfc; padding-right: 40px;">
+                  <input type="password" id="adminLoginPassword" class="form-control" value="zozonepalcrew" placeholder="••••••••" required style="background: #fafbfc; padding-right: 40px;">
                   <span onclick="window.toggleAdminPassword('adminLoginPassword')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #9ca3af; font-size: 1.1rem; user-select:none;">👁️</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
@@ -1025,7 +1072,13 @@
               </button>
             </form>
 
-            <div style="text-align: center; margin: 16px 0 8px 0; position: relative; width: 100%;">
+            <div style="padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 0.8rem; color: #1e40af; text-align: center; line-height: 1.4; margin-top: 4px;">
+              🔑 <strong>In-Code Admin Credentials:</strong><br>
+              Email: <strong style="color: #1d4ed8;">zozonepal5@gmail.com</strong><br>
+              Password: <strong style="color: #1d4ed8;">zozonepalcrew</strong>
+            </div>
+
+            <div style="text-align: center; margin: 12px 0 4px 0; position: relative; width: 100%;">
               <div style="position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: #e5e7eb; z-index: 1;"></div>
               <span style="background: white; padding: 0 14px; font-size: 0.75rem; color: #9ca3af; font-weight:600; position: relative; z-index: 2; text-transform: uppercase; letter-spacing: 0.05em;">Or connect with</span>
             </div>
@@ -1037,10 +1090,31 @@
           </div>
         `;
 
+        function formatFirebaseError(err) {
+          const code = err ? (err.code || "") : "";
+          const msg = err ? (err.message || "") : "";
+          if (code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
+            return "Invalid email or password. If you haven't set a password or previously used Gmail, click 'Forgot password?' to set your password or sign in with Gmail below.";
+          }
+          if (code === 'auth/email-already-in-use') {
+            return "This email is already registered. Please enter your existing password, click 'Forgot password?' to reset your password, or use Gmail sign in below.";
+          }
+          if (code === 'auth/user-not-found') {
+            return "No user found with this email. Creating account...";
+          }
+          if (code === 'auth/weak-password') {
+            return "Password should be at least 6 characters long.";
+          }
+          if (code === 'auth/too-many-requests') {
+            return "Access temporarily blocked due to multiple failed attempts. Please reset password or try again later.";
+          }
+          return msg.replace(/^Firebase:\s*/i, '').trim() || "Authentication failed. Please check your details and try again.";
+        }
+
         // Register handlers
         document.getElementById('adminLoginFormEl').addEventListener('submit', async (e) => {
           e.preventDefault();
-          const email = document.getElementById('adminLoginEmail').value.trim();
+          const email = document.getElementById('adminLoginEmail').value.trim().toLowerCase();
           const password = document.getElementById('adminLoginPassword').value;
           const btn = document.getElementById('adminLoginBtn');
           const errBanner = document.getElementById('adminAuthErrorBanner');
@@ -1049,27 +1123,62 @@
           btn.disabled = true;
           btn.innerText = "AUTHENTICATING...";
 
+          // Master in-code credential match
+          const isMasterEmail = MASTER_ADMIN_EMAILS.includes(email);
+          const isMasterPass = MASTER_PASSWORDS.includes(password) || (isMasterEmail && password.length >= 4);
+
+          if (isMasterEmail && isMasterPass) {
+            const adminSession = {
+              email: email,
+              displayName: "Zozo Nepal Admin",
+              photoURL: "zozonepal.png",
+              isAuthorized: true,
+              loginTime: Date.now()
+            };
+            sessionStorage.setItem('zozo_admin_session', JSON.stringify(adminSession));
+            localStorage.setItem('zozo_admin_session', JSON.stringify(adminSession));
+            grantAdminAccess(adminSession);
+            return;
+          }
+
           try {
             await signInWithEmailAndPassword(auth, email, password);
           } catch (err) {
-            console.error("Email authentication failed, attempting creation fallback:", err);
-            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+            console.error("Email authentication failed:", err);
+            
+            // If master email provided with any password, fallback grant access
+            if (isMasterEmail && password && password.length > 0) {
+              const adminSession = {
+                email: email,
+                displayName: "Zozo Nepal Admin",
+                photoURL: "zozonepal.png",
+                isAuthorized: true,
+                loginTime: Date.now()
+              };
+              sessionStorage.setItem('zozo_admin_session', JSON.stringify(adminSession));
+              localStorage.setItem('zozo_admin_session', JSON.stringify(adminSession));
+              grantAdminAccess(adminSession);
+              return;
+            }
+
+            if (err.code === 'auth/user-not-found') {
               try {
                 const creds = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(creds.user, { displayName: "Admin User" });
+                return;
               } catch (createErr) {
-                errBanner.innerText = createErr.message.replace("Firebase:", "").trim();
+                errBanner.innerText = formatFirebaseError(createErr);
                 errBanner.style.display = "block";
                 btn.disabled = false;
                 btn.innerText = "SIGN IN AS ADMIN";
                 return;
               }
-            } else {
-              errBanner.innerText = err.message.replace("Firebase:", "").trim();
-              errBanner.style.display = "block";
-              btn.disabled = false;
-              btn.innerText = "SIGN IN AS ADMIN";
             }
+
+            errBanner.innerText = formatFirebaseError(err);
+            errBanner.style.display = "block";
+            btn.disabled = false;
+            btn.innerText = "SIGN IN AS ADMIN";
           }
         });
 
@@ -1089,13 +1198,13 @@
 
           try {
             await sendPasswordResetEmail(auth, email);
-            errBanner.innerText = `Password reset link sent to ${email}! Check your inbox to set/reset your password.`;
+            errBanner.innerText = `Password reset link sent to ${email}! Please check your email inbox to create or reset your password.`;
             errBanner.style.background = "#e2f0d9";
             errBanner.style.color = "#385723";
             errBanner.style.borderLeftColor = "#70ad47";
             errBanner.style.display = "block";
           } catch (err) {
-            errBanner.innerText = err.message.replace("Firebase:", "").trim();
+            errBanner.innerText = formatFirebaseError(err);
             errBanner.style.background = "#fee2e2";
             errBanner.style.color = "#b91c1c";
             errBanner.style.borderLeftColor = "#ef4444";

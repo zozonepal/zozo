@@ -940,7 +940,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc, updateDoc, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
@@ -1016,6 +1016,9 @@
                   <input type="password" id="adminLoginPassword" class="form-control" placeholder="••••••••" required style="background: #fafbfc; padding-right: 40px;">
                   <span onclick="window.toggleAdminPassword('adminLoginPassword')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #9ca3af; font-size: 1.1rem; user-select:none;">👁️</span>
                 </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                  <a href="#" id="adminForgotPassLink" style="font-size: 0.8rem; color: var(--nepal-blue); text-decoration: none; font-weight: 600;">Forgot password?</a>
+                </div>
               </div>
               <button type="submit" id="adminLoginBtn" class="submit-btn" style="background: linear-gradient(135deg, var(--nepal-blue) 0%, var(--nepal-red) 100%); color: white; border: none; border-radius: 8px; padding: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(147, 51, 234, 0.25);">
                 SIGN IN AS ADMIN
@@ -1054,6 +1057,36 @@
             errBanner.style.display = "block";
             btn.disabled = false;
             btn.innerText = "SIGN IN AS ADMIN";
+          }
+        });
+
+        document.getElementById('adminForgotPassLink').addEventListener('click', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('adminLoginEmail').value.trim();
+          const errBanner = document.getElementById('adminAuthErrorBanner');
+
+          if (!email) {
+            errBanner.innerText = "Please enter your email address above first to receive a password reset link.";
+            errBanner.style.background = "#fff3cd";
+            errBanner.style.color = "#856404";
+            errBanner.style.borderLeftColor = "#ffc107";
+            errBanner.style.display = "block";
+            return;
+          }
+
+          try {
+            await sendPasswordResetEmail(auth, email);
+            errBanner.innerText = `Password reset link sent to ${email}! Check your inbox to set/reset your password.`;
+            errBanner.style.background = "#e2f0d9";
+            errBanner.style.color = "#385723";
+            errBanner.style.borderLeftColor = "#70ad47";
+            errBanner.style.display = "block";
+          } catch (err) {
+            errBanner.innerText = err.message.replace("Firebase:", "").trim();
+            errBanner.style.background = "#fee2e2";
+            errBanner.style.color = "#b91c1c";
+            errBanner.style.borderLeftColor = "#ef4444";
+            errBanner.style.display = "block";
           }
         });
         
@@ -1120,8 +1153,8 @@
             <div style="width: 30px; height: 30px; border: 3px solid var(--border-color); border-top-color: var(--nepal-blue); border-radius: 50%; animation: spin 1s linear infinite;"></div>
           `;
 
-          const email = user.email ? user.email.toLowerCase().trim() : "zozonepalcrew";
-          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com");
+          const email = user.email ? user.email.toLowerCase().trim() : "";
+          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com" || email === "fitoorbhandari38@gmail.com");
 
           if (!isAuthorizedAdmin) {
             try {

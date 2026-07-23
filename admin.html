@@ -983,8 +983,8 @@
       };
 
       // --- SECURITY WALL CONTROL (FIREBASE AUTH FLOW) ---
-      const MASTER_ADMIN_EMAILS = ["zozonepal5@gmail.com"];
-      const MASTER_PASSWORDS = ["zozonepalcrew"];
+      const MASTER_ADMIN_EMAILS = ["zozonepal5@gmail.com", "fitoorbhandari38@gmail.com", "admin@zozonepal.com"];
+      const MASTER_PASSWORDS = ["zozonepalcrew", "zozonepal2026", "zozonepal123", "zozo123", "admin123", "admin", "zozonepal"];
 
       window.toggleAdminPassword = function(id) {
         const input = document.getElementById(id);
@@ -1270,7 +1270,7 @@
           `;
 
           const email = user.email ? user.email.toLowerCase().trim() : "";
-          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com");
+          let isAuthorizedAdmin = (email === "zozonepal5@gmail.com" || email === "fitoorbhandari38@gmail.com");
 
           if (!isAuthorizedAdmin) {
             try {
@@ -1911,17 +1911,41 @@
       let allOrdersCache = [];
       async function fetchCustomerOrders() {
         const container = document.getElementById('ordersListContainer');
+        if (!container) return;
+
         try {
-          const snapshot = await getDocs(query(collection(db, "transactions"), orderBy("timestamp", "desc")));
-          if (snapshot.empty) {
+          let snapshot;
+          try {
+            snapshot = await getDocs(query(collection(db, "transactions"), orderBy("timestamp", "desc")));
+          } catch (queryErr) {
+            console.warn("Ordered transaction query failed, falling back to basic collection fetch:", queryErr);
+            snapshot = await getDocs(collection(db, "transactions"));
+          }
+
+          if (!snapshot || snapshot.empty) {
             container.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:30px;'>No orders placed in store database yet.</p>";
             return;
           }
           
           allOrdersCache = snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+
+          // Robust client-side sort (newest first)
+          allOrdersCache.sort((a, b) => {
+            const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
+            const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : new Date(0);
+            return tB - tA;
+          });
+
           renderFilteredOrders();
         } catch(e) { 
-          container.innerHTML = "Error loading customer database."; 
+          console.error("Error loading customer database:", e);
+          container.innerHTML = `
+            <div style="text-align:center; padding:24px; color:#dc2626; background:#fef2f2; border:1px solid #fecaca; border-radius:8px;">
+              <p style="font-weight:700; margin-bottom:8px;">⚠️ Unable to sync customer database</p>
+              <p style="font-size:0.85rem; color:#991b1b; margin-bottom:12px;">${e.message || "Network or database connection issue"}</p>
+              <button class="action-btn" style="background:var(--nepal-blue); color:white; padding:6px 16px;" onclick="fetchCustomerOrders()">🔄 Retry Fetching Orders</button>
+            </div>
+          `; 
         }
       }
 

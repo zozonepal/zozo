@@ -940,7 +940,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, getDoc, setDoc, updateDoc, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB0ZIhh5J8_cXMSpOriRiRn03fL-HB42SM",
@@ -983,6 +983,13 @@
       };
 
       // --- SECURITY WALL CONTROL (FIREBASE AUTH FLOW) ---
+      window.toggleAdminPassword = function(id) {
+        const input = document.getElementById(id);
+        if (input) {
+          input.type = input.type === 'password' ? 'text' : 'password';
+        }
+      };
+
       function showSignInState() {
         document.getElementById('adminPanelWrapper').style.display = "none";
         document.getElementById('authGateShield').style.display = "flex";
@@ -993,15 +1000,66 @@
           profileBadge.remove();
         }
 
-        document.getElementById('authGateStatusText').innerText = "Access is restricted to authorized administrators. Sign in with Google to continue.";
+        document.getElementById('authGateStatusText').innerText = "Access is restricted to authorized administrators. Log in using email & password or Gmail to continue.";
         document.getElementById('authGateActionArea').innerHTML = `
-          <button class="submit-btn" id="signInGoogleBtn" style="background: var(--nepal-blue); display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 24px; border-radius: 8px; border: none; color: white; font-weight: 700; cursor: pointer; transition: opacity 0.25s ease;">
-            <svg style="width:20px; height:20px;" viewBox="0 0 24 24"><path fill="#FFFFFF" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.14 3.01-1.3 4l3.01 2.33c1.76-1.63 2.77-4.02 2.77-6.93z"/><path fill="#FFFFFF" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.01-2.33c-.83.56-1.9.89-3.22.89-2.48 0-4.58-1.68-5.33-3.94l-3.12 2.42C5.24 22.02 8.39 24 12 24z"/><path fill="#FFFFFF" d="M6.67 15.71A7.17 7.17 0 0 1 6.24 12c0-.64.11-1.26.31-1.85L3.43 7.73A11.95 11.95 0 0 0 2 12c0 1.55.3 3.03.83 4.39l3.84-2.68z"/><path fill="#FFFFFF" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.96 1.19 15.24 0 12 0 8.39 0 5.24 1.98 3.43 5.31l3.12 2.42c.75-2.26 2.85-3.94 5.33-3.94z"/></svg>
-            Sign In with Google
-          </button>
+          <div id="adminAuthActionContainer" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+            <div id="adminAuthErrorBanner" style="display: none; background: #fee2e2; border-left: 4px solid #ef4444; color: #b91c1c; padding: 12px 14px; border-radius: 8px; font-size: 0.85rem; text-align: left; font-weight: 500; line-height: 1.4; margin-bottom: 8px;"></div>
+            
+            <form id="adminLoginFormEl" style="width: 100%; text-align: left;">
+              <div style="margin-bottom: 14px;">
+                <label style="display:block; font-size:0.75rem; font-weight:700; color:#4b5563; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Admin Email</label>
+                <input type="email" id="adminLoginEmail" class="form-control" placeholder="admin@zozonepal.com" required style="background: #fafbfc;">
+              </div>
+              <div style="margin-bottom: 20px;">
+                <label style="display:block; font-size:0.75rem; font-weight:700; color:#4b5563; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Password</label>
+                <div style="position: relative;">
+                  <input type="password" id="adminLoginPassword" class="form-control" placeholder="••••••••" required style="background: #fafbfc; padding-right: 40px;">
+                  <span onclick="window.toggleAdminPassword('adminLoginPassword')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #9ca3af; font-size: 1.1rem; user-select:none;">👁️</span>
+                </div>
+              </div>
+              <button type="submit" id="adminLoginBtn" class="submit-btn" style="background: linear-gradient(135deg, var(--nepal-blue) 0%, var(--nepal-red) 100%); color: white; border: none; border-radius: 8px; padding: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(147, 51, 234, 0.25);">
+                SIGN IN AS ADMIN
+              </button>
+            </form>
+
+            <div style="text-align: center; margin: 16px 0 8px 0; position: relative; width: 100%;">
+              <div style="position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: #e5e7eb; z-index: 1;"></div>
+              <span style="background: white; padding: 0 14px; font-size: 0.75rem; color: #9ca3af; font-weight:600; position: relative; z-index: 2; text-transform: uppercase; letter-spacing: 0.05em;">Or connect with</span>
+            </div>
+
+            <button type="button" class="submit-btn" id="signInGoogleBtn" style="background: #f9fafb; border: 1.5px solid #e5e7eb; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 24px; border-radius: 8px; color: #374151; font-weight: 700; cursor: pointer; transition: all 0.25s ease;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#f9fafb'">
+              <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.14 3.01-1.3 4l3.01 2.33c1.76-1.63 2.77-4.02 2.77-6.93z"/><path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.01-2.33c-.83.56-1.9.89-3.22.89-2.48 0-4.58-1.68-5.33-3.94l-3.12 2.42C5.24 22.02 8.39 24 12 24z"/><path fill="#FBBC05" d="M6.67 15.71A7.17 7.17 0 0 1 6.24 12c0-.64.11-1.26.31-1.85L3.43 7.73A11.95 11.95 0 0 0 2 12c0 1.55.3 3.03.83 4.39l3.84-2.68z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.96 1.19 15.24 0 12 0 8.39 0 5.24 1.98 3.43 5.31l3.12 2.42c.75-2.26 2.85-3.94 5.33-3.94z"/></svg>
+              Gmail (Google)
+            </button>
+          </div>
         `;
+
+        // Register handlers
+        document.getElementById('adminLoginFormEl').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('adminLoginEmail').value.trim();
+          const password = document.getElementById('adminLoginPassword').value;
+          const btn = document.getElementById('adminLoginBtn');
+          const errBanner = document.getElementById('adminAuthErrorBanner');
+
+          errBanner.style.display = "none";
+          btn.disabled = true;
+          btn.innerText = "AUTHENTICATING...";
+
+          try {
+            await signInWithEmailAndPassword(auth, email, password);
+          } catch (err) {
+            console.error("Email authentication failed:", err);
+            errBanner.innerText = err.message.replace("Firebase:", "").trim();
+            errBanner.style.display = "block";
+            btn.disabled = false;
+            btn.innerText = "SIGN IN AS ADMIN";
+          }
+        });
         
         document.getElementById('signInGoogleBtn').addEventListener('click', async () => {
+          const errBanner = document.getElementById('adminAuthErrorBanner');
+          if (errBanner) errBanner.style.display = "none";
           try {
             document.getElementById('authGateStatusText').innerText = "Opening security provider window...";
             document.getElementById('authGateActionArea').innerHTML = `
@@ -1011,7 +1069,13 @@
           } catch (err) {
             console.error("Sign-in failure context:", err);
             showSignInState();
-            alert("Sign-in failed: " + err.message);
+            const freshErrBanner = document.getElementById('adminAuthErrorBanner');
+            if (freshErrBanner) {
+              freshErrBanner.innerText = "Google Sign-In failed: " + err.message;
+              freshErrBanner.style.display = "block";
+            } else {
+              alert("Sign-in failed: " + err.message);
+            }
           }
         });
       }

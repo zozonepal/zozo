@@ -854,6 +854,23 @@
         <div class="slider-indicators" id="sliderIndicatorsContainer"></div>
       </div>
 
+      <!-- CATEGORY BAR (PLACED DIRECTLY BELOW HERO BANNER) -->
+      <div class="categories-filter-bar" id="categoriesFilterBar" style="margin-top: 18px; margin-bottom: 12px;">
+        <button id="catBtn-all" class="category-pill-btn" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
+        <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
+        <button id="catBtn-headphones" class="category-pill-btn" onclick="switchCategoryFilter('headphones')">🎧 Headphones</button>
+        <button id="catBtn-charger" class="category-pill-btn" onclick="switchCategoryFilter('charger')">🔌 Chargers</button>
+        <button id="catBtn-mobile-coolers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-coolers')">❄️ Mobile Coolers</button>
+        <button id="catBtn-mini-fan" class="category-pill-btn" onclick="switchCategoryFilter('mini-fan')">🌬️ Mini Fans</button>
+        <button id="catBtn-speakers" class="category-pill-btn" onclick="switchCategoryFilter('speakers')">🔊 Speakers</button>
+        <button id="catBtn-earbuds" class="category-pill-btn" onclick="switchCategoryFilter('earbuds')">🎵 Earbuds</button>
+        <button id="catBtn-power-sockets" class="category-pill-btn" onclick="switchCategoryFilter('power-sockets')">⚡ Power Sockets</button>
+      </div>
+
+      <!-- PRODUCT CATALOG GRID -->
+      <div id="productGrid" class="catalog-grid" style="margin-bottom: 24px;">
+      </div>
+
       <!-- FEATURED SPECIAL SECTIONS (DYNAMICAL) -->
       <div id="specialFeaturedSectionsContainer" style="display: flex; flex-direction: column; gap: 28px; margin: 24px 0;">
         <!-- Hot Products Section -->
@@ -871,19 +888,6 @@
           </div>
           <div id="gamingProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
         </section>
-      </div>
-    </div>
-
-      <div class="categories-filter-bar" id="categoriesFilterBar">
-        <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
-        <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
-        <button id="catBtn-headphones" class="category-pill-btn" onclick="switchCategoryFilter('headphones')">🎧 Headphones</button>
-        <button id="catBtn-charger" class="category-pill-btn" onclick="switchCategoryFilter('charger')">🔌 Chargers</button>
-        <button id="catBtn-mobile-coolers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-coolers')">❄️ Mobile Coolers</button>
-        <button id="catBtn-mini-fan" class="category-pill-btn" onclick="switchCategoryFilter('mini-fan')">🌬️ Mini Fans</button>
-      </div>
-
-      <div id="productGrid" class="catalog-grid">
       </div>
 
       <section class="faq-container">
@@ -1172,7 +1176,7 @@
     let globalProductsCatalog = []; // Populated in real-time from Firestore
     let systemCart = [];
     let selectedPaymentMethod = "eSewa";
-    let selectedCategoryFilter = "all";
+    let selectedCategoryFilter = null;
     let currentSelectedProduct = null;
     let currentSelectedColor = "";
     let isUserLoggedInState = false;
@@ -1355,7 +1359,10 @@
             { code: 'headphones', name: 'Headphones', emoji: '🎧' },
             { code: 'charger', name: 'Chargers', emoji: '🔌' },
             { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
-            { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' }
+            { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' },
+            { code: 'speakers', name: 'Speakers', emoji: '🔊' },
+            { code: 'earbuds', name: 'Earbuds', emoji: '🎵' },
+            { code: 'power-sockets', name: 'Power Sockets', emoji: '⚡' }
           ];
         } else {
           globalCategories = cats;
@@ -1370,7 +1377,10 @@
           { code: 'headphones', name: 'Headphones', emoji: '🎧' },
           { code: 'charger', name: 'Chargers', emoji: '🔌' },
           { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
-          { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' }
+          { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' },
+          { code: 'speakers', name: 'Speakers', emoji: '🔊' },
+          { code: 'earbuds', name: 'Earbuds', emoji: '🎵' },
+          { code: 'power-sockets', name: 'Power Sockets', emoji: '⚡' }
         ];
         renderCategoryFilterBar();
       });
@@ -1458,6 +1468,17 @@
       const targetGrid = document.getElementById('productGrid');
       if(!targetGrid) return;
 
+      if (!selectedCategoryFilter) {
+        targetGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 42px 20px; background: var(--bg-card); border: 2px dashed var(--border-color); border-radius: 16px; margin: 12px 0;">
+            <div style="font-size: 2.2rem; margin-bottom: 10px;">👇</div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">Select a Category</h3>
+            <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 440px; margin: 0 auto;">Click any category above (e.g. <strong>All Products</strong>, <strong>Mini Fans</strong>, <strong>Chargers</strong>, <strong>Headphones</strong>, etc.) to view products.</p>
+          </div>
+        `;
+        return;
+      }
+
       const filteredItems = globalProductsCatalog.filter(p => {
         if(selectedCategoryFilter === 'all') return true;
         const cat = (p.category || '').toLowerCase().trim();
@@ -1476,10 +1497,19 @@
           return cat.includes('cover') || cat.includes('case');
         }
         if (filter === 'headphones') {
-          return cat.includes('headphone') || cat.includes('earphone') || cat.includes('buds');
+          return cat.includes('headphone') || cat.includes('earphone');
+        }
+        if (filter === 'speakers') {
+          return cat.includes('speaker') || cat.includes('sound') || cat.includes('audio');
+        }
+        if (filter === 'earbuds') {
+          return cat.includes('earbud') || cat.includes('buds') || cat.includes('airpod') || cat.includes('tws');
+        }
+        if (filter === 'power-sockets') {
+          return cat.includes('socket') || cat.includes('plug') || cat.includes('extension') || cat.includes('power');
         }
         
-        return cat === filter;
+        return cat === filter || cat.includes(filter);
       });
 
       if (filteredItems.length === 0) {
@@ -1493,13 +1523,7 @@
     // --- 3. FILTER LOGIC CONTROL ---
     window.switchCategoryFilter = function(categoryCode) {
       selectedCategoryFilter = categoryCode;
-      document.querySelectorAll('.category-pill-btn').forEach(btn => {
-        if(btn.id === `catBtn-${categoryCode}`) {
-          btn.classList.add('active-category');
-        } else {
-          btn.classList.remove('active-category');
-        }
-      });
+      renderCategoryFilterBar();
       renderProductCatalogGrid();
     };
 

@@ -861,7 +861,9 @@
 
       <!-- CATEGORY BAR (PLACED DIRECTLY BELOW HERO BANNER) -->
       <div class="categories-filter-bar" id="categoriesFilterBar" style="margin-top: 18px; margin-bottom: 12px;">
-        <button id="catBtn-all" class="category-pill-btn" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
+        <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
+        <button id="catBtn-hot" class="category-pill-btn" onclick="switchCategoryFilter('hot')">🔥 Hot Products</button>
+        <button id="catBtn-gaming" class="category-pill-btn" onclick="switchCategoryFilter('gaming')">🎮 Gaming Gear</button>
         <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
         <button id="catBtn-headphones" class="category-pill-btn" onclick="switchCategoryFilter('headphones')">🎧 Headphones</button>
         <button id="catBtn-charger" class="category-pill-btn" onclick="switchCategoryFilter('charger')">🔌 Chargers</button>
@@ -874,25 +876,6 @@
 
       <!-- PRODUCT CATALOG GRID -->
       <div id="productGrid" class="catalog-grid" style="margin-bottom: 24px;">
-      </div>
-
-      <!-- FEATURED SPECIAL SECTIONS (DYNAMICAL) -->
-      <div id="specialFeaturedSectionsContainer" style="display: flex; flex-direction: column; gap: 28px; margin: 24px 0;">
-        <!-- Hot Products Section -->
-        <section id="section-hotProducts" style="display: none; background: #fffcfc; border: 1px solid #fee2e2; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.03);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #fee2e2; padding-bottom: 8px;">
-            <h2 style="font-size: 1.3rem; font-weight: 800; color: #dc2626; margin: 0; display: flex; align-items: center; gap: 8px;">🔥 Hot Products <span style="font-size: 0.75rem; background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Trending</span></h2>
-          </div>
-          <div id="hotProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
-        </section>
- 
-        <!-- Gaming Products Section -->
-        <section id="section-gamingProducts" style="display: none; background: #fafafc; border: 1px solid #e0e7ff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.03);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #e0e7ff; padding-bottom: 8px;">
-            <h2 style="font-size: 1.3rem; font-weight: 800; color: #3730a3; margin: 0; display: flex; align-items: center; gap: 8px;">🎮 Gaming Gear Special <span style="font-size: 0.75rem; background: #e0e7ff; color: #4f46e5; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Pro Gamer</span></h2>
-          </div>
-          <div id="gamingProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
-        </section>
       </div>
 
       <section class="faq-container">
@@ -1456,10 +1439,15 @@
       const container = document.getElementById('categoriesFilterBar');
       if (!container) return;
       
-      let html = `<button id="catBtn-all" class="category-pill-btn ${selectedCategoryFilter === 'all' ? 'active-category' : ''}" onclick="switchCategoryFilter('all')">🛍️ All Products</button>`;
-      
+      const activeFilter = selectedCategoryFilter || 'all';
+
+      let html = `<button id="catBtn-all" class="category-pill-btn ${activeFilter === 'all' ? 'active-category' : ''}" onclick="switchCategoryFilter('all')">🛍️ All Products</button>`;
+      html += `<button id="catBtn-hot" class="category-pill-btn ${activeFilter === 'hot' ? 'active-category' : ''}" onclick="switchCategoryFilter('hot')">🔥 Hot Products</button>`;
+      html += `<button id="catBtn-gaming" class="category-pill-btn ${activeFilter === 'gaming' ? 'active-category' : ''}" onclick="switchCategoryFilter('gaming')">🎮 Gaming Gear</button>`;
+
       globalCategories.forEach(cat => {
-        const isActive = selectedCategoryFilter === cat.code;
+        if (cat.code === 'hot' || cat.code === 'gaming' || cat.code === 'all') return;
+        const isActive = activeFilter === cat.code;
         html += `<button id="catBtn-${cat.code}" class="category-pill-btn ${isActive ? 'active-category' : ''}" onclick="switchCategoryFilter('${cat.code}')">${cat.emoji || '📦'} ${cat.name}</button>`;
       });
       
@@ -1505,32 +1493,7 @@
 
     // --- RENDER FEATURED SPECIAL SECTIONS ---
     window.renderSpecialSections = function() {
-      const specialContainer = document.getElementById('specialFeaturedSectionsContainer');
-      const hotGrid = document.getElementById('hotProductsGrid');
-      const gamingGrid = document.getElementById('gamingProductsGrid');
-
-      const hotSec = document.getElementById('section-hotProducts');
-      const gamingSec = document.getElementById('section-gamingProducts');
-
-      if (specialContainer) specialContainer.style.display = 'flex';
-
-      // 1. Hot Products
-      const hotItems = globalProductsCatalog.filter(p => p.isHot);
-      if (hotItems.length > 0 && hotGrid && hotSec) {
-        hotGrid.innerHTML = hotItems.map(p => createProductCardHtml(p)).join('');
-        hotSec.style.display = 'block';
-      } else if (hotSec) {
-        hotSec.style.display = 'none';
-      }
-
-      // 2. Gaming Products
-      const gamingItems = globalProductsCatalog.filter(p => p.isGaming);
-      if (gamingItems.length > 0 && gamingGrid && gamingSec) {
-        gamingGrid.innerHTML = gamingItems.map(p => createProductCardHtml(p)).join('');
-        gamingSec.style.display = 'block';
-      } else if (gamingSec) {
-        gamingSec.style.display = 'none';
-      }
+      // Hot Products and Gaming Gear special sections are integrated as category filter tabs
     };
 
     // --- 2. RENDER ENGINE GRID ---
@@ -1545,6 +1508,12 @@
         const cat = (p.category || '').toLowerCase().trim();
         const filter = activeFilter.toLowerCase().trim();
         
+        if (filter === 'hot') {
+          return p.isHot || cat.includes('hot') || cat.includes('trending');
+        }
+        if (filter === 'gaming') {
+          return p.isGaming || cat.includes('gaming') || cat.includes('gamer');
+        }
         if (filter === 'charger') {
           return cat.includes('charger') || cat.includes('cable') || cat.includes('wire');
         }

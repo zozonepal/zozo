@@ -390,14 +390,19 @@
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding: 4px 4px 12px 4px;
+      padding: 8px 4px 12px 4px;
       margin-bottom: 12px;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       width: calc(100% + 20px);
       margin-left: -10px;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-x pan-y;
     }
-    @media (min-width: 768px) { .categories-filter-bar { width: 100%; margin-left: 0; padding: 4px 0 16px 0; } }
+    .categories-filter-bar:active { cursor: grabbing; }
+    @media (min-width: 768px) { .categories-filter-bar { width: 100%; margin-left: 0; padding: 8px 0 16px 0; } }
     .categories-filter-bar::-webkit-scrollbar { display: none; }
     
     .category-pill-btn {
@@ -1321,9 +1326,20 @@
         }));
 
         try {
-          localStorage.setItem("zozo_products_cache", JSON.stringify(globalProductsCatalog));
+          // Cache light catalog metadata without huge base64 image strings to prevent QuotaExceededError
+          const cacheableProducts = globalProductsCatalog.map(p => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            oldPrice: p.oldPrice,
+            category: p.category,
+            image: (p.image && p.image.length > 500 && p.image.startsWith('data:')) ? 'zozonepal.png' : p.image,
+            isHot: p.isHot,
+            isGaming: p.isGaming
+          }));
+          safeSetItem("zozo_products_cache", JSON.stringify(cacheableProducts));
         } catch (e) {
-          console.error("Failed to cache products:", e);
+          console.warn("Could not cache products:", e);
         }
 
         isInventoryLoaded = true;
@@ -1386,6 +1402,56 @@
       });
     }
 
+    let isCatBarDragInitialized = false;
+    function initCategoryBarDrag() {
+      const bar = document.getElementById('categoriesFilterBar');
+      if (!bar || isCatBarDragInitialized) return;
+      isCatBarDragInitialized = true;
+
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+      let isDragging = false;
+
+      bar.addEventListener('mousedown', (e) => {
+        isDown = true;
+        isDragging = false;
+        startX = e.pageX - bar.offsetLeft;
+        scrollLeft = bar.scrollLeft;
+        bar.style.cursor = 'grabbing';
+      });
+
+      bar.addEventListener('mouseleave', () => {
+        isDown = false;
+        bar.style.cursor = 'grab';
+      });
+
+      bar.addEventListener('mouseup', () => {
+        isDown = false;
+        bar.style.cursor = 'grab';
+        setTimeout(() => { isDragging = false; }, 50);
+      });
+
+      bar.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - bar.offsetLeft;
+        const walk = (x - startX) * 1.8;
+        if (Math.abs(x - startX) > 5) {
+          isDragging = true;
+        }
+        bar.scrollLeft = scrollLeft - walk;
+      });
+
+      // Intercept click if user was dragging mouse across buttons
+      bar.addEventListener('click', (e) => {
+        if (isDragging) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true);
+    }
+
     function renderCategoryFilterBar() {
       const container = document.getElementById('categoriesFilterBar');
       if (!container) return;
@@ -1398,6 +1464,7 @@
       });
       
       container.innerHTML = html;
+      initCategoryBarDrag();
     }
 
     // --- PRODUCT CARD HTML MAKER ---
@@ -1438,11 +1505,22 @@
 
     // --- RENDER FEATURED SPECIAL SECTIONS ---
     window.renderSpecialSections = function() {
+      const specialContainer = document.getElementById('specialFeaturedSectionsContainer');
       const hotGrid = document.getElementById('hotProductsGrid');
       const gamingGrid = document.getElementById('gamingProductsGrid');
 
       const hotSec = document.getElementById('section-hotProducts');
       const gamingSec = document.getElementById('section-gamingProducts');
+
+      // Hide all product cards & special sections initially when no category is selected
+      if (!selectedCategoryFilter) {
+        if (specialContainer) specialContainer.style.display = 'none';
+        if (hotSec) hotSec.style.display = 'none';
+        if (gamingSec) gamingSec.style.display = 'none';
+        return;
+      }
+
+      if (specialContainer) specialContainer.style.display = 'flex';
 
       // 1. Hot Products
       const hotItems = globalProductsCatalog.filter(p => p.isHot);
@@ -1525,6 +1603,7 @@
       selectedCategoryFilter = categoryCode;
       renderCategoryFilterBar();
       renderProductCatalogGrid();
+      renderSpecialSections();
     };
 
     // --- 4. QUICKVIEW ACTION SYSTEM ---

@@ -912,6 +912,32 @@
       });
     }
 
+    // Toast Notification Banner Helper
+    window.showToastNotification = function(msg) {
+      let toast = document.getElementById('appToastNotice');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToastNotice';
+        toast.style.cssText = `
+          position: fixed; bottom: 24px; right: 24px; z-index: 99999;
+          background: #1e293b; color: #ffffff; padding: 12px 20px;
+          border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border-left: 4px solid var(--nepal-blue);
+          transition: all 0.3s ease; opacity: 0; transform: translateY(20px); pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+      }
+      toast.innerText = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+      
+      clearTimeout(toast.timeoutId);
+      toast.timeoutId = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+      }, 3000);
+    };
+
     // Live single product listener
     function listenToTargetProduct() {
       if (!targetProductId) {
@@ -933,6 +959,10 @@
       }
 
       if (cachedProduct) {
+        // Ensure image and description properties exist cleanly on cached object
+        cachedProduct.image = cachedProduct.image || cachedProduct.imageUrl || "zozonepal.png";
+        cachedProduct.images = Array.isArray(cachedProduct.images) && cachedProduct.images.length > 0 ? cachedProduct.images : [cachedProduct.image];
+        cachedProduct.description = (cachedProduct.description && cachedProduct.description !== "undefined") ? cachedProduct.description : "";
         currentSelectedProduct = cachedProduct;
         if (!currentSelectedColor) {
           currentSelectedColor = cachedProduct.colors && cachedProduct.colors[0] ? cachedProduct.colors[0].name : "Standard";
@@ -953,22 +983,42 @@
         }
 
         const data = docSnap.data();
+        const primaryImage = (data.imageUrl && data.imageUrl.trim() !== "") 
+          ? data.imageUrl 
+          : ((data.image && data.image.trim() !== "") ? data.image : "zozonepal.png");
+
+        const parsedColors = sanitizeColors(data.colors);
+        const colorImages = parsedColors.map(c => c.imageUrl).filter(img => img && typeof img === 'string' && img.trim() !== "");
+        
+        // Build deduplicated images array
+        const allImages = [primaryImage];
+        colorImages.forEach(cImg => {
+          if (!allImages.includes(cImg)) {
+            allImages.push(cImg);
+          }
+        });
+
+        const rawDesc = data.description;
+        const cleanDesc = (rawDesc && rawDesc !== "undefined" && String(rawDesc).trim() !== "") 
+          ? String(rawDesc).trim() 
+          : "";
+
         const p = {
           id: docSnap.id,
-          name: data.name,
-          price: Number(data.price),
+          name: data.name || "Zozo Nepal Product",
+          price: Number(data.price) || 0,
           oldPrice: data.oldPrice ? Number(data.oldPrice) : null,
           category: data.category || "all",
-          description: data.description || "Premium imported collection, selected carefully for style and high utility guidelines.",
-          specifications: Array.isArray(data.specifications) ? data.specifications : (data.specifications ? data.specifications.split('\n').map(s => s.trim()).filter(s => s) : []),
-          image: data.imageUrl || "zozonepal.png",
-          images: [data.imageUrl || "zozonepal.png"],
-          colors: sanitizeColors(data.colors)
+          description: cleanDesc,
+          specifications: Array.isArray(data.specifications) ? data.specifications : (data.specifications ? String(data.specifications).split('\n').map(s => s.trim()).filter(s => s) : []),
+          image: primaryImage,
+          images: allImages,
+          colors: parsedColors
         };
 
         currentSelectedProduct = p;
-        if (!currentSelectedColor) {
-          currentSelectedColor = p.colors && p.colors[0] ? p.colors[0].name : "Standard";
+        if (!currentSelectedColor || !parsedColors.some(c => c.name === currentSelectedColor)) {
+          currentSelectedColor = parsedColors && parsedColors[0] ? parsedColors[0].name : "Standard";
         }
 
         renderDetailPageContent(p);
@@ -998,21 +1048,43 @@
 
     // Dynamic detail drawer renderer
     function renderDetailPageContent(p) {
-      const categoryDisplay = p.category ? p.category.replace('-', ' ').toUpperCase() : 'GENERAL';
+      if (!p) return;
+
+      const categoryDisplay = (p.category && p.category !== "undefined") ? String(p.category).replace('-', ' ').toUpperCase() : 'GENERAL';
+      const productName = p.name || 'Product Details';
       
-      document.title = `${p.name} | Zozo Nepal`;
-      document.getElementById('detailBreadcrumbCategory').innerText = categoryDisplay;
-      document.getElementById('detailBreadcrumbName').innerText = p.name;
-      document.getElementById('detailCategoryBadge').innerText = categoryDisplay;
-      document.getElementById('detailProductName').innerText = p.name;
-      document.getElementById('detailProductDesc').innerText = p.description;
+      document.title = `${productName} | Zozo Nepal`;
+      
+      const elBreadcrumbCat = document.getElementById('detailBreadcrumbCategory');
+      if (elBreadcrumbCat) elBreadcrumbCat.innerText = categoryDisplay;
+
+      const elBreadcrumbName = document.getElementById('detailBreadcrumbName');
+      if (elBreadcrumbName) elBreadcrumbName.innerText = productName;
+
+      const elCategoryBadge = document.getElementById('detailCategoryBadge');
+      if (elCategoryBadge) elCategoryBadge.innerText = categoryDisplay;
+
+      const elProductName = document.getElementById('detailProductName');
+      if (elProductName) elProductName.innerText = productName;
+
+      const elProductDesc = document.getElementById('detailProductDesc');
+      if (elProductDesc) {
+        const cleanDesc = (p.description && p.description !== "undefined" && String(p.description).trim() !== "") ? String(p.description).trim() : "";
+        if (cleanDesc) {
+          elProductDesc.innerText = cleanDesc;
+          elProductDesc.style.display = "block";
+        } else {
+          elProductDesc.innerText = "";
+          elProductDesc.style.display = "none";
+        }
+      }
 
       // Populate highlighted specifications
       const specsList = document.getElementById('detailProductSpecsList');
       if (specsList) {
-        if (p.specifications && p.specifications.length > 0) {
+        if (p.specifications && Array.isArray(p.specifications) && p.specifications.length > 0) {
           specsList.innerHTML = p.specifications.map(spec => {
-            if (spec.includes(':')) {
+            if (typeof spec === 'string' && spec.includes(':')) {
               const parts = spec.split(':');
               const title = parts[0].trim();
               const val = parts.slice(1).join(':').trim();
@@ -1032,56 +1104,70 @@
 
       // Render Price Box
       const priceBox = document.getElementById('detailProductPriceContainer');
-      if (p.oldPrice && p.oldPrice > p.price) {
-        const discPercent = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
-        priceBox.innerHTML = `
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 1.8rem; font-weight: 800; color: var(--nepal-blue);">Rs. ${p.price.toLocaleString()}</span>
-              <span style="background: var(--nepal-red); color: white; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">-${discPercent}% OFF</span>
+      if (priceBox) {
+        if (p.oldPrice && p.oldPrice > p.price) {
+          const discPercent = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+          priceBox.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.8rem; font-weight: 800; color: var(--nepal-blue);">Rs. ${Number(p.price).toLocaleString()}</span>
+                <span style="background: var(--nepal-red); color: white; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">-${discPercent}% OFF</span>
+              </div>
+              <div style="font-size: 0.9rem; color: var(--text-muted);">
+                List Price: <span style="text-decoration: line-through;">Rs. ${Number(p.oldPrice).toLocaleString()}</span>
+              </div>
+              <div style="font-size: 0.85rem; color: #15803d; font-weight: 600; margin-top: 2px;">
+                ✨ You Save: Rs. ${(p.oldPrice - p.price).toLocaleString()}
+              </div>
             </div>
-            <div style="font-size: 0.9rem; color: var(--text-muted);">
-              List Price: <span style="text-decoration: line-through;">Rs. ${p.oldPrice.toLocaleString()}</span>
-            </div>
-            <div style="font-size: 0.85rem; color: #15803d; font-weight: 600; margin-top: 2px;">
-              ✨ You Save: Rs. ${(p.oldPrice - p.price).toLocaleString()}
-            </div>
-          </div>
-        `;
-      } else {
-        priceBox.innerHTML = `<span style="font-size: 1.8rem; font-weight: 800; color: var(--nepal-blue);">Rs. ${p.price.toLocaleString()}</span>`;
+          `;
+        } else {
+          priceBox.innerHTML = `<span style="font-size: 1.8rem; font-weight: 800; color: var(--nepal-blue);">Rs. ${Number(p.price || 0).toLocaleString()}</span>`;
+        }
       }
 
       // Render main large preview
-      // If the currently selected color has a custom image, render it, else standard main image
-      const activeColorObj = p.colors.find(c => c.name === currentSelectedColor);
-      document.getElementById('detailMainLargePreview').src = (activeColorObj && activeColorObj.imageUrl) ? activeColorObj.imageUrl : p.image;
+      const colorsList = Array.isArray(p.colors) ? p.colors : [];
+      const activeColorObj = colorsList.find(c => c.name === currentSelectedColor);
+      const activeImage = (activeColorObj && activeColorObj.imageUrl && activeColorObj.imageUrl.trim() !== "") 
+        ? activeColorObj.imageUrl 
+        : (p.image || "zozonepal.png");
+
+      const previewEl = document.getElementById('detailMainLargePreview');
+      if (previewEl) {
+        previewEl.src = activeImage;
+      }
 
       // Render thumbnails list
       const thumbsContainer = document.getElementById('detailThumbnailsContainer');
-      thumbsContainer.innerHTML = p.images.map((imgSrc, idx) => `
-        <img class="detail-thumbnail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" onclick="changeDetailPageImage(this, '${imgSrc}')" onerror="this.onerror=null; this.src='zozonepal.png'">
-      `).join('');
+      if (thumbsContainer) {
+        const imagesList = Array.isArray(p.images) && p.images.length > 0 ? p.images : [activeImage];
+        thumbsContainer.innerHTML = imagesList.map((imgSrc, idx) => `
+          <img class="detail-thumbnail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" onclick="changeDetailPageImage(this, '${imgSrc}')" onerror="this.onerror=null; this.src='zozonepal.png'">
+        `).join('');
+      }
 
       // Populate Color swatches
       const colorsContainer = document.getElementById('detailColorsContainer');
-      colorsContainer.innerHTML = p.colors.map((c, idx) => {
-        const safeName = (c.name || '').replace(/'/g, "\\'");
-        const safeImageUrl = (c.imageUrl || '').replace(/'/g, "\\'");
-        const isActive = c.name === currentSelectedColor ? 'active-color' : '';
-        return `
-          <button class="color-pill-selector ${isActive}" onclick="changeDetailPageColor(this, '${safeName}', '${safeImageUrl}')">
-            <span class="color-circle-preview" style="background-color: ${c.hex};"></span>${c.name}
-          </button>
-        `;
-      }).join('');
+      if (colorsContainer) {
+        colorsContainer.innerHTML = colorsList.map((c, idx) => {
+          const safeName = (c.name || '').replace(/'/g, "\\'");
+          const safeImageUrl = (c.imageUrl || '').replace(/'/g, "\\'");
+          const isActive = c.name === currentSelectedColor ? 'active-color' : '';
+          return `
+            <button class="color-pill-selector ${isActive}" onclick="changeDetailPageColor(this, '${safeName}', '${safeImageUrl}')">
+              <span class="color-circle-preview" style="background-color: ${c.hex || '#9333ea'};"></span>${c.name}
+            </button>
+          `;
+        }).join('');
+      }
 
       // Populate Delivery district selection
       const selectElement = document.getElementById('detailDeliveryDistrictSelect');
       if (selectElement) {
         if (selectElement.children.length === 0) {
           selectElement.innerHTML = Object.keys(nepalDeliveryRates).map(dist => `<option value="${dist}">${dist}</option>`).join('');
-          selectElement.value = "Rupandehi"; // Default selected
+          selectElement.value = "Rupandehi";
         }
       }
 
@@ -1182,37 +1268,55 @@
 
     // --- ADD CURRENT PRODUCT TO BASKET ---
     window.addCurrentDetailPageItemToCart = function() {
-      if(!currentSelectedProduct) return;
+      if (!currentSelectedProduct) {
+        showToastNotification("⏳ Loading product details. Please try again in a moment.");
+        return;
+      }
+
+      // Read quantity safely from input field or current state variable
+      const qtyInput = document.getElementById('detailPageQuantityInput');
+      const parsedQty = qtyInput ? parseInt(qtyInput.value, 10) : currentDetailProductQty;
+      const finalQty = (isNaN(parsedQty) || parsedQty < 1) ? 1 : parsedQty;
+      currentDetailProductQty = finalQty;
+
+      const colorsList = Array.isArray(currentSelectedProduct.colors) ? currentSelectedProduct.colors : [];
+      const selectedColorName = currentSelectedColor || (colorsList[0] ? colorsList[0].name : "Standard");
       
-      const cartItemId = `${currentSelectedProduct.id}-${currentSelectedColor}`;
+      const cartItemId = `${currentSelectedProduct.id}-${selectedColorName}`;
       const matchingIndex = systemCart.findIndex(item => item.cartId === cartItemId);
 
-      const selectedColorObj = currentSelectedProduct.colors.find(c => c.name === currentSelectedColor);
-      const cartImage = (selectedColorObj && selectedColorObj.imageUrl) ? selectedColorObj.imageUrl : currentSelectedProduct.image;
+      const selectedColorObj = colorsList.find(c => c.name === selectedColorName);
+      const cartImage = (selectedColorObj && selectedColorObj.imageUrl && selectedColorObj.imageUrl.trim() !== "") 
+        ? selectedColorObj.imageUrl 
+        : (currentSelectedProduct.image || "zozonepal.png");
 
-      if(matchingIndex > -1) {
-        systemCart[matchingIndex].quantity += currentDetailProductQty;
+      if (matchingIndex > -1) {
+        systemCart[matchingIndex].quantity = Number(systemCart[matchingIndex].quantity || 0) + finalQty;
         systemCart[matchingIndex].image = cartImage;
       } else {
         systemCart.push({
           cartId: cartItemId,
           id: currentSelectedProduct.id,
-          name: currentSelectedProduct.name,
-          price: currentSelectedProduct.price,
+          name: currentSelectedProduct.name || "Product",
+          price: Number(currentSelectedProduct.price || 0),
           image: cartImage,
-          color: currentSelectedColor,
-          quantity: currentDetailProductQty
+          color: selectedColorName,
+          quantity: finalQty
         });
       }
 
       saveCartToLocalStorage();
       synchronizeShoppingBagUIState();
+      showToastNotification(`🛍️ Added ${finalQty}x "${currentSelectedProduct.name}" (${selectedColorName}) to Cart!`);
       toggleCartSidebar(true);
     };
 
     window.buyDetailPageItemNow = async function() {
-      if(!currentSelectedProduct) return;
-      addCurrentDetailPageItemToCart();
+      if (!currentSelectedProduct) {
+        showToastNotification("⏳ Loading product details. Please try again in a moment.");
+        return;
+      }
+      window.addCurrentDetailPageItemToCart();
       window.location.href = "checkout.html";
     };
 

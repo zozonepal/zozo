@@ -1181,7 +1181,7 @@
     let globalProductsCatalog = []; // Populated in real-time from Firestore
     let systemCart = [];
     let selectedPaymentMethod = "eSewa";
-    let selectedCategoryFilter = null;
+    let selectedCategoryFilter = "all";
     let currentSelectedProduct = null;
     let currentSelectedColor = "";
     let isUserLoggedInState = false;
@@ -1512,14 +1512,6 @@
       const hotSec = document.getElementById('section-hotProducts');
       const gamingSec = document.getElementById('section-gamingProducts');
 
-      // Hide all product cards & special sections initially when no category is selected
-      if (!selectedCategoryFilter) {
-        if (specialContainer) specialContainer.style.display = 'none';
-        if (hotSec) hotSec.style.display = 'none';
-        if (gamingSec) gamingSec.style.display = 'none';
-        return;
-      }
-
       if (specialContainer) specialContainer.style.display = 'flex';
 
       // 1. Hot Products
@@ -1546,21 +1538,12 @@
       const targetGrid = document.getElementById('productGrid');
       if(!targetGrid) return;
 
-      if (!selectedCategoryFilter) {
-        targetGrid.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 42px 20px; background: var(--bg-card); border: 2px dashed var(--border-color); border-radius: 16px; margin: 12px 0;">
-            <div style="font-size: 2.2rem; margin-bottom: 10px;">👇</div>
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">Select a Category</h3>
-            <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 440px; margin: 0 auto;">Click any category above (e.g. <strong>All Products</strong>, <strong>Mini Fans</strong>, <strong>Chargers</strong>, <strong>Headphones</strong>, etc.) to view products.</p>
-          </div>
-        `;
-        return;
-      }
+      const activeFilter = selectedCategoryFilter || 'all';
 
       const filteredItems = globalProductsCatalog.filter(p => {
-        if(selectedCategoryFilter === 'all') return true;
+        if(activeFilter === 'all') return true;
         const cat = (p.category || '').toLowerCase().trim();
-        const filter = selectedCategoryFilter.toLowerCase().trim();
+        const filter = activeFilter.toLowerCase().trim();
         
         if (filter === 'charger') {
           return cat.includes('charger') || cat.includes('cable') || cat.includes('wire');

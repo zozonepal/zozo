@@ -1517,6 +1517,12 @@
 
       if (!specialContainer) return;
 
+      // Hide special sections if a category filter is active (e.g. 'all' or any specific category)
+      if (selectedCategoryFilter) {
+        specialContainer.style.display = 'none';
+        return;
+      }
+
       specialContainer.style.display = 'flex';
 
       // 1. Hot Products Section

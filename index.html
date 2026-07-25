@@ -861,9 +861,7 @@
 
       <!-- CATEGORY BAR (PLACED DIRECTLY BELOW HERO BANNER) -->
       <div class="categories-filter-bar" id="categoriesFilterBar" style="margin-top: 18px; margin-bottom: 12px;">
-        <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
-        <button id="catBtn-hot" class="category-pill-btn" onclick="switchCategoryFilter('hot')">🔥 Hot Products</button>
-        <button id="catBtn-gaming" class="category-pill-btn" onclick="switchCategoryFilter('gaming')">🎮 Gaming Gear</button>
+        <button id="catBtn-all" class="category-pill-btn" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
         <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
         <button id="catBtn-headphones" class="category-pill-btn" onclick="switchCategoryFilter('headphones')">🎧 Headphones</button>
         <button id="catBtn-charger" class="category-pill-btn" onclick="switchCategoryFilter('charger')">🔌 Chargers</button>
@@ -876,6 +874,25 @@
 
       <!-- PRODUCT CATALOG GRID -->
       <div id="productGrid" class="catalog-grid" style="margin-bottom: 24px;">
+      </div>
+
+      <!-- FEATURED SPECIAL SECTIONS (DYNAMICAL) -->
+      <div id="specialFeaturedSectionsContainer" style="display: none; flex-direction: column; gap: 28px; margin: 24px 0;">
+        <!-- Hot Products Section -->
+        <section id="section-hotProducts" style="display: none; background: #fffcfc; border: 1px solid #fee2e2; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.03);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #fee2e2; padding-bottom: 8px;">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #dc2626; margin: 0; display: flex; align-items: center; gap: 8px;">🔥 Hot Products <span style="font-size: 0.75rem; background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Trending</span></h2>
+          </div>
+          <div id="hotProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
+        </section>
+
+        <!-- Gaming Products Section -->
+        <section id="section-gamingProducts" style="display: none; background: #fafafc; border: 1px solid #e0e7ff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.03);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #e0e7ff; padding-bottom: 8px;">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #3730a3; margin: 0; display: flex; align-items: center; gap: 8px;">🎮 Gaming Gear Special <span style="font-size: 0.75rem; background: #e0e7ff; color: #4f46e5; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Pro Gamer</span></h2>
+          </div>
+          <div id="gamingProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
+        </section>
       </div>
 
       <section class="faq-container">
@@ -1164,7 +1181,7 @@
     let globalProductsCatalog = []; // Populated in real-time from Firestore
     let systemCart = [];
     let selectedPaymentMethod = "eSewa";
-    let selectedCategoryFilter = "all";
+    let selectedCategoryFilter = null;
     let currentSelectedProduct = null;
     let currentSelectedColor = "";
     let isUserLoggedInState = false;
@@ -1439,11 +1456,9 @@
       const container = document.getElementById('categoriesFilterBar');
       if (!container) return;
       
-      const activeFilter = selectedCategoryFilter || 'all';
+      const activeFilter = selectedCategoryFilter;
 
       let html = `<button id="catBtn-all" class="category-pill-btn ${activeFilter === 'all' ? 'active-category' : ''}" onclick="switchCategoryFilter('all')">🛍️ All Products</button>`;
-      html += `<button id="catBtn-hot" class="category-pill-btn ${activeFilter === 'hot' ? 'active-category' : ''}" onclick="switchCategoryFilter('hot')">🔥 Hot Products</button>`;
-      html += `<button id="catBtn-gaming" class="category-pill-btn ${activeFilter === 'gaming' ? 'active-category' : ''}" onclick="switchCategoryFilter('gaming')">🎮 Gaming Gear</button>`;
 
       globalCategories.forEach(cat => {
         if (cat.code === 'hot' || cat.code === 'gaming' || cat.code === 'all') return;
@@ -1493,7 +1508,39 @@
 
     // --- RENDER FEATURED SPECIAL SECTIONS ---
     window.renderSpecialSections = function() {
-      // Hot Products and Gaming Gear special sections are integrated as category filter tabs
+      const specialContainer = document.getElementById('specialFeaturedSectionsContainer');
+      const hotGrid = document.getElementById('hotProductsGrid');
+      const gamingGrid = document.getElementById('gamingProductsGrid');
+
+      const hotSec = document.getElementById('section-hotProducts');
+      const gamingSec = document.getElementById('section-gamingProducts');
+
+      if (!selectedCategoryFilter) {
+        if (specialContainer) specialContainer.style.display = 'none';
+        if (hotSec) hotSec.style.display = 'none';
+        if (gamingSec) gamingSec.style.display = 'none';
+        return;
+      }
+
+      if (specialContainer) specialContainer.style.display = 'flex';
+
+      // 1. Hot Products Section
+      const hotItems = globalProductsCatalog.filter(p => p.isHot);
+      if (hotItems.length > 0 && hotGrid && hotSec) {
+        hotGrid.innerHTML = hotItems.map(p => createProductCardHtml(p)).join('');
+        hotSec.style.display = 'block';
+      } else if (hotSec) {
+        hotSec.style.display = 'none';
+      }
+
+      // 2. Gaming Products Section
+      const gamingItems = globalProductsCatalog.filter(p => p.isGaming);
+      if (gamingItems.length > 0 && gamingGrid && gamingSec) {
+        gamingGrid.innerHTML = gamingItems.map(p => createProductCardHtml(p)).join('');
+        gamingSec.style.display = 'block';
+      } else if (gamingSec) {
+        gamingSec.style.display = 'none';
+      }
     };
 
     // --- 2. RENDER ENGINE GRID ---
@@ -1501,19 +1548,24 @@
       const targetGrid = document.getElementById('productGrid');
       if(!targetGrid) return;
 
-      const activeFilter = selectedCategoryFilter || 'all';
+      if (!selectedCategoryFilter) {
+        targetGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; background: var(--bg-card); border: 2px dashed var(--border-color); border-radius: 16px; margin: 12px 0;">
+            <div style="font-size: 2.2rem; margin-bottom: 8px;">👇</div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">Select a Category</h3>
+            <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 440px; margin: 0 auto;">Click any category above to open and view the products catalog.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const activeFilter = selectedCategoryFilter;
 
       const filteredItems = globalProductsCatalog.filter(p => {
         if(activeFilter === 'all') return true;
         const cat = (p.category || '').toLowerCase().trim();
         const filter = activeFilter.toLowerCase().trim();
         
-        if (filter === 'hot') {
-          return p.isHot || cat.includes('hot') || cat.includes('trending');
-        }
-        if (filter === 'gaming') {
-          return p.isGaming || cat.includes('gaming') || cat.includes('gamer');
-        }
         if (filter === 'charger') {
           return cat.includes('charger') || cat.includes('cable') || cat.includes('wire');
         }

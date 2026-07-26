@@ -837,45 +837,47 @@
     /* --- FIXED BEAUTIFUL WHATSAPP FLOATING FAB --- */
     .whatsapp-fixed-fab {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
       background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
       color: #ffffff !important;
-      padding: 10px 16px;
-      border-radius: 50px;
+      padding: 0;
       display: flex;
       align-items: center;
-      gap: 10px;
-      z-index: 999;
-      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4), 0 2px 8px rgba(0, 0, 0, 0.12);
+      justify-content: center;
+      z-index: 9999;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45), 0 2px 8px rgba(0, 0, 0, 0.15);
       text-decoration: none;
-      font-weight: 700;
-      font-size: 0.88rem;
-      letter-spacing: 0.01em;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
       backdrop-filter: blur(4px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       cursor: pointer;
+      touch-action: manipulation;
     }
     .whatsapp-fixed-fab:hover {
-      transform: translateY(-4px) scale(1.04);
-      box-shadow: 0 12px 30px rgba(37, 211, 102, 0.55), 0 4px 12px rgba(0, 0, 0, 0.18);
+      transform: scale(1.1);
+      box-shadow: 0 12px 30px rgba(37, 211, 102, 0.6), 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     .whatsapp-fixed-fab:active {
-      transform: translateY(-1px) scale(0.98);
+      transform: scale(0.95);
     }
     .whatsapp-fab-icon-wrap {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100%;
+      height: 100%;
     }
     .whatsapp-online-dot {
       position: absolute;
-      top: -2px;
-      right: -2px;
-      width: 10px;
-      height: 10px;
+      top: 3px;
+      right: 3px;
+      width: 12px;
+      height: 12px;
       background-color: #4ade80;
       border: 2px solid #128C7E;
       border-radius: 50%;
@@ -887,18 +889,12 @@
       70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
     }
-    .whatsapp-fab-text {
-      white-space: nowrap;
-      font-family: inherit;
-    }
     @media (max-width: 480px) {
       .whatsapp-fixed-fab {
-        padding: 10px 14px;
-        bottom: 16px;
-        right: 16px;
-      }
-      .whatsapp-fab-text {
-        font-size: 0.82rem;
+        width: 50px;
+        height: 50px;
+        bottom: 1.25rem;
+        right: 1.25rem;
       }
     }
 
@@ -1117,10 +1113,6 @@
           <button class="drawer-nav-item" onclick="toggleCartSidebar(true); toggleMobileDrawer(false);">
             <span>🛒 Shopping Cart</span>
             <span id="drawerCartCountBadge" class="drawer-badge" style="background:var(--nepal-blue); color:#ffffff;">0</span>
-          </button>
-          <button class="drawer-nav-item" onclick="location.href='admin.html'; toggleMobileDrawer(false);">
-            <span>⚙️ Admin Portal</span>
-            <span class="drawer-badge">Manager</span>
           </button>
         </div>
       </div>
@@ -1430,12 +1422,11 @@
     </div>
   </div>
 
-  <a class="whatsapp-fixed-fab" href="https://wa.me/9779766706246" target="_blank" title="Chat with us on WhatsApp" aria-label="Chat on WhatsApp">
+  <a class="whatsapp-fixed-fab" href="https://wa.me/9779766706246" target="_blank" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
     <div class="whatsapp-fab-icon-wrap">
-      <svg style="width:24px; height:24px;" viewBox="0 0 24 24"><path fill="#fff" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.817 9.817 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.132 8.132 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.21-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.188 8.188 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.27-8.23m-3.93 5.03c-.22 0-.45.03-.65.1-.2.07-.38.18-.54.34-.33.33-.52.79-.52 1.26 0 .97.43 1.93 1.26 2.76 1.13 1.13 2.58 2.02 4.1 2.53.42.14.85.22 1.28.22.61 0 1.18-.21 1.6-.62.33-.33.52-.78.52-1.26 0-.16-.02-.32-.07-.47-.05-.15-.15-.28-.27-.37l-1.66-.83c-.23-.12-.51-.1-.72.07l-.63.53c-.15.13-.36.16-.54.07-.54-.26-1.04-.62-1.48-1.06-.44-.44-.8-1-1.05-1.55-.09-.17-.06-.39.08-.53l.49-.42c.16-.14.23-.36.18-.57l-.63-1.89c-.08-.24-.26-.43-.5-.5-.14-.04-.28-.06-.42-.06Z"/></svg>
+      <svg style="width:28px; height:28px;" viewBox="0 0 24 24"><path fill="#fff" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.817 9.817 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.132 8.132 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.21-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.188 8.188 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.27-8.23m-3.93 5.03c-.22 0-.45.03-.65.1-.2.07-.38.18-.54.34-.33.33-.52.79-.52 1.26 0 .97.43 1.93 1.26 2.76 1.13 1.13 2.58 2.02 4.1 2.53.42.14.85.22 1.28.22.61 0 1.18-.21 1.6-.62.33-.33.52-.78.52-1.26 0-.16-.02-.32-.07-.47-.05-.15-.15-.28-.27-.37l-1.66-.83c-.23-.12-.51-.1-.72.07l-.63.53c-.15.13-.36.16-.54.07-.54-.26-1.04-.62-1.48-1.06-.44-.44-.8-1-1.05-1.55-.09-.17-.06-.39.08-.53l.49-.42c.16-.14.23-.36.18-.57l-.63-1.89c-.08-.24-.26-.43-.5-.5-.14-.04-.28-.06-.42-.06Z"/></svg>
       <span class="whatsapp-online-dot"></span>
     </div>
-    <span class="whatsapp-fab-text">Chat with Us</span>
   </a>
 
   </div> <!-- Close app-viewport -->

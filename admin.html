@@ -110,9 +110,11 @@
       border-radius: 8px;
       font-weight: 700;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
+      white-space: nowrap;
       transition: var(--transition);
       touch-action: manipulation;
     }
@@ -123,6 +125,20 @@
 
     .action-btn.btn-danger {
       background: var(--danger);
+    }
+
+    .edit-btn {
+      background: var(--nepal-blue) !important;
+      color: #ffffff !important;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .remove-btn {
+      background: var(--danger) !important;
+      color: #ffffff !important;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     /* Systematic Responsive Tab Rail */
@@ -1894,11 +1910,11 @@
 
             return `
               <div class="feed-item" style="background:#ffffff; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:12px;">
-                    <img src="${item.imageUrl}" style="width:45px; height:45px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);">
-                    <div>
-                      <strong style="font-size:0.95rem; color:var(--text-main);">${item.name}</strong>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap: 12px; min-width: 0;">
+                  <div style="display:flex; align-items:center; gap:12px; min-width: 0; flex: 1;">
+                    <img src="${item.imageUrl}" style="width:45px; height:45px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color); flex-shrink: 0;">
+                    <div style="min-width: 0; flex: 1;">
+                      <strong style="font-size:0.95rem; color:var(--text-main); display: block; overflow-wrap: anywhere; word-break: break-word;">${item.name}</strong>
                       <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
                         <span style="color:var(--nepal-blue); font-weight:800;">Rs. ${item.price}</span> 
                         &bull; <span class="badge badge-blue" style="font-size:0.6rem;">${item.category}</span>
@@ -1906,18 +1922,18 @@
                       <small style="font-size:0.75rem; color:gray; display:block; margin-top:1px;">Colors: ${colorsStr}</small>
                     </div>
                   </div>
-                  <div style="display: flex; gap: 6px;">
-                    <button class="action-btn" style="padding: 4px 10px; font-size:0.75rem; background: var(--nepal-blue); color: white;" onclick="startEditProduct('${item.id}')">Edit</button>
-                    <button class="action-btn btn-danger" style="padding: 4px 10px; font-size:0.75rem;" onclick="deleteCatalogProduct('${item.id}')">Remove</button>
+                  <div style="display: flex; gap: 8px; flex-shrink: 0; align-items: center;">
+                    <button class="action-btn edit-btn" style="padding: 6px 14px; min-height: 36px; font-size:0.8rem; background: var(--nepal-blue); color: white; white-space: nowrap; flex-shrink: 0;" onclick="startEditProduct('${item.id}')">Edit</button>
+                    <button class="action-btn btn-danger remove-btn" style="padding: 6px 14px; min-height: 36px; font-size:0.8rem; white-space: nowrap; flex-shrink: 0;" onclick="deleteCatalogProduct('${item.id}')">Remove</button>
                   </div>
                 </div>
                 
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; align-items: center;">
                   <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Sections:</span>
-                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.7rem; background: ${isHot ? '#ef4444' : '#e2e8f0'}; color: ${isHot ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer;" onclick="toggleProductSectionFlag('${item.id}', 'isHot', ${isHot})">
+                  <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isHot ? '#ef4444' : '#e2e8f0'}; color: ${isHot ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isHot', ${isHot})">
                     🔥 Hot
                   </button>
-                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.7rem; background: ${isGaming ? '#3b82f6' : '#e2e8f0'}; color: ${isGaming ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer;" onclick="toggleProductSectionFlag('${item.id}', 'isGaming', ${isGaming})">
+                  <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isGaming ? '#3b82f6' : '#e2e8f0'}; color: ${isGaming ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isGaming', ${isGaming})">
                     🎮 Gaming
                   </button>
                 </div>

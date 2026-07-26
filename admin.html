@@ -7,6 +7,13 @@
   <link rel="icon" type="image/png" href="/zozonepal.png">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('zozo_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+
   <style>
     :root {
       --bg-main: #f1f5f9;
@@ -20,6 +27,50 @@
       --success: #22c55e;
       --danger: #ef4444;
       --transition: all 0.2s ease-in-out;
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --nepal-blue: #a855f7;
+      --nepal-red: #c084fc;
+      --accent-color: #60a5fa;
+    }
+
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .auth-gate-card {
+      background: #0f172a !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+
+    .theme-toggle-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      color: var(--text-main);
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .theme-toggle-btn:hover {
+      border-color: var(--nepal-blue);
+      color: var(--nepal-blue);
+      transform: scale(1.05);
+    }
+    [data-theme="dark"] .theme-toggle-btn {
+      background: #334155;
+      border-color: #475569;
+      color: #f8fafc;
     }
 
     * { 
@@ -439,6 +490,9 @@
         <p>Operational control tower for catalog, promos, delivery logistics, resources, and orders.</p>
       </div>
       <div class="header-actions">
+        <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleGlobalAppTheme()" title="Toggle Light / Dark Theme" aria-label="Toggle Theme">
+          <span id="themeToggleIcon" style="display:flex; align-items:center; justify-content:center; font-size:1.1rem;">🌙</span>
+        </button>
         <button class="action-btn" id="refreshAllFeedsBtn" style="background: var(--nepal-blue);">🔄 Refresh Feeds</button>
         <button class="action-btn btn-danger" id="adminSignoutBtn">🚪 Sign Out</button>
       </div>
@@ -2753,6 +2807,32 @@
 
       document.getElementById('esewaQrFileInput').addEventListener('change', (e) => handleStoreQrCodeUpload(e, 'esewa'));
       document.getElementById('khaltiQrFileInput').addEventListener('change', (e) => handleStoreQrCodeUpload(e, 'khalti'));
+    });
+  </script>
+  <script>
+    window.toggleGlobalAppTheme = function() {
+      const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('zozo_theme', newTheme);
+      updateThemeToggleUI();
+    };
+
+    window.updateThemeToggleUI = function() {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const iconEl = document.getElementById('themeToggleIcon');
+      const btnEl = document.getElementById('themeToggleBtn');
+
+      if (iconEl) {
+        iconEl.innerHTML = currentTheme === 'dark' ? '☀️' : '🌙';
+      }
+      if (btnEl) {
+        btnEl.title = currentTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateThemeToggleUI();
     });
   </script>
 </body>

@@ -34,7 +34,10 @@
     
     html, body {
       width: 100%;
+      max-width: 100vw;
       overflow-x: hidden;
+      position: relative;
+      box-sizing: border-box;
     }
     
     body { 
@@ -45,30 +48,56 @@
       flex-direction: column; 
     }
 
+    /* --- GLOBAL OVERFLOW & TYPOGRAPHY BREAK PROTECTION --- */
+    main, .daraz-product-grid, .app-header, .catalog-grid, .product-card, footer {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, textarea, button, td, th {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    img, svg, video, iframe {
+      max-width: 100%;
+      height: auto;
+    }
+
     /* --- 2. NAVBAR & MOBILE DRAWER --- */
     .app-header {
       background: var(--bg-card);
       border-bottom: 3px solid var(--nepal-blue);
-      padding: 10px 12px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
-      gap: 12px;
+      gap: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    @media (max-width: 480px) {
+      .app-header {
+        padding: 8px 12px;
+        gap: 8px;
+      }
     }
     @media (min-width: 768px) { 
-      .app-header { padding: 16px 24px; gap: 16px; } 
+      .app-header { padding: 14px 24px; gap: 16px; } 
     }
 
     /* --- MOBILE DRAWER TOGGLE BUTTON & PANEL --- */
     .mobile-drawer-toggle-btn {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      width: 40px;
-      height: 40px;
+      min-width: 44px;
+      min-height: 44px;
+      width: 44px;
+      height: 44px;
       border-radius: 10px;
       cursor: pointer;
       display: flex;
@@ -77,6 +106,7 @@
       transition: var(--transition);
       color: var(--text-main);
       flex-shrink: 0;
+      touch-action: manipulation;
     }
     .mobile-drawer-toggle-btn:hover, .mobile-drawer-toggle-btn:active {
       background: var(--promo-gradient-start);
@@ -280,12 +310,16 @@
       flex-shrink: 0;
     }
     .brand-logo-img { 
-      height: 42px; 
+      height: 38px; 
+      max-height: 38px;
       width: auto; 
       object-fit: contain; 
     }
+    @media (min-width: 480px) {
+      .brand-logo-img { height: 42px; max-height: 42px; }
+    }
     @media (min-width: 768px) { 
-      .brand-logo-img { height: 65px; } 
+      .brand-logo-img { height: 58px; max-height: 58px; } 
     }
 
     .nav-actions-right {
@@ -302,14 +336,17 @@
     .search-icon-btn {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      width: 36px;
-      height: 36px;
+      min-width: 44px;
+      min-height: 44px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: var(--transition);
+      touch-action: manipulation;
     }
     .search-icon-btn:hover { background: var(--frame-bg); }
 
@@ -369,54 +406,20 @@
       color: white;
       border: none;
       border-radius: 30px;
-      padding: 6px 14px;
+      padding: 8px 16px;
+      min-height: 44px;
       font-weight: 700;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
       transition: var(--transition);
       box-shadow: 0 4px 10px rgba(147, 51, 234, 0.2);
+      touch-action: manipulation;
     }
     .cart-nav-btn:hover { background: var(--nepal-red); }
     .cart-badge { background: white; color: var(--nepal-blue); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; }
-
-    /* --- THREE DOTS KEBAB DROPDOWN --- */
-    .dots-menu-container {
-      position: relative;
-      display: inline-block;
-    }
-    .dots-toggle-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-    }
-    .dots-toggle-btn:hover { background: var(--frame-bg); }
-    
-    .dots-dropdown-panel {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 120%;
-      background-color: var(--bg-card);
-      min-width: 220px;
-      box-shadow: 0px 8px 24px rgba(0,0,0,0.12);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      z-index: 1050;
-      padding: 14px;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .dots-dropdown-panel.active { display: flex; }
     
     .dropdown-section-header {
       font-size: 0.75rem;
@@ -833,24 +836,13 @@
     </div>
     
     <div class="nav-actions-right">
-      <button class="search-icon-btn" onclick="toggleHeaderSearchOverlay()" title="Search catalog">
-        <svg style="width:18px; height:18px;" viewBox="0 0 24 24"><path fill="var(--text-muted)" d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      <button class="search-icon-btn" onclick="toggleHeaderSearchOverlay()" title="Search catalog" aria-label="Search Catalog">
+        <svg style="width:20px; height:20px;" viewBox="0 0 24 24"><path fill="var(--text-muted)" d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </button>
       
-      <button class="cart-nav-btn" onclick="toggleCartSidebar(true)">
+      <button class="cart-nav-btn" onclick="toggleCartSidebar(true)" title="View Cart" aria-label="View Shopping Cart">
         🛒 <span id="navCartCountBadge" class="cart-badge">0</span>
       </button>
-
-      <div class="dots-menu-container">
-        <button class="dots-toggle-btn" onclick="toggleDotsDropdown()">
-          <svg style="width:18px; height:18px;" viewBox="0 0 24 24"><path fill="var(--text-muted)" d="M12 16a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2Z"/></svg>
-        </button>
-        <div id="dotsMenuDropdown" class="dots-dropdown-panel">
-          <div id="userAuthenticationTargetBox"></div>
-          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 8px 0;">
-          <button class="dropdown-item-link" onclick="openOrderTrackingModal()">🔍 Track My Orders</button>
-        </div>
-      </div>
     </div>
 
     <!-- Search Overlay -->
@@ -2179,15 +2171,14 @@
     window.triggerSignOutUserSession = async function() {
       try {
         await signOut(auth);
-        document.getElementById('dotsMenuDropdown').classList.remove('active');
+        const dropdown = document.getElementById('dotsMenuDropdown');
+        if (dropdown) dropdown.classList.remove('active');
       } catch (err) {
         console.error("Sign-out error:", err);
       }
     };
 
-    window.toggleDotsDropdown = function() {
-      document.getElementById('dotsMenuDropdown').classList.toggle('active');
-    };
+    window.toggleDotsDropdown = function() {};
 
     // --- GLOBAL THEME SYSTEM ---
     window.toggleGlobalAppTheme = function() {

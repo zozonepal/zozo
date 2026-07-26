@@ -38,13 +38,100 @@
       --nepal-blue: #a855f7;
       --nepal-red: #c084fc;
       --accent-color: #60a5fa;
+      --input-bg: #1e293b;
     }
 
-    [data-theme="dark"] .form-control,
-    [data-theme="dark"] .auth-gate-card {
-      background: #0f172a !important;
+    /* --- REFACTORED DARK MODE COMPONENT STYLES & HIGH-CONTRAST TOKENS --- */
+    [data-theme="dark"] body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    /* Text & Headings Readability */
+    [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, 
+    [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+    [data-theme="dark"] label, [data-theme="dark"] .panel-card h2 {
+      color: #f8fafc !important;
+    }
+
+    /* Secondary & Muted Text */
+    [data-theme="dark"] p, [data-theme="dark"] span:not(.action-btn):not(.submit-btn),
+    [data-theme="dark"] .text-muted, [data-theme="dark"] p.sub-label {
+      color: #cbd5e1;
+    }
+
+    /* Inputs, Form Controls, Placeholders & Select Dropdowns */
+    [data-theme="dark"] input,
+    [data-theme="dark"] select,
+    [data-theme="dark"] textarea,
+    [data-theme="dark"] .form-control {
+      background-color: #1e293b !important;
       color: #f8fafc !important;
       border-color: #334155 !important;
+    }
+
+    [data-theme="dark"] input::placeholder,
+    [data-theme="dark"] textarea::placeholder,
+    [data-theme="dark"] .form-control::placeholder {
+      color: #94a3b8 !important;
+      opacity: 1;
+    }
+
+    [data-theme="dark"] select option {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] input:focus,
+    [data-theme="dark"] select:focus,
+    [data-theme="dark"] textarea:focus,
+    [data-theme="dark"] .form-control:focus {
+      border-color: #a855f7 !important;
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    /* Cards, Panels & Feed Containers Surface Colors */
+    [data-theme="dark"] .panel-card,
+    [data-theme="dark"] .order-card,
+    [data-theme="dark"] .feed-item,
+    [data-theme="dark"] .auth-gate-card,
+    [data-theme="dark"] .tabs-scroller,
+    [data-theme="dark"] .qr-preview-box {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    /* Tabs */
+    [data-theme="dark"] .tab-trigger {
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .tab-trigger:hover,
+    [data-theme="dark"] .tab-trigger.active {
+      color: #c084fc !important;
+      border-bottom-color: #a855f7 !important;
+    }
+
+    /* Badges */
+    [data-theme="dark"] .badge-blue { background: #1e3a8a !important; color: #93c5fd !important; }
+    [data-theme="dark"] .badge-green { background: #14532d !important; color: #86efac !important; }
+    [data-theme="dark"] .badge-purple { background: #581c87 !important; color: #d8b4fe !important; }
+    [data-theme="dark"] .badge-yellow { background: #713f12 !important; color: #fde047 !important; }
+    [data-theme="dark"] .badge-red { background: #7f1d1d !important; color: #fca5a5 !important; }
+
+    /* Tables */
+    [data-theme="dark"] table,
+    [data-theme="dark"] th,
+    [data-theme="dark"] td {
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] th {
+      background-color: #0f172a !important;
     }
 
     .theme-toggle-btn {

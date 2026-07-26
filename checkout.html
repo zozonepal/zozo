@@ -39,18 +39,106 @@
       --border-color: #334155;
       --nepal-blue: #a855f7;
       --nepal-red: #c084fc;
-      --input-bg: #0f172a;
-      --frame-bg: #0f172a;
+      --input-bg: #1e293b;
+      --frame-bg: #181825;
       --promo-gradient-start: #2e1065;
       --promo-gradient-end: #1e293b;
     }
 
+    /* --- REFACTORED DARK MODE COMPONENT STYLES & HIGH-CONTRAST TOKENS --- */
+    [data-theme="dark"] body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    /* Text & Headings Readability */
+    [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, 
+    [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+    [data-theme="dark"] label, [data-theme="dark"] .checkout-title,
+    [data-theme="dark"] .summary-title, [data-theme="dark"] .summary-total-value {
+      color: #f8fafc !important;
+    }
+
+    /* Secondary & Muted Text */
+    [data-theme="dark"] p, [data-theme="dark"] span:not(.btn),
+    [data-theme="dark"] .text-muted, [data-theme="dark"] .summary-row {
+      color: #cbd5e1;
+    }
+
+    /* Inputs, Form Controls, Placeholders & Select Dropdowns */
+    [data-theme="dark"] input,
+    [data-theme="dark"] select,
+    [data-theme="dark"] textarea,
+    [data-theme="dark"] .details-form-input,
+    [data-theme="dark"] .form-control {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+
+    [data-theme="dark"] input::placeholder,
+    [data-theme="dark"] textarea::placeholder {
+      color: #94a3b8 !important;
+      opacity: 1;
+    }
+
+    [data-theme="dark"] select option {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] input:focus,
+    [data-theme="dark"] select:focus,
+    [data-theme="dark"] textarea:focus,
+    [data-theme="dark"] .details-form-input:focus {
+      border-color: #a855f7 !important;
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25) !important;
+    }
+
+    /* Cards & Containers Surface Colors */
+    [data-theme="dark"] .checkout-card,
+    [data-theme="dark"] .summary-card,
+    [data-theme="dark"] .qr-box,
+    [data-theme="dark"] .modal-card {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    /* Image Frames & Product Media Boxes */
     [data-theme="dark"] .summary-item-img,
     [data-theme="dark"] .qr-box img {
       mix-blend-mode: normal !important;
-      background: #ffffff;
-      border-radius: 6px;
+      background: #ffffff !important;
+      border-radius: 8px;
       padding: 2px;
+    }
+
+    /* Payment Option Selector Cards */
+    [data-theme="dark"] .method-selector-card {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      border-color: #334155 !important;
+    }
+
+    [data-theme="dark"] .method-selector-card.active-esewa {
+      border-color: #22c55e !important;
+      background: rgba(34, 197, 94, 0.2) !important;
+      color: #4ade80 !important;
+    }
+
+    [data-theme="dark"] .method-selector-card.active-khalti {
+      border-color: #a855f7 !important;
+      background: rgba(168, 85, 247, 0.2) !important;
+      color: #c084fc !important;
+    }
+
+    [data-theme="dark"] .method-selector-card.active-cod {
+      border-color: #3b82f6 !important;
+      background: rgba(59, 130, 246, 0.2) !important;
+      color: #60a5fa !important;
     }
 
     .theme-toggle-btn {

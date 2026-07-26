@@ -608,7 +608,7 @@
           <!-- Manage Categories -->
           <div class="panel-card" style="margin-top: 0px;">
             <h2>📁 Manage Categories</h2>
-            <p class="sub-label">Add new product categories or delete existing ones.</p>
+            <p class="sub-label">Add new product categories or deploy default ones to the live store.</p>
             <form id="categoryAddForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
               <div class="form-group">
                 <label>Category Name *</label>
@@ -624,11 +624,14 @@
                   <input type="text" id="catEmoji" class="form-control" placeholder="e.g. 🔋" required>
                 </div>
               </div>
-              <button type="submit" id="addCatBtn" class="submit-btn" style="background: var(--nepal-blue);">➕ Add Category</button>
+              <button type="submit" id="addCatBtn" class="submit-btn" style="background: var(--nepal-blue);">➕ Add / Deploy Category</button>
             </form>
 
             <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
-              <h3 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">Existing Categories</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <h3 style="font-size: 0.9rem; font-weight: 700; margin: 0; color: var(--text-main);">Active Store Categories</h3>
+                <button type="button" id="deployDefaultCatsBtn" onclick="deployDefaultCategories()" class="action-btn" style="font-size: 0.75rem; padding: 5px 12px; background: #10b981; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; font-weight: 700;">🚀 Deploy Default Categories</button>
+              </div>
               <div id="adminCategoriesList" style="display: flex; flex-direction: column; gap: 8px;">
                 <p style="font-size: 0.8rem; color: gray;">Loading categories...</p>
               </div>
@@ -1591,8 +1594,42 @@
         { code: 'headphones', name: 'Headphones', emoji: '🎧' },
         { code: 'charger', name: 'Chargers', emoji: '🔌' },
         { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
-        { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' }
+        { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' },
+        { code: 'speakers', name: 'Speakers', emoji: '🔊' },
+        { code: 'earbuds', name: 'Earbuds', emoji: '🎵' },
+        { code: 'power-sockets', name: 'Power Sockets', emoji: '⚡' }
       ];
+
+      window.deployDefaultCategories = async () => {
+        const btn = document.getElementById('deployDefaultCatsBtn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = "⏳ Deploying...";
+        }
+        try {
+          let addedCount = 0;
+          for (const cat of defaultCategories) {
+            const exists = globalCategoriesCache.some(c => c.code === cat.code && c.id);
+            if (!exists) {
+              await addDoc(collection(db, "categories"), { ...cat, createdAt: new Date().toISOString() });
+              addedCount++;
+            }
+          }
+          if (addedCount > 0) {
+            alert(`Successfully deployed ${addedCount} default categories to live database!`);
+          } else {
+            alert("All default categories are already deployed!");
+          }
+        } catch (err) {
+          console.error("Error deploying default categories:", err);
+          alert("Could not deploy default categories: " + (err.message || "Permissions issue or network fault."));
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "🚀 Deploy Default Categories";
+          }
+        }
+      };
 
       let isCategoriesListening = false;
       function listenToCategories() {
@@ -1601,13 +1638,17 @@
 
         onSnapshot(collection(db, "categories"), async (snapshot) => {
           if (snapshot.empty) {
-            console.log("Seeding default categories...");
+            console.log("Categories collection empty. Showing defaults & auto-seeding...");
+            globalCategoriesCache = defaultCategories.map(c => ({ ...c }));
+            renderAdminCategoriesList();
+            renderAdminCategorySelector();
+
             try {
               for (const cat of defaultCategories) {
-                await addDoc(collection(db, "categories"), cat);
+                await addDoc(collection(db, "categories"), { ...cat, createdAt: new Date().toISOString() });
               }
             } catch (err) {
-              console.warn("Seeding categories failed (likely due to missing rules on the server):", err);
+              console.warn("Auto-seeding categories encountered a warning:", err);
             }
             return;
           }
@@ -1622,8 +1663,7 @@
           renderAdminCategorySelector();
         }, (error) => {
           console.error("Firestore listening categories issue in admin:", error);
-          // Safe fallback to default categories so the UI is still completely usable
-          globalCategoriesCache = defaultCategories;
+          globalCategoriesCache = defaultCategories.map(c => ({ ...c }));
           renderAdminCategoriesList();
           renderAdminCategorySelector();
         });
@@ -1639,6 +1679,10 @@
         }
 
         container.innerHTML = globalCategoriesCache.map(cat => {
+          const deleteBtn = cat.id 
+            ? `<button class="action-btn btn-danger" style="padding: 2px 8px; font-size: 0.7rem;" onclick="deleteCategory('${cat.id}')">Delete</button>`
+            : `<span style="font-size:0.65rem; color:#64748b; background:#e2e8f0; padding:2px 6px; border-radius:4px;">Default</span>`;
+            
           return `
             <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -1648,7 +1692,7 @@
                   <code style="font-size: 0.7rem; color: var(--text-muted); display: block;">tag: ${cat.code}</code>
                 </div>
               </div>
-              <button class="action-btn btn-danger" style="padding: 2px 8px; font-size: 0.7rem;" onclick="deleteCategory('${cat.id}')">Delete</button>
+              ${deleteBtn}
             </div>
           `;
         }).join('');
@@ -1664,12 +1708,16 @@
       }
 
       window.deleteCategory = async (docId) => {
-        if (confirm("Are you sure you want to delete this category?")) {
+        if (!docId || docId === 'undefined') {
+          alert("This is a default preset category. Please click 'Deploy Default Categories' first to sync all defaults to the database.");
+          return;
+        }
+        if (confirm("Are you sure you want to delete this category from the store?")) {
           try {
             await deleteDoc(doc(db, "categories", docId));
           } catch (e) {
             console.error("Error deleting category:", e);
-            alert("Could not delete category.");
+            alert("Could not delete category: " + (e.message || "Unknown error"));
           }
         }
       };
@@ -1679,31 +1727,31 @@
         e.preventDefault();
         const name = document.getElementById('catName').value.trim();
         const code = document.getElementById('catCode').value.trim().toLowerCase().replace(/\s+/g, '-');
-        const emoji = document.getElementById('catEmoji').value.trim();
+        const emoji = document.getElementById('catEmoji').value.trim() || '📦';
 
         if (!name || !code) return;
 
-        // Check if code already exists
+        // Check if code already exists in cache
         const exists = globalCategoriesCache.some(c => c.code === code);
         if (exists) {
-          alert("A category with this code/tag already exists!");
+          alert(`A category with code/tag "${code}" already exists!`);
           return;
         }
 
         const btn = document.getElementById('addCatBtn');
         btn.disabled = true;
-        btn.innerText = "⏳ Adding...";
+        btn.innerText = "⏳ Deploying Category...";
 
         try {
-          await addDoc(collection(db, "categories"), { name, code, emoji });
+          await addDoc(collection(db, "categories"), { name, code, emoji, createdAt: new Date().toISOString() });
           document.getElementById('categoryAddForm').reset();
-          alert("Category added successfully!");
+          alert(`Category "${name}" deployed successfully!`);
         } catch (err) {
           console.error("Error adding category:", err);
-          alert("Could not add category.");
+          alert("Could not deploy category: " + (err.message || "Unknown error"));
         } finally {
           btn.disabled = false;
-          btn.innerText = "➕ Add Category";
+          btn.innerText = "➕ Add / Deploy Category";
         }
       });
 

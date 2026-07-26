@@ -7,6 +7,12 @@
   <link rel="icon" type="image/png" href="/zozonepal.png">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
+  <!-- Critical Resource Hints & Preconnect -->
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+  <link rel="dns-prefetch" href="https://images.unsplash.com">
+
   <style>
     :root {
       --bg-main: #f1f5f9;
@@ -1396,7 +1402,7 @@
 
       document.getElementById('refreshAllFeedsBtn').addEventListener('click', refreshAllFeeds);
 
-      // --- IMAGE COMPRESSION HELPER ---
+      // --- HIGH-FIDELITY IMAGE COMPRESSION HELPER (WEBP & VISUALLY LOSSLESS ENCODING) ---
       function compressAndConvertImage(file, maxWidth = 1200) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -1407,7 +1413,7 @@
             img.onload = () => {
               const maxAllowedBytes = 900000; // Safeguard below Firestore 1MB document limit
               
-              // Helper to attempt compression with varying scale, format, and quality
+              // Helper to attempt encoding with high-quality canvas smoothing
               function attemptEncode(scale, format, quality) {
                 const canvas = document.createElement('canvas');
                 let width = img.width * scale;
@@ -1418,33 +1424,53 @@
                   width = maxWidth;
                 }
                 
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = Math.round(width);
+                canvas.height = Math.round(height);
                 const ctx = canvas.getContext('2d');
                 
                 if (format === 'image/jpeg') {
-                  // JPEG does not support transparency, fill canvas with white first
                   ctx.fillStyle = '#ffffff';
-                  ctx.fillRect(0, 0, width, height);
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
                 } else {
-                  ctx.clearRect(0, 0, width, height);
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
                 
-                ctx.drawImage(img, 0, 0, width, height);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 
-                if (format === 'image/jpeg') {
-                  return canvas.toDataURL('image/jpeg', quality);
+                if (format === 'image/webp') {
+                  return canvas.toDataURL('image/webp', quality || 0.85);
+                } else if (format === 'image/jpeg') {
+                  return canvas.toDataURL('image/jpeg', quality || 0.82);
                 } else {
                   return canvas.toDataURL('image/png');
                 }
               }
 
-              // Determine if the input is a PNG
-              const isPng = file.type === 'image/png' || file.name?.toLowerCase().endsWith('.png');
               let base64 = "";
 
+              // Try WebP first for ultra-lightweight, visually lossless Retina rendering
+              const webpScales = [1.0, 0.85, 0.70];
+              const webpQualities = [0.88, 0.82, 0.75];
+
+              for (let scale of webpScales) {
+                for (let quality of webpQualities) {
+                  try {
+                    base64 = attemptEncode(scale, 'image/webp', quality);
+                    if (base64.startsWith('data:image/webp') && base64.length <= maxAllowedBytes) {
+                      resolve(base64);
+                      return;
+                    }
+                  } catch (e) {
+                    console.warn("WebP encode attempt warning:", e);
+                  }
+                }
+              }
+
+              // Fallback for PNGs with transparency
+              const isPng = file.type === 'image/png' || file.name?.toLowerCase().endsWith('.png');
               if (isPng) {
-                // Iteratively try PNG at decreasing scales to preserve transparency if possible
                 const pngScales = [1.0, 0.8, 0.6];
                 for (let scale of pngScales) {
                   base64 = attemptEncode(scale, 'image/png');
@@ -1453,12 +1479,11 @@
                     return;
                   }
                 }
-                // If PNG is still too large (e.g. detailed lossless graphic), convert to highly-compressible JPEG
               }
 
-              // Try JPEG encoding with dynamic fallback (decreasing quality then scales)
+              // JPEG fallback
               const jpegScales = [1.0, 0.8, 0.6, 0.4];
-              const jpegQualities = [0.92, 0.82, 0.70, 0.50];
+              const jpegQualities = [0.85, 0.78, 0.65, 0.50];
 
               for (let scale of jpegScales) {
                 for (let quality of jpegQualities) {
@@ -1470,8 +1495,7 @@
                 }
               }
 
-              // absolute fallback: low resolution, low quality JPEG to guarantee success
-              base64 = attemptEncode(0.2, 'image/jpeg', 0.3);
+              base64 = attemptEncode(0.3, 'image/jpeg', 0.4);
               resolve(base64);
             };
           };

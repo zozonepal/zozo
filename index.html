@@ -7,6 +7,13 @@
   <link rel="icon" type="image/png" href="/zozonepal.png">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   
+  <!-- Critical Resource Hints & Preconnect for Speed -->
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+  <link rel="dns-prefetch" href="https://images.unsplash.com">
+  <link rel="dns-prefetch" href="https://wa.me">
+  
   <style>
     /* --- 1. DESIGN SYSTEM & CORE CSS VARIABLES (PURPLE THEME) --- */
     :root {
@@ -619,6 +626,8 @@
       height: 100%;
       box-shadow: 0 2px 8px rgba(0,0,0,0.03);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      content-visibility: auto;
+      contain-intrinsic-size: 1px 320px;
     }
     .product-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); }
     @media (min-width: 768px) { .product-card { padding: 16px; border-radius: 12px; } }
@@ -1884,8 +1893,8 @@
       
       return `
         <div class="product-card" id="card-${p.id}">
-          <div class="image-frame" onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">
-            <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.src='zozonepal.png'">
+          <div class="image-frame" onclick="openProductDetailPage('${p.id}')" style="cursor:pointer; position:relative; width:100%; aspect-ratio:1/1; overflow:hidden;">
+            <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="280" height="280" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null; this.src='zozonepal.png'">
           </div>
           <div class="product-meta">
             <h3 onclick="openProductDetailPage('${p.id}')" style="cursor:pointer;">${p.name}</h3>
@@ -2000,7 +2009,21 @@
         return;
       }
 
-      targetGrid.innerHTML = filteredItems.map(p => createProductCardHtml(p)).join('');
+      // Batch load for optimal LCP & FID/INP responsiveness
+      const BATCH_SIZE = 16;
+      const initialBatch = filteredItems.slice(0, BATCH_SIZE);
+      targetGrid.innerHTML = initialBatch.map(p => createProductCardHtml(p)).join('');
+
+      if (filteredItems.length > BATCH_SIZE) {
+        const remaining = filteredItems.slice(BATCH_SIZE);
+        requestAnimationFrame(() => {
+          const fragment = document.createElement('div');
+          fragment.className = 'grid-batch-fragment';
+          fragment.style.display = 'contents';
+          fragment.innerHTML = remaining.map(p => createProductCardHtml(p)).join('');
+          targetGrid.appendChild(fragment);
+        });
+      }
     };
 
     // --- 3. FILTER LOGIC CONTROL ---
@@ -3285,9 +3308,9 @@
 
         maxSlidesCount = bannerList.length;
 
-        sliderTrack.innerHTML = bannerList.map(b => `
+        sliderTrack.innerHTML = bannerList.map((b, idx) => `
           <div class="slide-panel">
-            <img class="slide-image" src="${b.imageUrl}" alt="${b.caption || 'Slide'}" onerror="this.onerror=null; this.src='zozonepal.png'">
+            <img class="slide-image" src="${b.imageUrl}" alt="${b.caption || 'Slide'}" ${idx === 0 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'">
           </div>
         `).join('');
 

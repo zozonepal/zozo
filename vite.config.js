@@ -8,12 +8,19 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
   plugins: [
     {
-      name: 'html-ext-fallback',
+      name: 'html-ext-fallback-and-cache',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
           if (req.url) {
             const urlObj = new URL(req.url, 'http://localhost');
             const pathname = urlObj.pathname;
+
+            // Set immutable long-term Cache-Control headers for static media and bundled assets
+            if (/\.(png|jpg|jpeg|gif|webp|avif|svg|ico|woff2?|ttf|otf|css|js)$/i.test(pathname)) {
+              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            } else if (pathname.endsWith('.html') || pathname === '/' || !pathname.includes('.')) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            }
             
             // If the pathname doesn't have an extension, is not root, and doesn't end with a slash
             if (pathname !== '/' && !pathname.includes('.') && !pathname.endsWith('/')) {
@@ -30,6 +37,10 @@ export default defineConfig({
     }
   ],
   build: {
+    target: 'es2020',
+    cssCodeSplit: true,
+    minify: 'esbuild',
+    assetsInlineLimit: 4096, // Inline small assets (<4kb) as data URIs to reduce HTTP requests
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
@@ -37,7 +48,18 @@ export default defineConfig({
         checkout: path.resolve(__dirname, 'checkout.html'),
         admin: path.resolve(__dirname, 'admin.html'),
       },
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/firebase')) {
+            return 'vendor-firebase';
+          }
+          if (id.includes('node_modules')) {
+            return 'vendor-core';
+          }
+        },
+      },
     },
   },
 });
+
 

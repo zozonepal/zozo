@@ -1157,9 +1157,9 @@
     <div id="homeMainView">
       <div class="hero-slider-container">
         <div id="sliderTrack" class="slider-track">
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 1" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 2" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 3" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 1" loading="eager" fetchpriority="high" decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 2" loading="lazy" decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 3" loading="lazy" decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
         </div>
         <button class="slider-nav-arrow nav-arrow-left" onclick="slideShift(-1)">&#10094;</button>
         <button class="slider-nav-arrow nav-arrow-right" onclick="slideShift(1)">&#10095;</button>
@@ -3569,16 +3569,29 @@
       synchronizeShoppingBagUIState();
     }
 
-    // Initialize listeners on launch
+    // Critical path initialization for immediate LCP & interactive rendering
     loadInitialShoppingBag();
     listenToLiveInventory();
     listenToLiveCategories();
     listenToLiveBanners();
-    listenToLiveFaqs();
-    listenToLiveDeliveryRates();
-    listenToLiveShopInfo();
-    listenToPromoPopup();
     initSliderGestures();
+
+    // Defer non-critical secondary feeds & popups after initial render frame
+    const runDeferredInits = () => {
+      listenToLiveFaqs();
+      listenToLiveDeliveryRates();
+      listenToLiveShopInfo();
+      listenToPromoPopup();
+      if (typeof checkForDeliveredOrdersNotification === 'function') {
+        checkForDeliveredOrdersNotification();
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(runDeferredInits, { timeout: 1500 });
+    } else {
+      setTimeout(runDeferredInits, 800);
+    }
   </script>
 </body>
 </html>

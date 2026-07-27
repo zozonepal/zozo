@@ -991,7 +991,7 @@
         <!-- Left Column: Image Gallery -->
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <div style="width: 100%; aspect-ratio: 1; background: var(--frame-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border: 1px solid var(--border-color);">
-            <img id="detailMainLargePreview" src="" alt="Product Main Image" style="max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; transition: transform 0.25s ease;" onerror="this.onerror=null; this.src='zozonepal.png'">
+            <img id="detailMainLargePreview" src="" alt="Product Main Image" loading="eager" fetchpriority="high" decoding="async" width="600" height="600" style="max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; transition: transform 0.25s ease;" onerror="this.onerror=null; this.src='zozonepal.png'">
             <span style="position: absolute; top: 12px; left: 12px; background: var(--nepal-blue); color: white; padding: 4px 12px; font-size: 0.75rem; border-radius: 30px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">Zozo Choice</span>
           </div>
           <!-- Thumbnails Row -->
@@ -1560,7 +1560,7 @@
       if (thumbsContainer) {
         const imagesList = Array.isArray(p.images) && p.images.length > 0 ? p.images : [activeImage];
         thumbsContainer.innerHTML = imagesList.map((imgSrc, idx) => `
-          <img class="detail-thumbnail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" onclick="changeDetailPageImage(this, '${imgSrc}')" onerror="this.onerror=null; this.src='zozonepal.png'">
+          <img class="detail-thumbnail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" loading="lazy" decoding="async" width="60" height="60" onclick="changeDetailPageImage(this, '${imgSrc}')" onerror="this.onerror=null; this.src='zozonepal.png'">
         `).join('');
       }
 
@@ -1676,8 +1676,8 @@
           
           return `
             <div class="product-card" onclick="window.location.href='product.html?id=${p.id}'" style="cursor:pointer;">
-              <div class="image-frame">
-                <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.src='zozonepal.png'">
+              <div class="image-frame" style="width:100%; aspect-ratio:1/1; position:relative; overflow:hidden;">
+                <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="280" height="280" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null; this.src='zozonepal.png'">
               </div>
               <div class="product-meta">
                 <h3 style="font-size:0.85rem; margin-bottom:4px;">${p.name}</h3>
@@ -2711,14 +2711,17 @@
       }
     }
 
-    // Safety fallback for dismissing load screen
-    setTimeout(dismissGlobalLoaderScreen, 2500);
-
-    // Bootstrap
+    // Critical bootstrap
     loadInitialShoppingBag();
-    listenToProductCatalog();
     listenToTargetProduct();
-    fetchStoreMetadata();
+    listenToProductCatalog();
+
+    // Defer non-critical store metadata
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(fetchStoreMetadata, { timeout: 1500 });
+    } else {
+      setTimeout(fetchStoreMetadata, 600);
+    }
 
   </script>
 </body>

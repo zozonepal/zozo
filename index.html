@@ -616,6 +616,22 @@
       .catalog-grid { grid-template-columns: repeat(5, 1fr); gap: 24px; } 
     }
     
+    /* --- ELEGANT ANIMATED SKELETON LOADER --- */
+    @keyframes skeletonShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-box {
+      background: linear-gradient(90deg, var(--frame-bg) 25%, var(--border-color) 37%, var(--frame-bg) 63%);
+      background-size: 400% 100%;
+      animation: skeletonShimmer 1.4s ease infinite;
+      border-radius: 6px;
+    }
+    .product-card-skeleton {
+      pointer-events: none;
+      user-select: none;
+    }
+
     .product-card {
       background: var(--bg-card);
       border-radius: 10px;
@@ -1186,7 +1202,12 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #fee2e2; padding-bottom: 8px;">
             <h2 style="font-size: 1.3rem; font-weight: 800; color: #dc2626; margin: 0; display: flex; align-items: center; gap: 8px;">🔥 Hot Products <span style="font-size: 0.75rem; background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Trending</span></h2>
           </div>
-          <div id="hotProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
+          <div id="hotProductsGrid" class="catalog-grid" style="gap: 16px;">
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+          </div>
         </section>
 
         <!-- Gaming Products Section -->
@@ -1194,7 +1215,12 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid #e0e7ff; padding-bottom: 8px;">
             <h2 style="font-size: 1.3rem; font-weight: 800; color: #3730a3; margin: 0; display: flex; align-items: center; gap: 8px;">🎮 Gaming Gear Special <span style="font-size: 0.75rem; background: #e0e7ff; color: #4f46e5; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Pro Gamer</span></h2>
           </div>
-          <div id="gamingProductsGrid" class="catalog-grid" style="gap: 16px;"></div>
+          <div id="gamingProductsGrid" class="catalog-grid" style="gap: 16px;">
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+            <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div><div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div></div></div>
+          </div>
         </section>
       </div>
 
@@ -1875,6 +1901,28 @@
       renderDrawerCategories();
     }
 
+    // --- SKELETON CARD HTML GENERATOR ---
+    window.createProductCardSkeletonHtml = function(count = 4) {
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        html += `
+          <div class="product-card product-card-skeleton">
+            <div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div>
+            <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px; width:100%;">
+              <div class="skeleton-box" style="width:85%; height:16px;"></div>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <div class="skeleton-box" style="width:35%; height:12px;"></div>
+                <div class="skeleton-box" style="width:25%; height:12px;"></div>
+              </div>
+              <div class="skeleton-box" style="width:55%; height:18px;"></div>
+              <div class="skeleton-box" style="width:100%; height:36px; border-radius:8px; margin-top:4px;"></div>
+            </div>
+          </div>
+        `;
+      }
+      return html;
+    };
+
     // --- PRODUCT CARD HTML MAKER ---
     window.createProductCardHtml = function(p) {
       let actionPriceBlock = '';
@@ -1970,6 +2018,12 @@
 
       targetGrid.style.display = 'grid';
       const activeFilter = selectedCategoryFilter;
+
+      // If catalog is still loading from database, render skeleton loaders
+      if (globalProductsCatalog.length === 0) {
+        targetGrid.innerHTML = createProductCardSkeletonHtml(8);
+        return;
+      }
 
       const filteredItems = globalProductsCatalog.filter(p => {
         if(activeFilter === 'all') return true;

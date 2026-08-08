@@ -705,6 +705,10 @@
       animation: skeletonShimmer 1.4s ease infinite;
       border-radius: 8px;
     }
+    .product-card-skeleton {
+      pointer-events: none;
+      user-select: none;
+    }
 
     /* --- DARAZ STYLE PRODUCT DETAIL VIEW --- */
     .daraz-product-grid {
@@ -1096,7 +1100,12 @@
           <!-- Related Accessories Grid -->
           <div style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 24px; text-align: left;">
             <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--nepal-blue); margin-bottom: 14px;">🛍️ You May Also Like (Related Accessories)</h3>
-            <div id="relatedProductsContainer" class="catalog-grid"></div>
+            <div id="relatedProductsContainer" class="catalog-grid">
+              <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div></div></div>
+              <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div></div></div>
+              <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div></div></div>
+              <div class="product-card product-card-skeleton"><div class="skeleton-box" style="width:100%; aspect-ratio:1/1; border-radius:6px;"></div><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"><div class="skeleton-box" style="width:85%; height:16px;"></div><div style="display:flex; justify-content:space-between;"><div class="skeleton-box" style="width:35%; height:12px;"></div><div class="skeleton-box" style="width:25%; height:12px;"></div></div><div class="skeleton-box" style="width:55%; height:18px;"></div></div></div>
+            </div>
           </div>
 
         </div>

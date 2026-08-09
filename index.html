@@ -384,10 +384,22 @@
     .search-input-wrapper {
       position: relative;
       flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .search-input-icon {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
     }
     .search-input {
       width: 100%;
-      padding: 10px 16px;
+      padding: 10px 38px 10px 38px;
       font-size: 0.9rem;
       border: 2px solid var(--border-color);
       border-radius: 30px;
@@ -397,6 +409,61 @@
       transition: var(--transition);
     }
     .search-input:focus { border-color: var(--nepal-blue); background-color: var(--bg-card); }
+    
+    .search-clear-btn {
+      position: absolute;
+      right: 12px;
+      background: var(--border-color);
+      color: var(--text-muted);
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .search-clear-btn:hover {
+      background: var(--nepal-red);
+      color: #ffffff;
+    }
+
+    .search-spinner {
+      position: absolute;
+      right: 40px;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--nepal-blue);
+      border-radius: 50%;
+      animation: searchSpin 0.6s linear infinite;
+      display: none;
+    }
+    @keyframes searchSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .search-suggestion-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-card);
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      transition: all 0.15s ease;
+    }
+    .search-suggestion-item:hover {
+      border-color: var(--nepal-blue);
+      background: rgba(79, 70, 229, 0.04);
+      transform: translateX(2px);
+    }
 
     .search-inline-results-panel {
       max-height: 60vh;
@@ -1129,7 +1196,10 @@
     <div id="searchOverlayDrop" class="header-search-overlay">
       <div class="search-input-row-bar">
         <div class="search-input-wrapper">
-          <input type="text" id="liveQuerySearchInput" class="search-input" placeholder="What are you searching for today?" oninput="executeLiveCatalogSearchSearch()">
+          <span class="search-input-icon">🔍</span>
+          <input type="text" id="liveQuerySearchInput" class="search-input" placeholder="Search by product name, category, or keyword..." oninput="window.debouncedCatalogSearch()" onkeydown="if(event.key==='Enter'){if(window.searchDebounceTimer)clearTimeout(window.searchDebounceTimer);window.executeLiveCatalogSearchSearch();}">
+          <span id="searchDebounceSpinner" class="search-spinner"></span>
+          <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="window.clearSearchInput()" title="Clear search">✕</button>
         </div>
         <button class="modal-close" style="position:static;" onclick="toggleHeaderSearchOverlay()">✕</button>
       </div>
@@ -3102,27 +3172,76 @@
     });
 
     // --- 8. GLOBAL UTILITIES (HEADER OVERLAYS, SEARCH, & CAROUSELS) ---
+    window.searchDebounceTimer = null;
+
+    window.debouncedCatalogSearch = function() {
+      const clearBtn = document.getElementById('searchClearBtn');
+      const spinner = document.getElementById('searchDebounceSpinner');
+      const input = document.getElementById('liveQuerySearchInput');
+      const txt = input ? input.value : '';
+
+      if (clearBtn) {
+        clearBtn.style.display = txt.trim().length > 0 ? 'inline-flex' : 'none';
+      }
+
+      if (spinner && txt.trim().length > 0) {
+        spinner.style.display = 'block';
+      }
+
+      if (window.searchDebounceTimer) {
+        clearTimeout(window.searchDebounceTimer);
+      }
+
+      window.searchDebounceTimer = setTimeout(() => {
+        if (spinner) spinner.style.display = 'none';
+        window.executeLiveCatalogSearchSearch();
+      }, 250);
+    };
+
+    window.clearSearchInput = function() {
+      const input = document.getElementById('liveQuerySearchInput');
+      if (input) {
+        input.value = '';
+        input.focus();
+        window.debouncedCatalogSearch();
+      }
+    };
+
+    window.highlightMatchText = function(text, query) {
+      if (!query || !text) return text || '';
+      const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+      return text.replace(regex, '<mark style="background: rgba(79, 70, 229, 0.15); color: var(--nepal-blue); font-weight: 800; border-radius: 2px; padding: 0 2px;">$1</mark>');
+    };
+
     window.toggleHeaderSearchOverlay = function() {
       const container = document.getElementById('searchOverlayDrop');
       container.classList.toggle('active');
       if(container.classList.contains('active')) {
-        document.getElementById('liveQuerySearchInput').focus();
-        window.executeLiveCatalogSearchSearch();
+        const input = document.getElementById('liveQuerySearchInput');
+        if (input) input.focus();
+        window.debouncedCatalogSearch();
       } else {
-        document.getElementById('liveQuerySearchInput').value = "";
+        const input = document.getElementById('liveQuerySearchInput');
+        if (input) input.value = "";
+        window.clearSearchInput();
         document.getElementById('searchInlineViewResults').classList.remove('has-query');
       }
     };
 
     window.applyPresetSearchTerm = function(term) {
       const input = document.getElementById('liveQuerySearchInput');
-      input.value = term;
-      input.focus();
-      window.executeLiveCatalogSearchSearch();
+      if (input) {
+        input.value = term;
+        input.focus();
+        window.debouncedCatalogSearch();
+      }
     };
 
     window.executeLiveCatalogSearchSearch = function() {
-      const txt = document.getElementById('liveQuerySearchInput').value.toLowerCase().trim();
+      const input = document.getElementById('liveQuerySearchInput');
+      const rawTxt = input ? input.value.trim() : '';
+      const txt = rawTxt.toLowerCase();
       const visualBox = document.getElementById('searchInlineViewResults');
       
       visualBox.classList.add('has-query');
@@ -3139,7 +3258,7 @@
 
       let commonTermsHtml = `
         <div style="margin-bottom: 16px;">
-          <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px 0; text-align: left;">🎯 Common Search Terms</h4>
+          <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px 0; text-align: left;">🎯 Quick Category Searches</h4>
           <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             ${commonTerms.map(item => `
               <button type="button" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center;" onclick="window.applyPresetSearchTerm('${item.query}')">
@@ -3152,18 +3271,19 @@
 
       if (!txt) {
         // If there's no query, display common search terms AND popular products
-        const hotItems = globalProductsCatalog.slice(0, 3);
+        const hotItems = globalProductsCatalog.slice(0, 4);
         const popularProductsHtml = hotItems.length > 0 ? `
           <div>
-            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🔥 Featured Products</h4>
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🔥 Trending Products</h4>
             <div>
               ${hotItems.map(p => `
-                <div style="display:flex; align-items:center; gap:12px; background:white; padding:8px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="openProductDetailPage('${p.id}'); toggleHeaderSearchOverlay();">
-                  <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.onerror=null; this.src='zozonepal.png'">
+                <div style="display:flex; align-items:center; gap:12px; background:var(--bg-card); padding:8px 12px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="openProductDetailPage('${p.id}'); toggleHeaderSearchOverlay();">
+                  <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:6px; flex-shrink: 0;" onerror="this.onerror=null; this.src='zozonepal.png'">
                   <div style="flex:1; text-align:left;">
                     <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main);">${p.name}</h4>
                     <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
                   </div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); background: var(--frame-bg); padding: 4px 8px; border-radius: 12px; font-weight: 600;">View →</span>
                 </div>
               `).join('')}
             </div>
@@ -3174,44 +3294,39 @@
         return;
       }
 
-      const matched = globalProductsCatalog.filter(p => p.name.toLowerCase().includes(txt) || p.description.toLowerCase().includes(txt));
-      const matchingTerms = commonTerms.filter(item => item.query.includes(txt) || item.label.toLowerCase().includes(txt));
-      
-      let matchedTermsHtml = '';
-      if (matchingTerms.length > 0) {
-        matchedTermsHtml = `
-          <div style="margin-bottom: 16px;">
-            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px 0; text-align: left;">💡 Live Suggestions</h4>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-              ${matchingTerms.map(item => `
-                <button type="button" style="background: rgba(79, 70, 229, 0.05); border: 1px solid rgba(79, 70, 229, 0.2); color: var(--nepal-blue); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="window.applyPresetSearchTerm('${item.query}')">
-                  ${item.label}
-                </button>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }
+      // Filter matches
+      const matched = globalProductsCatalog.filter(p => 
+        p.name.toLowerCase().includes(txt) || 
+        (p.category && p.category.toLowerCase().includes(txt)) || 
+        (p.description && p.description.toLowerCase().includes(txt))
+      );
 
-      let matchedProductsHtml = '';
-      if (matched.length === 0) {
-        matchedProductsHtml = `
-          <div>
-            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🛍️ Matching Products</h4>
-            <p style="font-size:0.85rem; color:var(--text-muted); text-align:left; padding:10px 0;">No exact product matches discovered.</p>
-          </div>
-        `;
-      } else {
-        matchedProductsHtml = `
-          <div>
-            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🛍️ Matching Products (${matched.length})</h4>
-            <div>
-              ${matched.map(p => `
-                <div style="display:flex; align-items:center; gap:12px; background:white; padding:8px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="openProductDetailPage('${p.id}'); toggleHeaderSearchOverlay();">
-                  <img src="${p.image}" style="width:40px; height:40px; object-fit:contain; background:var(--frame-bg); border-radius:4px;" onerror="this.onerror=null; this.src='zozonepal.png'">
-                  <div style="flex:1; text-align:left;">
-                    <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main);">${p.name}</h4>
-                    <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
+      const nameMatched = matched.filter(p => p.name.toLowerCase().includes(txt));
+      const matchingTerms = commonTerms.filter(item => item.query.includes(txt) || item.label.toLowerCase().includes(txt));
+
+      // 1. Product Name Suggestions (Real-time auto-complete list)
+      let nameSuggestionsHtml = '';
+      if (nameMatched.length > 0) {
+        nameSuggestionsHtml = `
+          <div style="margin-bottom: 16px;">
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px 0; text-align: left;">🔍 Product Name Suggestions (${nameMatched.length})</h4>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              ${nameMatched.slice(0, 5).map(p => `
+                <div class="search-suggestion-item" onclick="openProductDetailPage('${p.id}'); toggleHeaderSearchOverlay();">
+                  <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                    <img src="${p.image}" style="width: 34px; height: 34px; object-fit: contain; background: var(--frame-bg); border-radius: 6px; flex-shrink: 0;" onerror="this.onerror=null; this.src='zozonepal.png'">
+                    <div style="text-align: left; overflow: hidden;">
+                      <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${window.highlightMatchText(p.name, rawTxt)}
+                      </div>
+                      ${p.category ? `<span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">${p.category}</span>` : ''}
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                    <span style="font-size: 0.82rem; font-weight: 800; color: var(--nepal-blue);">Rs. ${p.price.toLocaleString()}</span>
+                    <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 0.75rem;" title="Fill search box" onclick="event.stopPropagation(); window.applyPresetSearchTerm('${p.name.replace(/'/g, "\\'")}');">
+                      ✏️
+                    </button>
                   </div>
                 </div>
               `).join('')}
@@ -3220,7 +3335,57 @@
         `;
       }
 
-      visualBox.innerHTML = matchedTermsHtml + matchedProductsHtml;
+      // 2. Matching Category / Term Badges
+      let matchedTermsHtml = '';
+      if (matchingTerms.length > 0) {
+        matchedTermsHtml = `
+          <div style="margin-bottom: 16px;">
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 8px 0; text-align: left;">💡 Matching Categories</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              ${matchingTerms.map(item => `
+                <button type="button" style="background: rgba(79, 70, 229, 0.08); border: 1px solid rgba(79, 70, 229, 0.25); color: var(--nepal-blue); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onclick="window.applyPresetSearchTerm('${item.query}')">
+                  ${item.label}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // 3. Full Matching Product Cards
+      let matchedProductsHtml = '';
+      if (matched.length === 0) {
+        matchedProductsHtml = `
+          <div style="text-align: center; padding: 20px 10px;">
+            <div style="font-size: 2rem; margin-bottom: 8px;">🔎</div>
+            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin: 0 0 4px 0;">No product matches found for "${rawTxt}"</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 14px 0;">Try searching for "charger", "cover", "cooler", or "earbuds".</p>
+            <button type="button" class="btn btn-crimson" style="font-size: 0.8rem; padding: 8px 16px;" onclick="window.clearSearchInput()">
+              Clear Search Query
+            </button>
+          </div>
+        `;
+      } else {
+        matchedProductsHtml = `
+          <div>
+            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 8px 0; text-align: left;">🛍️ Catalog Results (${matched.length})</h4>
+            <div>
+              ${matched.map(p => `
+                <div style="display:flex; align-items:center; gap:12px; background:var(--bg-card); padding:8px 12px; border-radius:8px; margin-bottom:6px; cursor:pointer; border:1px solid var(--border-color);" onclick="openProductDetailPage('${p.id}'); toggleHeaderSearchOverlay();">
+                  <img src="${p.image}" style="width:42px; height:42px; object-fit:contain; background:var(--frame-bg); border-radius:6px; flex-shrink: 0;" onerror="this.onerror=null; this.src='zozonepal.png'">
+                  <div style="flex:1; text-align:left; overflow:hidden;">
+                    <h4 style="font-size:0.85rem; font-weight:700; margin:0; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${window.highlightMatchText(p.name, rawTxt)}</h4>
+                    <p style="font-size:0.8rem; font-weight:700; color:var(--nepal-blue); margin:0;">Rs. ${p.price.toLocaleString()}</p>
+                  </div>
+                  <span style="font-size: 0.75rem; color: var(--nepal-blue); font-weight: 700;">View →</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      visualBox.innerHTML = nameSuggestionsHtml + matchedTermsHtml + matchedProductsHtml;
     };
 
     // --- DYNAMIC SLIDER COMPONENT DRIVER ---

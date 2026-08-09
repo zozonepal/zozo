@@ -147,69 +147,59 @@
       this.sendSystemNotification(fullTitle, fullBody, { url: url, type: 'promo', promoCode: promoCode });
     },
 
-    // Inject Bell Button in Header and Banner if needed
+    // Inject Push Notification UI in Side Drawer Menu ('three lines')
     injectNotificationUI: function () {
-      // Find nav action rights or header right container
-      const navRightElements = document.querySelectorAll('.nav-actions-right');
-      navRightElements.forEach((container) => {
-        if (container.querySelector('#pushNotificationBellBtn')) return;
+      // Find drawer nav lists in mobile/side menu
+      const drawerLists = document.querySelectorAll('.drawer-nav-list');
+      drawerLists.forEach((list) => {
+        if (list.querySelector('.push-notifications-drawer-btn')) return;
 
-        const bellBtn = document.createElement('button');
-        bellBtn.id = 'pushNotificationBellBtn';
-        bellBtn.className = 'push-bell-nav-btn';
-        bellBtn.title = 'Push Notifications Center';
-        bellBtn.setAttribute('aria-label', 'Push Notifications Center');
-        bellBtn.onclick = () => this.openNotificationCenterModal();
+        const pushItem = document.createElement('button');
+        pushItem.className = 'drawer-nav-item push-notifications-drawer-btn';
+        pushItem.onclick = () => {
+          this.openNotificationCenterModal();
+          if (typeof window.toggleMobileDrawer === 'function') {
+            window.toggleMobileDrawer(false);
+          }
+        };
 
-        bellBtn.innerHTML = `
-          <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
-            <svg style="width:20px; height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        pushItem.innerHTML = `
+          <span style="display:inline-flex; align-items:center; gap:8px;">
+            <svg style="width:18px; height:18px; flex-shrink:0; color:var(--nepal-blue,#9333ea);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
-            <span id="pushBellStatusDot" class="push-status-dot"></span>
-          </div>
+            <span>Push Notifications</span>
+          </span>
+          <span id="pushBellStatusDot" class="drawer-badge" style="background:var(--promo-gradient-start,#faf5ff); color:var(--nepal-blue,#9333ea); border:1px solid var(--border-color,#e2e8f0); font-weight:700;">Alerts</span>
         `;
 
-        container.insertBefore(bellBtn, container.firstChild);
+        // Insert before Shopping Cart item if present, or append
+        const cartBtn = list.querySelector('button[onclick*="toggleCartSidebar"]');
+        if (cartBtn) {
+          list.insertBefore(pushItem, cartBtn);
+        } else {
+          list.appendChild(pushItem);
+        }
       });
 
-      // Inject styling for bell and modal if not added
+      // Remove any leftover bell button in header if present
+      const oldHeaderBell = document.getElementById('pushNotificationBellBtn');
+      if (oldHeaderBell) {
+        oldHeaderBell.remove();
+      }
+
+      // Inject styling for push modal if not added
       if (!document.getElementById('zozoPushStyles')) {
         const style = document.createElement('style');
         style.id = 'zozoPushStyles';
         style.textContent = `
-          .push-bell-nav-btn {
-            background: var(--bg-card, #ffffff);
-            border: 1px solid var(--border-color, #e2e8f0);
-            min-height: 40px;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            color: var(--text-main, #0f172a);
-            flex-shrink: 0;
-            padding: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-          }
-          .push-bell-nav-btn:hover {
-            background: var(--promo-gradient-start, #faf5ff);
-            border-color: var(--nepal-blue, #9333ea);
-            color: var(--nepal-blue, #9333ea);
-          }
           .push-status-dot {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 9px;
-            height: 9px;
+            display: inline-block;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #94a3b8;
-            border: 2px solid #ffffff;
           }
           .push-status-dot.active { background: #22c55e; }
           .push-status-dot.prompt { background: #f59e0b; }
@@ -357,8 +347,10 @@
 
       if (this.permissionStatus === 'granted') {
         if (statusDot) {
-          statusDot.className = 'push-status-dot active';
-          statusDot.title = 'Push Notifications Active';
+          statusDot.textContent = 'Active 🟢';
+          statusDot.style.background = '#f0fdf4';
+          statusDot.style.color = '#15803d';
+          statusDot.style.borderColor = '#bbf7d0';
         }
         if (permBanner) {
           permBanner.style.background = '#f0fdf4';
@@ -369,8 +361,10 @@
         if (enableBtn) enableBtn.style.display = 'none';
       } else if (this.permissionStatus === 'denied') {
         if (statusDot) {
-          statusDot.className = 'push-status-dot blocked';
-          statusDot.title = 'Push Notifications Blocked';
+          statusDot.textContent = 'Blocked 🔴';
+          statusDot.style.background = '#fef2f2';
+          statusDot.style.color = '#b91c1c';
+          statusDot.style.borderColor = '#fecaca';
         }
         if (permBanner) {
           permBanner.style.background = '#fef2f2';
@@ -385,8 +379,15 @@
         }
       } else {
         if (statusDot) {
-          statusDot.className = 'push-status-dot prompt';
-          statusDot.title = 'Click to Enable Push Notifications';
+          statusDot.textContent = 'Enable 🔔';
+          statusDot.style.background = '#faf5ff';
+          statusDot.style.color = '#9333ea';
+          statusDot.style.borderColor = '#e9d5ff';
+        }
+        if (permBanner) {
+          permBanner.style.background = '#fffbe2';
+          permBanner.style.border = '1px solid #fef08a';
+          permBanner.style.color = '#854d0e';
         }
         if (permBanner) {
           permBanner.style.background = '#fefce8';

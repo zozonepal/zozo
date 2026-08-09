@@ -980,6 +980,53 @@
     .color-pill-selector.active-color { border-color: var(--nepal-blue); background: var(--promo-gradient-start); color: var(--nepal-blue); }
     .color-circle-preview { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.1); }
 
+    /* Native Web Share API Buttons */
+    .native-share-badge-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--nepal-blue);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .native-share-badge-btn:hover, .native-share-badge-btn:active {
+      background: var(--nepal-blue);
+      color: #ffffff;
+      border-color: var(--nepal-blue);
+      transform: translateY(-1px);
+    }
+
+    .native-share-btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+    .native-share-btn-secondary:hover, .native-share-btn-secondary:active {
+      background: rgba(147, 51, 234, 0.08);
+      border-color: var(--nepal-blue);
+      color: var(--nepal-blue);
+    }
+
     .details-form-group { margin-bottom: 10px; text-align: left; }
     .details-form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
     .details-form-input { width: 100%; padding: 8px 12px; font-size: 0.85rem; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; outline: none; background: var(--input-bg); }
@@ -1434,7 +1481,19 @@
       <div class="gallery-thumbs-row" id="modalThumbnailsContainer"></div>
       
       <div class="product-meta" style="margin:0; text-align:left;">
-        <h3 id="modalProductName" style="height:auto; font-size:1.2rem; margin-bottom:4px;"></h3>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px;">
+          <h3 id="modalProductName" style="height:auto; font-size:1.2rem; margin:0; line-height:1.3;"></h3>
+          <button class="native-share-badge-btn" onclick="shareCurrentProduct()" title="Share Product Link" aria-label="Share Product">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span>Share</span>
+          </button>
+        </div>
         <p id="modalProductDesc" style="height:auto; margin-bottom:12px;"></p>
         <div id="modalProductPriceContainer"></div>
       </div>
@@ -1444,7 +1503,17 @@
         <div class="variant-swatch-row" id="modalColorsContainer"></div>
       </div>
 
-      <button class="btn btn-crimson" style="width:100%; margin-top:10px; font-size:0.9rem; padding:12px;" onclick="addCurrentConfiguredItemToCart()">🛒 Add Item to Selection Bag</button>
+      <div style="display:flex; gap:10px; margin-top:12px;">
+        <button class="btn btn-crimson" style="flex:1; font-size:0.9rem; padding:12px;" onclick="addCurrentConfiguredItemToCart()">🛒 Add Item to Selection Bag</button>
+        <button class="native-share-btn-secondary" onclick="shareCurrentProduct()" title="Share Product Link via Social Apps">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+            <polyline points="16 6 12 2 8 6"></polyline>
+            <line x1="12" y1="2" x2="12" y2="15"></line>
+          </svg>
+          <span>Share</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2341,6 +2410,94 @@
     window.openProductDetailPage = function(productId) {
       window.location.href = `product.html?id=${productId}`;
     };
+
+    // Toast Notification Banner Helper
+    window.showToastNotification = function(msg) {
+      let toast = document.getElementById('appToastNotice');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToastNotice';
+        toast.style.cssText = `
+          position: fixed; bottom: 24px; right: 24px; z-index: 99999;
+          background: #1e293b; color: #ffffff; padding: 12px 20px;
+          border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border-left: 4px solid var(--nepal-blue);
+          transition: all 0.3s ease; opacity: 0; transform: translateY(20px); pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+      }
+      toast.innerText = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+      
+      clearTimeout(toast.timeoutId);
+      toast.timeoutId = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+      }, 3000);
+    };
+
+    // Native Web Share API Handler
+    window.shareCurrentProduct = async function() {
+      if (!currentSelectedProduct) {
+        showToastNotification("⏳ Select a product to share.");
+        return;
+      }
+
+      const pName = currentSelectedProduct.name || "Zozo Nepal Product";
+      const pPrice = currentSelectedProduct.price ? `Rs. ${Number(currentSelectedProduct.price).toLocaleString()}` : "";
+      const pDesc = (currentSelectedProduct.description && currentSelectedProduct.description !== "undefined")
+        ? String(currentSelectedProduct.description).slice(0, 100)
+        : "Discover authentic tech & lifestyle accessories on Zozo Nepal!";
+      
+      const targetUrl = window.location.protocol + '//' + window.location.host + '/product.html?id=' + encodeURIComponent(currentSelectedProduct.id);
+
+      const shareData = {
+        title: `${pName} | Zozo Nepal`,
+        text: `Check out ${pName} ${pPrice ? '(' + pPrice + ') ' : ''}on Zozo Nepal! ${pDesc}`,
+        url: targetUrl
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+          showToastNotification("✨ Shared successfully!");
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.warn('Native share failed, falling back to URL copy:', err);
+            copyProductLinkFallback(targetUrl);
+          }
+        }
+      } else {
+        copyProductLinkFallback(targetUrl);
+      }
+    };
+
+    function copyProductLinkFallback(url) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToastNotification("🔗 Product link copied to clipboard!");
+        }).catch(() => {
+          promptCopyFallback(url);
+        });
+      } else {
+        promptCopyFallback(url);
+      }
+    }
+
+    function promptCopyFallback(url) {
+      const tempInput = document.createElement('input');
+      document.body.appendChild(tempInput);
+      tempInput.value = url;
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+        showToastNotification("🔗 Product link copied to clipboard!");
+      } catch (e) {
+        prompt("Copy product link:", url);
+      }
+      document.body.removeChild(tempInput);
+    }
 
     // --- 5. SHOPPING BASKET DRIVER ---
     window.addCurrentConfiguredItemToCart = function() {
@@ -3945,5 +4102,6 @@
       setTimeout(runDeferredInits, 800);
     }
   </script>
+  <script src="/sw-push-manager.js"></script>
 </body>
 </html>

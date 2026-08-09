@@ -1362,6 +1362,16 @@
           timestamp: serverTimestamp()
         });
 
+        // Trigger Service Worker Push Notification for Order Placed
+        if (window.ZozoPushManager) {
+          window.ZozoPushManager.sendOrderUpdateNotification(
+            docRef.id,
+            "Order Received (Pending)",
+            `Thank you ${nameVal}! Your order of Rs. ${finalCalculatedBill.toLocaleString()} has been placed and is being verified.`,
+            `/product.html?orderTrack=${docRef.id}`
+          );
+        }
+
         // Set invoice elements
         document.getElementById("recName").innerText = nameVal;
         document.getElementById("recPhone").innerText = phoneVal;
@@ -1415,5 +1425,6 @@
       <span class="whatsapp-online-dot"></span>
     </div>
   </a>
+  <script src="/sw-push-manager.js"></script>
 </body>
 </html>

@@ -520,6 +520,7 @@
         <button class="tab-trigger" onclick="switchAdminTab('reviews')">⭐ Reviews</button>
         <button class="tab-trigger" onclick="switchAdminTab('popup')">✨ Promo Popup</button>
         <button class="tab-trigger" onclick="switchAdminTab('settings')">⚙️ Shop Settings</button>
+        <button class="tab-trigger" onclick="switchAdminTab('notifications')">🔔 Push Broadcast</button>
       </div>
     </div>
 
@@ -935,6 +936,60 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ================== TAB: PUSH NOTIFICATIONS BROADCAST ================== -->
+      <section id="tabPane-notifications" class="tab-pane">
+        <div class="panel-card" style="max-width: 650px; margin: 0 auto;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <div style="width:44px; height:44px; border-radius:12px; background:var(--promo-gradient-start); border:1px solid var(--nepal-blue); color:var(--nepal-blue); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+              🔔
+            </div>
+            <div>
+              <h2 style="margin:0; font-size:1.2rem; font-weight:800;">Push Notifications Broadcast Center</h2>
+              <p class="sub-label" style="margin:2px 0 0 0;">Dispatch instant Web Push alerts to subscribed shoppers for live order status updates and promotional sales campaigns.</p>
+            </div>
+          </div>
+
+          <form id="adminPushBroadcastForm" onsubmit="handleAdminPushBroadcast(event)">
+            <div class="form-group" style="margin-bottom:14px;">
+              <label style="font-weight:700;">Broadcast Campaign Type</label>
+              <select id="adminPushType" class="form-control" onchange="toggleAdminPushFields()">
+                <option value="promo">🔥 Promotional Deal / Flash Sale Campaign</option>
+                <option value="order">📦 Order Status Update Dispatch</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px;">
+              <label style="font-weight:700;">Notification Title</label>
+              <input type="text" id="adminPushTitle" class="form-control" placeholder="e.g. Flash Sale! 25% OFF Airpods Max" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px;">
+              <label style="font-weight:700;">Notification Message Body</label>
+              <textarea id="adminPushBody" class="form-control" rows="3" placeholder="e.g. Exclusive weekend deal! Use voucher code ZOZO25 at checkout." required></textarea>
+            </div>
+
+            <div id="adminPushPromoCodeGroup" class="form-group" style="margin-bottom:14px;">
+              <label style="font-weight:700;">Voucher / Promo Code (Optional)</label>
+              <input type="text" id="adminPushPromoCode" class="form-control" placeholder="e.g. ZOZO25">
+            </div>
+
+            <div id="adminPushOrderIdGroup" class="form-group" style="margin-bottom:14px; display:none;">
+              <label style="font-weight:700;">Target Order ID</label>
+              <input type="text" id="adminPushOrderId" class="form-control" placeholder="e.g. ZNP-940212">
+            </div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+              <label style="font-weight:700;">Destination URL Target</label>
+              <input type="text" id="adminPushTargetUrl" class="form-control" value="/index.html">
+            </div>
+
+            <button type="submit" class="submit-btn" style="background:var(--nepal-blue); width:100%; font-size:0.95rem; padding:12px;">
+              🚀 Broadcast Push Notification Now
+            </button>
+          </form>
         </div>
       </section>
 
@@ -2242,9 +2297,55 @@
         try {
           await updateDoc(doc(db, "transactions", docId), { status: newStatus });
           alert(`Order shipment status updated to "${newStatus}"!`);
+
+          if (window.ZozoPushManager) {
+            window.ZozoPushManager.sendOrderUpdateNotification(
+              docId,
+              newStatus,
+              `Your order shipment status has been updated to "${newStatus}".`,
+              `/product.html?orderTrack=${docId}`
+            );
+          }
+
           fetchCustomerOrders();
         } catch (err) {
           alert("Could not adjust status.");
+        }
+      };
+
+      window.handleAdminPushBroadcast = function(e) {
+        e.preventDefault();
+        const type = document.getElementById('adminPushType').value;
+        const title = document.getElementById('adminPushTitle').value.trim();
+        const body = document.getElementById('adminPushBody').value.trim();
+        const promoCode = document.getElementById('adminPushPromoCode').value.trim();
+        const orderId = document.getElementById('adminPushOrderId').value.trim();
+        const targetUrl = document.getElementById('adminPushTargetUrl').value.trim() || '/index.html';
+
+        if (!window.ZozoPushManager) {
+          alert("Push notification manager loading...");
+          return;
+        }
+
+        if (type === 'promo') {
+          window.ZozoPushManager.sendPromoOfferNotification(title, body, promoCode, targetUrl);
+          alert("🔥 Promotional Push Notification broadcasted successfully!");
+        } else {
+          window.ZozoPushManager.sendOrderUpdateNotification(orderId || 'BROADCAST', title, body, targetUrl);
+          alert("📦 Order Status Push Notification broadcasted successfully!");
+        }
+      };
+
+      window.toggleAdminPushFields = function() {
+        const type = document.getElementById('adminPushType').value;
+        const promoGroup = document.getElementById('adminPushPromoCodeGroup');
+        const orderGroup = document.getElementById('adminPushOrderIdGroup');
+        if (type === 'promo') {
+          promoGroup.style.display = 'block';
+          orderGroup.style.display = 'none';
+        } else {
+          promoGroup.style.display = 'none';
+          orderGroup.style.display = 'block';
         }
       };
 
@@ -2943,5 +3044,6 @@
       document.getElementById('khaltiQrFileInput').addEventListener('change', (e) => handleStoreQrCodeUpload(e, 'khalti'));
     });
   </script>
+  <script src="/sw-push-manager.js"></script>
 </body>
 </html>

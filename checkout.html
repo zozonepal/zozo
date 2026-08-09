@@ -702,6 +702,14 @@
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
 
+    window.firebaseApp = app;
+    window.firebaseDb = db;
+    window.firebaseAuth = auth;
+    window.firestoreCollection = collection;
+    window.firestoreQuery = query;
+    window.firestoreWhere = where;
+    window.firestoreGetDocs = getDocs;
+
     // STATE
     let checkoutCart = [];
     let selectedMethod = "eSewa";
@@ -1361,6 +1369,27 @@
           status: "Pending",
           timestamp: serverTimestamp()
         });
+
+        // Save locally to user order history cache
+        try {
+          const newOrderObj = {
+            id: docRef.id,
+            productName: orderSummaryString,
+            amountPaid: finalCalculatedBill,
+            userEmail: auth.currentUser ? auth.currentUser.email : "Guest User",
+            customerName: nameVal,
+            customerPhone: phoneVal,
+            deliveryLocation: `${rawLocation}, ${districtVal}`,
+            paymentMethod: displayPaymentMethodString,
+            status: "Pending",
+            date: new Date().toLocaleString()
+          };
+          const existing = JSON.parse(localStorage.getItem('zozo_user_orders') || '[]');
+          existing.unshift(newOrderObj);
+          localStorage.setItem('zozo_user_orders', JSON.stringify(existing));
+        } catch (e) {
+          console.warn("Local order history cache write warning:", e);
+        }
 
         // Trigger Service Worker Push Notification for Order Placed
         if (window.ZozoPushManager) {

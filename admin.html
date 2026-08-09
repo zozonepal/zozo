@@ -1427,18 +1427,28 @@
 
       document.getElementById('refreshAllFeedsBtn').addEventListener('click', refreshAllFeeds);
 
-      // --- HIGH-FIDELITY IMAGE COMPRESSION HELPER (WEBP & VISUALLY LOSSLESS ENCODING WITH STEP-DOWN RESAMPLING) ---
+      // --- ULTRA-HIGH FIDELITY IMAGE PRESERVATION HELPER ---
       function compressAndConvertImage(file, maxWidth = 2560) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.readAsDataURL(file);
           reader.onload = (event) => {
+            const rawDataUrl = event.target.result;
+            const maxAllowedBytes = 920000; // Safeguard below Firestore 1MB document limit
+            
+            // 1. PERFECT ORIGINAL QUALITY PASS:
+            // If the raw uploaded file data URL is already under the Firestore document threshold (~920KB Base64),
+            // return the raw original file bytes directly! Zero canvas loss, zero color shift, 100% crisp HD original.
+            if (rawDataUrl && rawDataUrl.length <= maxAllowedBytes) {
+              resolve(rawDataUrl);
+              return;
+            }
+
+            // 2. RESIZING PASS FOR LARGE FILES (> 920KB):
             const img = new Image();
-            img.src = event.target.result;
+            img.src = rawDataUrl;
             img.onload = () => {
-              const maxAllowedBytes = 920000; // Safeguard below Firestore 1MB document limit
-              
-              // Calculate target dimensions (keep 100% original dimensions if smaller than maxWidth)
+              // Calculate target dimensions (keep original dimensions if smaller than maxWidth)
               let targetWidth = img.width;
               let targetHeight = img.height;
               if (targetWidth > maxWidth) {
@@ -1446,7 +1456,7 @@
                 targetWidth = maxWidth;
               }
 
-              // Multi-step progressive 50% downsampling to prevent bilinear aliasing blur
+              // Multi-step progressive downsampling canvas
               function buildResampledCanvas(targetW, targetH) {
                 let curW = img.width;
                 let curH = img.height;
@@ -1505,7 +1515,7 @@
                 }
               }
 
-              // 1. Try WebP at full resolution target first with high-quality encoding passes
+              // Try WebP first at high quality passes
               const primaryCanvas = buildResampledCanvas(targetWidth, targetHeight);
               const webpQualities = [0.96, 0.92, 0.88, 0.84, 0.80];
 
@@ -1521,7 +1531,7 @@
                 }
               }
 
-              // 2. If original target exceeds size limit at 0.80, scale down gracefully in small steps (92%, 85%, 78%)
+              // Scale down gracefully if needed
               const scaleFactors = [0.92, 0.85, 0.78, 0.70];
               for (let scale of scaleFactors) {
                 const subW = Math.round(targetWidth * scale);
@@ -1536,7 +1546,7 @@
                 }
               }
 
-              // 3. Fallback for PNGs with transparency
+              // Fallback for PNGs
               const isPng = file.type === 'image/png' || file.name?.toLowerCase().endsWith('.png');
               if (isPng) {
                 const pngData = encodeFromCanvas(primaryCanvas, 'image/png');
@@ -1546,7 +1556,7 @@
                 }
               }
 
-              // 4. JPEG Fallback at high quality
+              // Fallback JPEG
               for (let q of [0.92, 0.86, 0.80, 0.74]) {
                 const jpgData = encodeFromCanvas(primaryCanvas, 'image/jpeg', q);
                 if (jpgData.length <= maxAllowedBytes) {
@@ -1555,7 +1565,6 @@
                 }
               }
 
-              // Extreme fallback
               const fallbackCanvas = buildResampledCanvas(Math.round(targetWidth * 0.6), Math.round(targetHeight * 0.6));
               resolve(encodeFromCanvas(fallbackCanvas, 'image/jpeg', 0.70));
             };

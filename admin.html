@@ -1427,8 +1427,8 @@
 
       document.getElementById('refreshAllFeedsBtn').addEventListener('click', refreshAllFeeds);
 
-      // --- HIGH-FIDELITY IMAGE COMPRESSION HELPER (WEBP & VISUALLY LOSSLESS ENCODING) ---
-      function compressAndConvertImage(file, maxWidth = 1200) {
+      // --- HIGH-FIDELITY IMAGE COMPRESSION HELPER (WEBP & VISUALLY LOSSLESS ENCODING WITH STEP-DOWN RESAMPLING) ---
+      function compressAndConvertImage(file, maxWidth = 2560) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.readAsDataURL(file);
@@ -1436,92 +1436,128 @@
             const img = new Image();
             img.src = event.target.result;
             img.onload = () => {
-              const maxAllowedBytes = 900000; // Safeguard below Firestore 1MB document limit
+              const maxAllowedBytes = 920000; // Safeguard below Firestore 1MB document limit
               
-              // Helper to attempt encoding with high-quality canvas smoothing
-              function attemptEncode(scale, format, quality) {
-                const canvas = document.createElement('canvas');
-                let width = img.width * scale;
-                let height = img.height * scale;
+              // Calculate target dimensions (keep 100% original dimensions if smaller than maxWidth)
+              let targetWidth = img.width;
+              let targetHeight = img.height;
+              if (targetWidth > maxWidth) {
+                targetHeight = Math.round(targetHeight * (maxWidth / targetWidth));
+                targetWidth = maxWidth;
+              }
 
-                if (width > maxWidth) {
-                  height *= maxWidth / width;
-                  width = maxWidth;
-                }
+              // Multi-step progressive 50% downsampling to prevent bilinear aliasing blur
+              function buildResampledCanvas(targetW, targetH) {
+                let curW = img.width;
+                let curH = img.height;
                 
-                canvas.width = Math.round(width);
-                canvas.height = Math.round(height);
-                const ctx = canvas.getContext('2d');
-                
-                if (format === 'image/jpeg') {
-                  ctx.fillStyle = '#ffffff';
-                  ctx.fillRect(0, 0, canvas.width, canvas.height);
-                } else {
-                  ctx.clearRect(0, 0, canvas.width, canvas.height);
-                }
-                
+                let curCanvas = document.createElement('canvas');
+                curCanvas.width = curW;
+                curCanvas.height = curH;
+                let ctx = curCanvas.getContext('2d');
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                if (format === 'image/webp') {
-                  return canvas.toDataURL('image/webp', quality || 0.85);
-                } else if (format === 'image/jpeg') {
-                  return canvas.toDataURL('image/jpeg', quality || 0.82);
+                ctx.drawImage(img, 0, 0, curW, curH);
+
+                while (curW * 0.5 >= targetW && curH * 0.5 >= targetH) {
+                  const nextW = Math.round(curW * 0.5);
+                  const nextH = Math.round(curH * 0.5);
+                  const nextCanvas = document.createElement('canvas');
+                  nextCanvas.width = nextW;
+                  nextCanvas.height = nextH;
+                  const nextCtx = nextCanvas.getContext('2d');
+                  nextCtx.imageSmoothingEnabled = true;
+                  nextCtx.imageSmoothingQuality = 'high';
+                  nextCtx.drawImage(curCanvas, 0, 0, curW, curH, 0, 0, nextW, nextH);
+
+                  curCanvas = nextCanvas;
+                  curW = nextW;
+                  curH = nextH;
+                }
+
+                if (curW !== targetW || curH !== targetH) {
+                  const finalCanvas = document.createElement('canvas');
+                  finalCanvas.width = targetW;
+                  finalCanvas.height = targetH;
+                  const finalCtx = finalCanvas.getContext('2d');
+                  finalCtx.imageSmoothingEnabled = true;
+                  finalCtx.imageSmoothingQuality = 'high';
+                  finalCtx.drawImage(curCanvas, 0, 0, curW, curH, 0, 0, targetW, targetH);
+                  return finalCanvas;
+                }
+                return curCanvas;
+              }
+
+              function encodeFromCanvas(canvasObj, format, quality) {
+                if (format === 'image/jpeg') {
+                  const jpgCanvas = document.createElement('canvas');
+                  jpgCanvas.width = canvasObj.width;
+                  jpgCanvas.height = canvasObj.height;
+                  const jctx = jpgCanvas.getContext('2d');
+                  jctx.fillStyle = '#ffffff';
+                  jctx.fillRect(0, 0, jpgCanvas.width, jpgCanvas.height);
+                  jctx.drawImage(canvasObj, 0, 0);
+                  return jpgCanvas.toDataURL('image/jpeg', quality);
+                } else if (format === 'image/webp') {
+                  return canvasObj.toDataURL('image/webp', quality);
                 } else {
-                  return canvas.toDataURL('image/png');
+                  return canvasObj.toDataURL('image/png');
                 }
               }
 
-              let base64 = "";
+              // 1. Try WebP at full resolution target first with high-quality encoding passes
+              const primaryCanvas = buildResampledCanvas(targetWidth, targetHeight);
+              const webpQualities = [0.96, 0.92, 0.88, 0.84, 0.80];
 
-              // Try WebP first for ultra-lightweight, visually lossless Retina rendering
-              const webpScales = [1.0, 0.85, 0.70];
-              const webpQualities = [0.88, 0.82, 0.75];
+              for (let q of webpQualities) {
+                try {
+                  const base64 = encodeFromCanvas(primaryCanvas, 'image/webp', q);
+                  if (base64.startsWith('data:image/webp') && base64.length <= maxAllowedBytes) {
+                    resolve(base64);
+                    return;
+                  }
+                } catch (e) {
+                  console.warn("WebP encoding warning:", e);
+                }
+              }
 
-              for (let scale of webpScales) {
-                for (let quality of webpQualities) {
-                  try {
-                    base64 = attemptEncode(scale, 'image/webp', quality);
-                    if (base64.startsWith('data:image/webp') && base64.length <= maxAllowedBytes) {
-                      resolve(base64);
-                      return;
-                    }
-                  } catch (e) {
-                    console.warn("WebP encode attempt warning:", e);
+              // 2. If original target exceeds size limit at 0.80, scale down gracefully in small steps (92%, 85%, 78%)
+              const scaleFactors = [0.92, 0.85, 0.78, 0.70];
+              for (let scale of scaleFactors) {
+                const subW = Math.round(targetWidth * scale);
+                const subH = Math.round(targetHeight * scale);
+                const subCanvas = buildResampledCanvas(subW, subH);
+                for (let q of [0.92, 0.86, 0.80]) {
+                  const base64 = encodeFromCanvas(subCanvas, 'image/webp', q);
+                  if (base64.startsWith('data:image/webp') && base64.length <= maxAllowedBytes) {
+                    resolve(base64);
+                    return;
                   }
                 }
               }
 
-              // Fallback for PNGs with transparency
+              // 3. Fallback for PNGs with transparency
               const isPng = file.type === 'image/png' || file.name?.toLowerCase().endsWith('.png');
               if (isPng) {
-                const pngScales = [1.0, 0.8, 0.6];
-                for (let scale of pngScales) {
-                  base64 = attemptEncode(scale, 'image/png');
-                  if (base64.length <= maxAllowedBytes) {
-                    resolve(base64);
-                    return;
-                  }
+                const pngData = encodeFromCanvas(primaryCanvas, 'image/png');
+                if (pngData.length <= maxAllowedBytes) {
+                  resolve(pngData);
+                  return;
                 }
               }
 
-              // JPEG fallback
-              const jpegScales = [1.0, 0.8, 0.6, 0.4];
-              const jpegQualities = [0.85, 0.78, 0.65, 0.50];
-
-              for (let scale of jpegScales) {
-                for (let quality of jpegQualities) {
-                  base64 = attemptEncode(scale, 'image/jpeg', quality);
-                  if (base64.length <= maxAllowedBytes) {
-                    resolve(base64);
-                    return;
-                  }
+              // 4. JPEG Fallback at high quality
+              for (let q of [0.92, 0.86, 0.80, 0.74]) {
+                const jpgData = encodeFromCanvas(primaryCanvas, 'image/jpeg', q);
+                if (jpgData.length <= maxAllowedBytes) {
+                  resolve(jpgData);
+                  return;
                 }
               }
 
-              base64 = attemptEncode(0.3, 'image/jpeg', 0.4);
-              resolve(base64);
+              // Extreme fallback
+              const fallbackCanvas = buildResampledCanvas(Math.round(targetWidth * 0.6), Math.round(targetHeight * 0.6));
+              resolve(encodeFromCanvas(fallbackCanvas, 'image/jpeg', 0.70));
             };
           };
           reader.onerror = error => reject(error);
@@ -1618,7 +1654,7 @@
         const file = event.target.files[0];
         if (!file) return;
         try {
-          const compressed = await compressAndConvertImage(file, 800);
+          const compressed = await compressAndConvertImage(file, 1400);
           colorImagesMap[key] = compressed;
           updateColorImagesUploader();
         } catch (err) {
@@ -1887,7 +1923,7 @@
           let compressedImageString = editingProductImageUrl || "";
           if (fileInput.files && fileInput.files.length > 0) {
             btn.innerText = "⏳ Compressing & Saving...";
-            compressedImageString = await compressAndConvertImage(fileInput.files[0], 1200);
+            compressedImageString = await compressAndConvertImage(fileInput.files[0], 1800);
           }
 
           const colorsRaw = document.getElementById('pColors').value.trim();
@@ -2398,7 +2434,7 @@
         }
 
         btn.disabled = true;
-        btn.innerText = "⏳ Deploying slide...";
+        btn.innerText = "⏳ Optimizing & Deploying Ultra-HD Banner...";
 
         try {
           // Check limit of 3 banners
@@ -2410,7 +2446,7 @@
             return;
           }
 
-          const compressed = await compressAndConvertImage(fileInput.files[0], 1600);
+          const compressed = await compressAndConvertImage(fileInput.files[0], 2560);
           const caption = document.getElementById('bannerCaption').value.trim();
           const order = Number(document.getElementById('bannerOrder').value);
 
@@ -2693,7 +2729,7 @@
           currentInfo.about = document.getElementById('shopAbout').value.trim();
 
           if (logoFile.files && logoFile.files.length > 0) {
-            const compressedLogo = await compressAndConvertImage(logoFile.files[0], 600);
+            const compressedLogo = await compressAndConvertImage(logoFile.files[0], 1200);
             currentInfo.logoUrl = compressedLogo;
             document.getElementById('logoAdminPreview').src = compressedLogo;
             document.getElementById('logoPreviewZone').style.display = 'block';
@@ -2756,7 +2792,7 @@
         if (!file) return;
 
         try {
-          const compressed = await compressAndConvertImage(file, 800);
+          const compressed = await compressAndConvertImage(file, 1200);
           
           let currentSettings = {};
           const settingsRef = doc(db, "settings", "payment_qrs");
@@ -2814,7 +2850,7 @@
           const file = e.target.files[0];
           if (!file) return;
           try {
-            const compressed = await compressAndConvertImage(file, 800);
+            const compressed = await compressAndConvertImage(file, 1600);
             promoPopupImgString = compressed;
             
             document.getElementById('popupAdminImgPreview').src = compressed;

@@ -493,7 +493,59 @@
       touch-action: manipulation;
     }
     .cart-nav-btn:hover { background: var(--nepal-red); }
-    .cart-badge { background: white; color: var(--nepal-blue); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; }
+    .cart-badge { 
+      background: white; 
+      color: var(--nepal-blue); 
+      border-radius: 50%; 
+      width: 20px; 
+      height: 20px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 0.7rem; 
+      font-weight: 800; 
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      will-change: transform;
+    }
+
+    .badge-pop-shake {
+      animation: cartBadgePopShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes cartBadgePopShake {
+      0% {
+        transform: scale(1) rotate(0deg);
+      }
+      20% {
+        transform: scale(1.45) rotate(-14deg);
+        box-shadow: 0 0 12px rgba(147, 51, 234, 0.7);
+      }
+      40% {
+        transform: scale(1.45) rotate(14deg);
+        box-shadow: 0 0 12px rgba(147, 51, 234, 0.7);
+      }
+      60% {
+        transform: scale(1.25) rotate(-8deg);
+      }
+      80% {
+        transform: scale(1.1) rotate(4deg);
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: none;
+      }
+    }
+
+    .cart-nav-btn.badge-pop-shake {
+      animation: cartBtnPop 0.5s ease-out both;
+    }
+
+    @keyframes cartBtnPop {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.1); }
+      60% { transform: scale(0.96); }
+      100% { transform: scale(1); }
+    }
     
     .dropdown-section-header {
       font-size: 0.75rem;
@@ -1887,7 +1939,7 @@
       }
 
       saveCartToLocalStorage();
-      synchronizeShoppingBagUIState();
+      synchronizeShoppingBagUIState(true);
       showToastNotification(`🛍️ Added ${finalQty}x "${currentSelectedProduct.name}" (${selectedColorName}) to Cart!`);
       toggleCartSidebar(true);
     };
@@ -1924,6 +1976,26 @@
       safeSetItem("zozo_cart", JSON.stringify(systemCart));
     }
 
+    window.triggerCartBadgeAnimation = function() {
+      const badge = document.getElementById('navCartCountBadge');
+      const drawerCartBadge = document.getElementById('drawerCartCountBadge');
+      const cartNavBtns = document.querySelectorAll('.cart-nav-btn');
+
+      const elementsToAnimate = [badge, drawerCartBadge, ...cartNavBtns];
+
+      elementsToAnimate.forEach(el => {
+        if (!el) return;
+        el.classList.remove('badge-pop-shake');
+        void el.offsetWidth; // Force layout recalculation
+        el.classList.add('badge-pop-shake');
+        setTimeout(() => {
+          el.classList.remove('badge-pop-shake');
+        }, 650);
+      });
+    };
+
+    let previousCartTotalCount = -1;
+
     // Modify cart item inside sidebar
     window.modifyCartItemQty = function(cartId, shiftAmount) {
       const index = systemCart.findIndex(item => item.cartId === cartId);
@@ -1934,11 +2006,11 @@
         systemCart.splice(index, 1);
       }
       saveCartToLocalStorage();
-      synchronizeShoppingBagUIState();
+      synchronizeShoppingBagUIState(shiftAmount > 0);
     };
 
     // Synchronize Shopping Bag state
-    function synchronizeShoppingBagUIState() {
+    function synchronizeShoppingBagUIState(forceAnimate = false) {
       const badge = document.getElementById('navCartCountBadge');
       const drawerCartBadge = document.getElementById('drawerCartCountBadge');
       const drawerTarget = document.getElementById('cartDrawerItemsTarget');
@@ -1950,6 +2022,11 @@
       if (drawerCartBadge) {
         drawerCartBadge.innerText = totalItemsCount;
       }
+
+      if (forceAnimate || (previousCartTotalCount >= 0 && totalItemsCount > previousCartTotalCount)) {
+        window.triggerCartBadgeAnimation();
+      }
+      previousCartTotalCount = totalItemsCount;
 
       if(systemCart.length === 0) {
         drawerTarget.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-muted); font-size:0.9rem;">Your selection bag is completely empty.</p>`;

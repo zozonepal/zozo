@@ -556,6 +556,50 @@
       border-radius: 10px;
       min-width: 18px;
       text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      will-change: transform;
+    }
+
+    .badge-pop-shake {
+      animation: cartBadgePopShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes cartBadgePopShake {
+      0% {
+        transform: scale(1) rotate(0deg);
+      }
+      20% {
+        transform: scale(1.45) rotate(-14deg);
+        box-shadow: 0 0 12px rgba(225, 29, 72, 0.7);
+      }
+      40% {
+        transform: scale(1.45) rotate(14deg);
+        box-shadow: 0 0 12px rgba(225, 29, 72, 0.7);
+      }
+      60% {
+        transform: scale(1.25) rotate(-8deg);
+      }
+      80% {
+        transform: scale(1.1) rotate(4deg);
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        box-shadow: none;
+      }
+    }
+
+    .cart-nav-btn.badge-pop-shake {
+      animation: cartBtnPop 0.5s ease-out both;
+    }
+
+    @keyframes cartBtnPop {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.1); }
+      60% { transform: scale(0.96); }
+      100% { transform: scale(1); }
     }
 
     /* --- 3. MAIN CONTAINER VIEW --- */
@@ -598,7 +642,18 @@
       transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .slide-panel { min-width: 100%; height: 100%; position: relative; overflow: hidden; }
-    .slide-image { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; -webkit-user-drag: none; }
+    .slide-image { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+      display: block; 
+      pointer-events: none; 
+      -webkit-user-drag: none; 
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
 
     .slider-nav-arrow {
       display: none !important;
@@ -1277,9 +1332,9 @@
     <div id="homeMainView">
       <div class="hero-slider-container">
         <div id="sliderTrack" class="slider-track">
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 1" loading="eager" fetchpriority="high" decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 2" loading="lazy" decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
-          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 3" loading="lazy" decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 1" loading="eager" fetchpriority="high" decoding="async" width="2560" height="1080" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 2" loading="lazy" decoding="async" width="2560" height="1080" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
+          <div class="slide-panel"><img class="slide-image" src="zozonepal.png" alt="Promo Slide 3" loading="lazy" decoding="async" width="2560" height="1080" onerror="this.onerror=null; this.src='zozonepal.png'"></div>
         </div>
         <button class="slider-nav-arrow nav-arrow-left" onclick="slideShift(-1)">&#10094;</button>
         <button class="slider-nav-arrow nav-arrow-right" onclick="slideShift(1)">&#10095;</button>
@@ -2296,7 +2351,7 @@
 
       closeQuickViewModal();
       saveCartToLocalStorage();
-      synchronizeShoppingBagUIState();
+      synchronizeShoppingBagUIState(true);
       toggleCartSidebar(true);
     };
 
@@ -2322,6 +2377,26 @@
       safeSetItem("zozo_cart", JSON.stringify(systemCart));
     }
 
+    window.triggerCartBadgeAnimation = function() {
+      const badge = document.getElementById('navCartCountBadge');
+      const drawerCartBadge = document.getElementById('drawerCartCountBadge');
+      const cartNavBtns = document.querySelectorAll('.cart-nav-btn');
+
+      const elementsToAnimate = [badge, drawerCartBadge, ...cartNavBtns];
+
+      elementsToAnimate.forEach(el => {
+        if (!el) return;
+        el.classList.remove('badge-pop-shake');
+        void el.offsetWidth; // Force layout recalculation to restart animation
+        el.classList.add('badge-pop-shake');
+        setTimeout(() => {
+          el.classList.remove('badge-pop-shake');
+        }, 650);
+      });
+    };
+
+    let previousCartTotalCount = -1;
+
     window.modifyCartItemQty = function(cartId, shiftAmount) {
       const index = systemCart.findIndex(item => item.cartId === cartId);
       if(index === -1) return;
@@ -2331,10 +2406,10 @@
         systemCart.splice(index, 1);
       }
       saveCartToLocalStorage();
-      synchronizeShoppingBagUIState();
+      synchronizeShoppingBagUIState(shiftAmount > 0);
     };
 
-    function synchronizeShoppingBagUIState() {
+    function synchronizeShoppingBagUIState(forceAnimate = false) {
       const badge = document.getElementById('navCartCountBadge');
       const drawerCartBadge = document.getElementById('drawerCartCountBadge');
       const drawerTarget = document.getElementById('cartDrawerItemsTarget');
@@ -2346,6 +2421,11 @@
       if (drawerCartBadge) {
         drawerCartBadge.innerText = totalItemsCount;
       }
+
+      if (forceAnimate || (previousCartTotalCount >= 0 && totalItemsCount > previousCartTotalCount)) {
+        window.triggerCartBadgeAnimation();
+      }
+      previousCartTotalCount = totalItemsCount;
 
       if(systemCart.length === 0) {
         drawerTarget.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-muted); font-size:0.9rem;">Your selection bag is completely empty.</p>`;
@@ -3563,7 +3643,7 @@
 
         sliderTrack.innerHTML = bannerList.map((b, idx) => `
           <div class="slide-panel">
-            <img class="slide-image" src="${b.imageUrl}" alt="${b.caption || 'Slide'}" ${idx === 0 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async" width="1200" height="500" onerror="this.onerror=null; this.src='zozonepal.png'">
+            <img class="slide-image" src="${b.imageUrl}" alt="${b.caption || 'Slide'}" ${idx === 0 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async" width="2560" height="1080" onerror="this.onerror=null; this.src='zozonepal.png'">
           </div>
         `).join('');
 

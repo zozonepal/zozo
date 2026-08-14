@@ -737,7 +737,132 @@
       box-shadow: none !important;
     }
 
-    /* --- 4. CATALOG GRID --- */
+    /* --- 4. CATALOG GRID & TOOLBAR --- */
+    .catalog-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 18px 0 16px 0;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+      transition: var(--transition);
+    }
+    .catalog-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .catalog-heading {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: -0.2px;
+    }
+    .catalog-results-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--frame-bg);
+      color: var(--text-muted);
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+    }
+    .catalog-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .catalog-sort-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .catalog-sort-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .catalog-select-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .catalog-sort-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: var(--input-bg);
+      border: 1.5px solid var(--border-color);
+      border-radius: 9px;
+      padding: 7px 32px 7px 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s ease;
+      min-width: 175px;
+    }
+    .catalog-sort-select:hover {
+      border-color: var(--nepal-blue);
+      background-color: var(--bg-card);
+    }
+    .catalog-sort-select:focus {
+      border-color: var(--nepal-blue);
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
+      background-color: var(--bg-card);
+    }
+    .catalog-select-chevron {
+      position: absolute;
+      right: 10px;
+      pointer-events: none;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+    .catalog-sort-select:focus + .catalog-select-chevron {
+      color: var(--nepal-blue);
+      transform: rotate(180deg);
+    }
+    @media (max-width: 640px) {
+      .catalog-toolbar {
+        padding: 10px 12px;
+        gap: 10px;
+      }
+      .catalog-toolbar-left {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .catalog-toolbar-right {
+        width: 100%;
+      }
+      .catalog-sort-box {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .catalog-select-wrapper {
+        flex: 1;
+      }
+      .catalog-sort-select {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+
     .catalog-grid { 
       display: grid; 
       grid-template-columns: repeat(2, 1fr); 
@@ -1930,6 +2055,35 @@
         </section>
       </div>
 
+      <!-- PRODUCT CATALOG TOOLBAR & CONTROLS -->
+      <div id="catalogToolbar" class="catalog-toolbar" style="display: none;">
+        <div class="catalog-toolbar-left">
+          <h2 id="catalogActiveCategoryTitle" class="catalog-heading">🛍️ All Products</h2>
+          <span id="catalogResultsCount" class="catalog-results-badge">0 products</span>
+        </div>
+
+        <div class="catalog-toolbar-right">
+          <div class="catalog-sort-box">
+            <label for="catalogSortSelect" class="catalog-sort-label">
+              <svg style="width:16px; height:16px; color:var(--nepal-blue);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18M6 12h12m-9 6h6"></path>
+              </svg>
+              <span>Sort by:</span>
+            </label>
+            <div class="catalog-select-wrapper">
+              <select id="catalogSortSelect" class="catalog-sort-select" onchange="window.handleCatalogSortChange(this.value)" aria-label="Sort products by price and recency">
+                <option value="newest">🆕 New Arrivals</option>
+                <option value="price-asc">💰 Price: Low to High</option>
+                <option value="price-desc">💎 Price: High to Low</option>
+                <option value="hot">🔥 Hot & Trending</option>
+                <option value="name-asc">🔤 Name: A to Z</option>
+              </select>
+              <div class="catalog-select-chevron">▼</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- PRODUCT CATALOG GRID (WHEN CATEGORY PILL IS CLICKED) -->
       <div id="productGrid" class="catalog-grid" style="margin-bottom: 24px; display: none;">
       </div>
@@ -2359,6 +2513,7 @@
     let systemCart = [];
     let selectedPaymentMethod = "eSewa";
     let selectedCategoryFilter = urlParams.get('category') || null;
+    let currentSortOption = "newest"; // "newest", "price-asc", "price-desc", "hot", "name-asc"
     let currentSelectedProduct = null;
     let currentSelectedColor = "";
     let isUserLoggedInState = false;
@@ -2523,7 +2678,8 @@
             colors: sanitizedColors,
             isHot: !!p.isHot,
             isGaming: !!p.isGaming,
-            isSpecialOffer: !!p.isSpecialOffer
+            isSpecialOffer: !!p.isSpecialOffer,
+            timestamp: p.timestamp ? (typeof p.timestamp.toDate === 'function' ? p.timestamp.toDate().getTime() : new Date(p.timestamp).getTime()) : (p.createdAt ? new Date(p.createdAt).getTime() : Date.now())
           };
         });
 
@@ -2884,27 +3040,68 @@
       }
     };
 
+    // --- SORTING ENGINE HANDLER ---
+    window.handleCatalogSortChange = function(newSort) {
+      currentSortOption = newSort || 'newest';
+      const sortSelect = document.getElementById('catalogSortSelect');
+      if (sortSelect && sortSelect.value !== currentSortOption) {
+        sortSelect.value = currentSortOption;
+      }
+      
+      // If user triggers sorting on default homepage view without category active, activate 'all'
+      if (!selectedCategoryFilter) {
+        selectedCategoryFilter = 'all';
+        renderCategoryFilterBar();
+        renderSpecialSections();
+        renderDrawerCategories();
+      }
+      
+      renderProductCatalogGrid();
+    };
+
     // --- 2. RENDER ENGINE GRID ---
     window.renderProductCatalogGrid = function() {
       const targetGrid = document.getElementById('productGrid');
+      const toolbar = document.getElementById('catalogToolbar');
+      const headingEl = document.getElementById('catalogActiveCategoryTitle');
+      const countBadge = document.getElementById('catalogResultsCount');
+      const sortSelect = document.getElementById('catalogSortSelect');
       if (!targetGrid) return;
 
       if (!selectedCategoryFilter) {
         targetGrid.style.display = 'none';
         targetGrid.innerHTML = '';
+        if (toolbar) toolbar.style.display = 'none';
         return;
       }
 
       targetGrid.style.display = 'grid';
+      if (toolbar) toolbar.style.display = 'flex';
       const activeFilter = selectedCategoryFilter;
+
+      // Update Active Category Title
+      if (headingEl) {
+        if (activeFilter === 'all') {
+          headingEl.innerText = '🛍️ All Products';
+        } else {
+          const matchCat = (globalCategories || []).find(c => c.code === activeFilter);
+          headingEl.innerText = matchCat ? `${matchCat.emoji || '📦'} ${matchCat.name}` : `📦 ${activeFilter}`;
+        }
+      }
+
+      // Sync sort dropdown value
+      if (sortSelect && sortSelect.value !== currentSortOption) {
+        sortSelect.value = currentSortOption;
+      }
 
       // If catalog is still loading from database, render skeleton loaders
       if (globalProductsCatalog.length === 0) {
         targetGrid.innerHTML = createProductCardSkeletonHtml(8);
+        if (countBadge) countBadge.innerText = 'Loading...';
         return;
       }
 
-      const filteredItems = globalProductsCatalog.filter(p => {
+      let filteredItems = globalProductsCatalog.filter(p => {
         if(activeFilter === 'all') return true;
         const cat = (p.category || '').toLowerCase().trim();
         const filter = activeFilter.toLowerCase().trim();
@@ -2936,6 +3133,24 @@
         
         return cat === filter || cat.includes(filter);
       });
+
+      // Update results count badge
+      if (countBadge) {
+        countBadge.innerText = `${filteredItems.length} ${filteredItems.length === 1 ? 'product' : 'products'}`;
+      }
+
+      // Apply dynamic sorting
+      if (currentSortOption === 'price-asc') {
+        filteredItems.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+      } else if (currentSortOption === 'price-desc') {
+        filteredItems.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+      } else if (currentSortOption === 'newest') {
+        filteredItems.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      } else if (currentSortOption === 'hot') {
+        filteredItems.sort((a, b) => (b.isHot ? 1 : 0) - (a.isHot ? 1 : 0));
+      } else if (currentSortOption === 'name-asc') {
+        filteredItems.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      }
 
       if (filteredItems.length === 0) {
         targetGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-muted); font-weight:600;">No items available in this category currently.</p>`;

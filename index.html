@@ -745,10 +745,10 @@
       flex-wrap: wrap;
       gap: 12px;
       margin: 18px 0 16px 0;
-      padding: 12px 16px;
+      padding: 10px 16px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 14px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
       transition: var(--transition);
     }
@@ -781,63 +781,120 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      position: relative;
     }
     .catalog-sort-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .catalog-sort-label {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      white-space: nowrap;
-      cursor: pointer;
-    }
-    .catalog-select-wrapper {
       position: relative;
-      display: inline-flex;
+      display: flex;
       align-items: center;
     }
-    .catalog-sort-select {
-      appearance: none;
-      -webkit-appearance: none;
-      background-color: var(--input-bg);
-      border: 1.5px solid var(--border-color);
-      border-radius: 9px;
-      padding: 7px 32px 7px 12px;
-      font-size: 0.84rem;
+    .catalog-sort-pill-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--text-main);
       cursor: pointer;
-      outline: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
       transition: all 0.2s ease;
-      min-width: 175px;
+      user-select: none;
+      -webkit-user-select: none;
+      outline: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      box-sizing: border-box;
     }
-    .catalog-sort-select:hover {
-      border-color: var(--nepal-blue);
-      background-color: var(--bg-card);
+    .catalog-sort-pill-btn:hover {
+      border-color: var(--text-main);
+      background: #ffffff;
     }
-    .catalog-sort-select:focus {
-      border-color: var(--nepal-blue);
-      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
-      background-color: var(--bg-card);
+    .catalog-sort-pill-btn.is-active,
+    .catalog-sort-pill-btn:focus {
+      border: 1.5px solid var(--text-main);
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-    .catalog-select-chevron {
-      position: absolute;
-      right: 10px;
-      pointer-events: none;
+    .catalog-sort-btn-prefix {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .catalog-sort-btn-current {
+      color: var(--text-main);
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .catalog-sort-chevron {
       font-size: 0.65rem;
       color: var(--text-muted);
       transition: transform 0.2s ease;
+      margin-left: 2px;
     }
-    .catalog-sort-select:focus + .catalog-select-chevron {
-      color: var(--nepal-blue);
+    .catalog-sort-pill-btn.is-active .catalog-sort-chevron {
       transform: rotate(180deg);
+      color: var(--nepal-blue);
     }
+
+    /* Custom Sort Dropdown Menu */
+    .catalog-sort-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 220px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04);
+      z-index: 150;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      animation: catalogMenuFadeIn 0.15s ease-out;
+    }
+    @keyframes catalogMenuFadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .catalog-sort-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+    .catalog-sort-item:hover {
+      background: var(--frame-bg);
+      color: var(--nepal-blue);
+    }
+    .catalog-sort-item.active-sort-item {
+      background: rgba(79, 70, 229, 0.08);
+      color: var(--nepal-blue);
+      font-weight: 800;
+    }
+    .catalog-sort-check {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--nepal-blue);
+    }
+
     @media (max-width: 640px) {
       .catalog-toolbar {
         padding: 10px 12px;
@@ -852,14 +909,15 @@
       }
       .catalog-sort-box {
         width: 100%;
+      }
+      .catalog-sort-pill-btn {
+        width: 100%;
         justify-content: space-between;
       }
-      .catalog-select-wrapper {
-        flex: 1;
-      }
-      .catalog-sort-select {
+      .catalog-sort-menu {
+        left: 0;
+        right: 0;
         width: 100%;
-        min-width: 0;
       }
     }
 
@@ -2064,21 +2122,32 @@
 
         <div class="catalog-toolbar-right">
           <div class="catalog-sort-box">
-            <label for="catalogSortSelect" class="catalog-sort-label">
-              <svg style="width:16px; height:16px; color:var(--nepal-blue);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18M6 12h12m-9 6h6"></path>
-              </svg>
-              <span>Sort by:</span>
-            </label>
-            <div class="catalog-select-wrapper">
-              <select id="catalogSortSelect" class="catalog-sort-select" onchange="window.handleCatalogSortChange(this.value)" aria-label="Sort products by price and recency">
-                <option value="newest">🆕 New Arrivals</option>
-                <option value="price-asc">💰 Price: Low to High</option>
-                <option value="price-desc">💎 Price: High to Low</option>
-                <option value="hot">🔥 Hot & Trending</option>
-                <option value="name-asc">🔤 Name: A to Z</option>
-              </select>
-              <div class="catalog-select-chevron">▼</div>
+            <button id="catalogSortDropdownBtn" type="button" class="catalog-sort-pill-btn" onclick="toggleCatalogSortDropdown(event)" aria-haspopup="listbox" aria-expanded="false" title="Change sorting order">
+              <span class="catalog-sort-btn-prefix">Sort by:</span>
+              <span id="catalogSortCurrentLabel" class="catalog-sort-btn-current">🆕 New Arrivals</span>
+              <span class="catalog-sort-chevron">▼</span>
+            </button>
+            <div id="catalogSortMenu" class="catalog-sort-menu" style="display: none;" role="listbox" aria-label="Sort products">
+              <button type="button" class="catalog-sort-item active-sort-item" data-sort="newest" onclick="selectCatalogSortOption('newest')">
+                <span>🆕 New Arrivals</span>
+                <span class="catalog-sort-check">✓</span>
+              </button>
+              <button type="button" class="catalog-sort-item" data-sort="price-asc" onclick="selectCatalogSortOption('price-asc')">
+                <span>💰 Price: Low to High</span>
+                <span class="catalog-sort-check" style="display:none;">✓</span>
+              </button>
+              <button type="button" class="catalog-sort-item" data-sort="price-desc" onclick="selectCatalogSortOption('price-desc')">
+                <span>💎 Price: High to Low</span>
+                <span class="catalog-sort-check" style="display:none;">✓</span>
+              </button>
+              <button type="button" class="catalog-sort-item" data-sort="hot" onclick="selectCatalogSortOption('hot')">
+                <span>🔥 Hot & Trending</span>
+                <span class="catalog-sort-check" style="display:none;">✓</span>
+              </button>
+              <button type="button" class="catalog-sort-item" data-sort="name-asc" onclick="selectCatalogSortOption('name-asc')">
+                <span>🔤 Name: A to Z</span>
+                <span class="catalog-sort-check" style="display:none;">✓</span>
+              </button>
             </div>
           </div>
         </div>
@@ -3040,13 +3109,48 @@
       }
     };
 
-    // --- SORTING ENGINE HANDLER ---
-    window.handleCatalogSortChange = function(newSort) {
-      currentSortOption = newSort || 'newest';
-      const sortSelect = document.getElementById('catalogSortSelect');
-      if (sortSelect && sortSelect.value !== currentSortOption) {
-        sortSelect.value = currentSortOption;
+    // --- SORTING ENGINE HANDLER & CUSTOM DROPDOWN ---
+    const sortLabelsMap = {
+      'newest': '🆕 New Arrivals',
+      'price-asc': '💰 Price: Low to High',
+      'price-desc': '💎 Price: High to Low',
+      'hot': '🔥 Hot & Trending',
+      'name-asc': '🔤 Name: A to Z'
+    };
+
+    window.toggleCatalogSortDropdown = function(e) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
       }
+      const menu = document.getElementById('catalogSortMenu');
+      const btn = document.getElementById('catalogSortDropdownBtn');
+      if (!menu || !btn) return;
+      
+      const isVisible = menu.style.display === 'flex';
+      if (isVisible) {
+        window.closeCatalogSortDropdown();
+      } else {
+        menu.style.display = 'flex';
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    };
+
+    window.closeCatalogSortDropdown = function() {
+      const menu = document.getElementById('catalogSortMenu');
+      const btn = document.getElementById('catalogSortDropdownBtn');
+      if (menu) menu.style.display = 'none';
+      if (btn) {
+        btn.classList.remove('is-active');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    };
+
+    window.selectCatalogSortOption = function(sortKey) {
+      currentSortOption = sortKey || 'newest';
+      updateCatalogSortUI();
+      window.closeCatalogSortDropdown();
       
       // If user triggers sorting on default homepage view without category active, activate 'all'
       if (!selectedCategoryFilter) {
@@ -3059,13 +3163,39 @@
       renderProductCatalogGrid();
     };
 
+    function updateCatalogSortUI() {
+      const labelEl = document.getElementById('catalogSortCurrentLabel');
+      if (labelEl) {
+        labelEl.innerText = sortLabelsMap[currentSortOption] || '🆕 New Arrivals';
+      }
+      const menuItems = document.querySelectorAll('.catalog-sort-item');
+      menuItems.forEach(item => {
+        const itemSort = item.getAttribute('data-sort');
+        const check = item.querySelector('.catalog-sort-check');
+        if (itemSort === currentSortOption) {
+          item.classList.add('active-sort-item');
+          if (check) check.style.display = 'inline';
+        } else {
+          item.classList.remove('active-sort-item');
+          if (check) check.style.display = 'none';
+        }
+      });
+    }
+
+    // Global listener to close sort menu when clicking outside
+    document.addEventListener('click', function(e) {
+      const box = document.querySelector('.catalog-sort-box');
+      if (box && !box.contains(e.target)) {
+        window.closeCatalogSortDropdown();
+      }
+    });
+
     // --- 2. RENDER ENGINE GRID ---
     window.renderProductCatalogGrid = function() {
       const targetGrid = document.getElementById('productGrid');
       const toolbar = document.getElementById('catalogToolbar');
       const headingEl = document.getElementById('catalogActiveCategoryTitle');
       const countBadge = document.getElementById('catalogResultsCount');
-      const sortSelect = document.getElementById('catalogSortSelect');
       if (!targetGrid) return;
 
       if (!selectedCategoryFilter) {
@@ -3089,10 +3219,8 @@
         }
       }
 
-      // Sync sort dropdown value
-      if (sortSelect && sortSelect.value !== currentSortOption) {
-        sortSelect.value = currentSortOption;
-      }
+      // Sync sort button & menu UI
+      updateCatalogSortUI();
 
       // If catalog is still loading from database, render skeleton loaders
       if (globalProductsCatalog.length === 0) {

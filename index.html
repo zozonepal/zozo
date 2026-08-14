@@ -2682,7 +2682,7 @@
     // --- PRODUCT CARD HTML MAKER ---
     window.createProductCardHtml = function(p) {
       let actionPriceBlock = '';
-      let buttonText = 'Quick View';
+      let buttonText = 'Buy Now';
       if(p.oldPrice && p.oldPrice > p.price) {
         const disc = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
         actionPriceBlock = `
@@ -2691,7 +2691,7 @@
             <span style="color:var(--nepal-red); font-weight:700;">-${disc}%</span>
           </div>
         `;
-        buttonText = `Quick View (-${disc}%)`;
+        buttonText = `Buy Now`;
       }
 
       const isSaved = window.ZozoWishlist ? window.ZozoWishlist.isSaved(p.id) : false;
@@ -2711,7 +2711,7 @@
           <div class="image-frame" style="position:relative; width:100%; aspect-ratio:1/1; overflow:hidden;">
             <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="280" height="280" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null; this.src='zozonepal.png'">
             <div class="card-quick-view-overlay-btn">
-              <span>👁️ Quick View</span>
+              <span>⚡ Buy Now</span>
             </div>
           </div>
           <div class="product-meta">
@@ -2722,7 +2722,7 @@
                 ${actionPriceBlock}
                 <span class="price">Rs. ${p.price.toLocaleString()}</span>
               </div>
-              <button class="btn btn-crimson" onclick="event.stopPropagation(); openProductQuickViewModal('${p.id}')" style="font-size:0.8rem; padding:6px 10px; white-space:nowrap;">${buttonText}</button>
+              <button class="btn btn-crimson" onclick="event.stopPropagation(); openProductQuickViewModal('${p.id}')" style="font-size:0.82rem; padding:6px 12px; font-weight:800; white-space:nowrap;">⚡ ${buttonText}</button>
             </div>
           </div>
         </div>

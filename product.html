@@ -400,7 +400,7 @@
     }
     .search-input {
       width: 100%;
-      padding: 10px 38px 10px 38px;
+      padding: 10px 76px 10px 38px;
       font-size: 0.9rem;
       border: 2px solid var(--border-color);
       border-radius: 30px;
@@ -411,14 +411,20 @@
     }
     .search-input:focus { border-color: var(--nepal-blue); background-color: var(--bg-card); }
     
-    .search-clear-btn {
+    .search-actions-group {
       position: absolute;
-      right: 12px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .search-clear-btn {
       background: var(--border-color);
       color: var(--text-muted);
       border: none;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       cursor: pointer;
       display: none;
@@ -432,9 +438,52 @@
       color: #ffffff;
     }
 
+    .search-voice-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      outline: none;
+      padding: 0;
+    }
+    .search-voice-btn:hover {
+      background: rgba(79, 70, 229, 0.12);
+      color: var(--nepal-blue);
+    }
+    .search-voice-btn.is-listening {
+      background: #f43f5e;
+      color: #ffffff;
+      animation: voicePulse 1.4s infinite ease-in-out;
+      box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.25);
+    }
+    .search-voice-btn svg {
+      width: 17px;
+      height: 17px;
+      transition: transform 0.2s ease;
+    }
+    .search-voice-btn:hover svg {
+      transform: scale(1.1);
+    }
+    .search-voice-btn.is-listening svg {
+      transform: scale(1.05);
+    }
+
+    @keyframes voicePulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+      70% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+    }
+
     .search-spinner {
       position: absolute;
-      right: 40px;
+      right: 76px;
       width: 16px;
       height: 16px;
       border: 2px solid var(--border-color);
@@ -1182,7 +1231,16 @@
           <span class="search-input-icon">🔍</span>
           <input type="text" id="liveQuerySearchInput" class="search-input" placeholder="Search by product name, category, or keyword..." oninput="window.debouncedCatalogSearch()" onkeydown="if(event.key==='Enter'){if(window.searchDebounceTimer)clearTimeout(window.searchDebounceTimer);window.executeLiveCatalogSearchSearch();}">
           <span id="searchDebounceSpinner" class="search-spinner"></span>
-          <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="window.clearSearchInput()" title="Clear search">✕</button>
+          <div class="search-actions-group">
+            <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="window.clearSearchInput()" title="Clear search" aria-label="Clear search input">✕</button>
+            <button type="button" id="searchVoiceBtn" class="search-voice-btn" onclick="window.toggleVoiceSearch(event)" title="Search with voice" aria-label="Search by voice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+              </svg>
+            </button>
+          </div>
         </div>
         <button class="modal-close" style="position:static;" onclick="toggleHeaderSearchOverlay()">✕</button>
       </div>
@@ -2887,6 +2945,126 @@
 
     // --- SEARCH BAR PIPELINE ---
     window.searchDebounceTimer = null;
+    let voiceRecognitionInstance = null;
+    let isVoiceListening = false;
+
+    window.toggleVoiceSearch = function(event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const input = document.getElementById('liveQuerySearchInput');
+
+      if (!SpeechRecognition) {
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification('⚠️ Voice search is not supported in this browser.');
+        } else {
+          alert('Voice search is not supported in this browser. Please use Chrome, Edge, or Safari.');
+        }
+        return;
+      }
+
+      if (isVoiceListening && voiceRecognitionInstance) {
+        try {
+          voiceRecognitionInstance.stop();
+        } catch(e) {
+          console.warn(e);
+        }
+        setVoiceListeningState(false);
+        return;
+      }
+
+      try {
+        voiceRecognitionInstance = new SpeechRecognition();
+        voiceRecognitionInstance.continuous = false;
+        voiceRecognitionInstance.interimResults = true;
+        voiceRecognitionInstance.lang = 'en-US';
+
+        voiceRecognitionInstance.onstart = function() {
+          setVoiceListeningState(true);
+          if (input) {
+            input.placeholder = 'Listening... Speak product name 🎙️';
+          }
+          if (typeof window.showToastNotification === 'function') {
+            window.showToastNotification('🎙️ Listening... Speak product name or category');
+          }
+        };
+
+        voiceRecognitionInstance.onresult = function(e) {
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = e.resultIndex; i < e.results.length; ++i) {
+            if (e.results[i].isFinal) {
+              finalTranscript += e.results[i][0].transcript;
+            } else {
+              interimTranscript += e.results[i][0].transcript;
+            }
+          }
+
+          const recognizedText = (finalTranscript || interimTranscript).trim();
+          if (input && recognizedText) {
+            input.value = recognizedText;
+            window.debouncedCatalogSearch();
+          }
+        };
+
+        voiceRecognitionInstance.onerror = function(e) {
+          console.warn('Voice recognition error:', e.error);
+          setVoiceListeningState(false);
+          if (e.error === 'not-allowed') {
+            if (typeof window.showToastNotification === 'function') {
+              window.showToastNotification('⚠️ Microphone access denied. Please allow microphone permissions.');
+            }
+          } else if (e.error !== 'no-speech') {
+            if (typeof window.showToastNotification === 'function') {
+              window.showToastNotification(`⚠️ Voice search error: ${e.error}`);
+            }
+          }
+        };
+
+        voiceRecognitionInstance.onend = function() {
+          setVoiceListeningState(false);
+          if (input) {
+            input.placeholder = 'Search by product name, category, or keyword...';
+            if (input.value.trim().length > 0) {
+              if (window.searchDebounceTimer) clearTimeout(window.searchDebounceTimer);
+              window.executeLiveCatalogSearchSearch();
+            }
+          }
+        };
+
+        voiceRecognitionInstance.start();
+      } catch (err) {
+        console.error('Failed to initialize speech recognition:', err);
+        setVoiceListeningState(false);
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification('⚠️ Unable to start voice search. Please try again.');
+        }
+      }
+    };
+
+    function setVoiceListeningState(isListening) {
+      isVoiceListening = isListening;
+      const micBtn = document.getElementById('searchVoiceBtn');
+      const input = document.getElementById('liveQuerySearchInput');
+      if (micBtn) {
+        if (isListening) {
+          micBtn.classList.add('is-listening');
+          micBtn.setAttribute('title', 'Listening... Click to stop');
+          micBtn.setAttribute('aria-label', 'Listening. Click to stop voice search');
+        } else {
+          micBtn.classList.remove('is-listening');
+          micBtn.setAttribute('title', 'Search with voice');
+          micBtn.setAttribute('aria-label', 'Search with voice');
+        }
+      }
+      if (!isListening && input) {
+        input.placeholder = 'Search by product name, category, or keyword...';
+      }
+    }
 
     window.debouncedCatalogSearch = function() {
       const clearBtn = document.getElementById('searchClearBtn');
@@ -2936,6 +3114,10 @@
         if (input) input.focus();
         window.debouncedCatalogSearch();
       } else {
+        if (isVoiceListening && voiceRecognitionInstance) {
+          try { voiceRecognitionInstance.stop(); } catch(e) {}
+          setVoiceListeningState(false);
+        }
         const input = document.getElementById('liveQuerySearchInput');
         if (input) input.value = "";
         window.clearSearchInput();

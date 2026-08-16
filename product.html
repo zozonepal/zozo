@@ -422,7 +422,7 @@
     .search-clear-btn {
       background: var(--border-color);
       color: var(--text-muted);
-      border: none;
+      border: 1px solid rgba(0, 0, 0, 0.06);
       width: 24px;
       height: 24px;
       border-radius: 50%;
@@ -430,12 +430,24 @@
       display: none;
       align-items: center;
       justify-content: center;
-      font-size: 0.75rem;
-      transition: all 0.2s;
+      padding: 0;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      outline: none;
+    }
+    .search-clear-btn svg {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.2s ease;
     }
     .search-clear-btn:hover {
       background: var(--nepal-red);
+      border-color: var(--nepal-red);
       color: #ffffff;
+      transform: scale(1.12);
+      box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
+    }
+    .search-clear-btn:active {
+      transform: scale(0.92);
     }
 
     .search-voice-btn {
@@ -1233,10 +1245,15 @@
       <div class="search-input-row-bar">
         <div class="search-input-wrapper">
           <span class="search-input-icon">🔍</span>
-          <input type="text" id="liveQuerySearchInput" class="search-input" placeholder="Search by product name, category, or keyword..." oninput="window.debouncedCatalogSearch()" onkeydown="if(event.key==='Enter'){if(window.searchDebounceTimer)clearTimeout(window.searchDebounceTimer);window.executeLiveCatalogSearchSearch();}">
+          <input type="text" id="liveQuerySearchInput" class="search-input" placeholder="Search by product name, category, or keyword..." oninput="window.updateSearchClearVisibility(); window.debouncedCatalogSearch();" onkeyup="window.updateSearchClearVisibility();" onkeydown="if(event.key==='Enter'){if(window.searchDebounceTimer)clearTimeout(window.searchDebounceTimer);window.executeLiveCatalogSearchSearch();}">
           <span id="searchDebounceSpinner" class="search-spinner"></span>
           <div class="search-actions-group">
-            <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="window.clearSearchInput()" title="Clear search" aria-label="Clear search input">✕</button>
+            <button type="button" id="searchClearBtn" class="search-clear-btn" onclick="window.clearSearchInput()" title="Clear search query" aria-label="Clear current query">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
             <button type="button" id="searchVoiceBtn" class="search-voice-btn" onclick="window.toggleVoiceSearch(event)" title="Search with voice" aria-label="Search by voice">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
@@ -3070,15 +3087,20 @@
       }
     }
 
-    window.debouncedCatalogSearch = function() {
+    window.updateSearchClearVisibility = function() {
       const clearBtn = document.getElementById('searchClearBtn');
-      const spinner = document.getElementById('searchDebounceSpinner');
       const input = document.getElementById('liveQuerySearchInput');
       const txt = input ? input.value : '';
-
       if (clearBtn) {
         clearBtn.style.display = txt.trim().length > 0 ? 'inline-flex' : 'none';
       }
+    };
+
+    window.debouncedCatalogSearch = function() {
+      window.updateSearchClearVisibility();
+      const spinner = document.getElementById('searchDebounceSpinner');
+      const input = document.getElementById('liveQuerySearchInput');
+      const txt = input ? input.value : '';
 
       if (spinner && txt.trim().length > 0) {
         spinner.style.display = 'block';
@@ -3098,6 +3120,7 @@
       const input = document.getElementById('liveQuerySearchInput');
       if (input) {
         input.value = '';
+        window.updateSearchClearVisibility();
         input.focus();
         window.debouncedCatalogSearch();
       }

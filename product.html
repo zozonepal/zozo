@@ -449,13 +449,17 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       outline: none;
       padding: 0;
     }
     .search-voice-btn:hover {
       background: rgba(79, 70, 229, 0.12);
       color: var(--nepal-blue);
+      transform: scale(1.1);
+    }
+    .search-voice-btn:active {
+      transform: scale(0.94);
     }
     .search-voice-btn.is-listening {
       background: #f43f5e;
@@ -466,10 +470,10 @@
     .search-voice-btn svg {
       width: 17px;
       height: 17px;
-      transition: transform 0.2s ease;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .search-voice-btn:hover svg {
-      transform: scale(1.1);
+      transform: scale(1.06);
     }
     .search-voice-btn.is-listening svg {
       transform: scale(1.05);

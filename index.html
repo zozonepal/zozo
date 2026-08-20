@@ -2513,10 +2513,17 @@
               </div>
             </div>
 
+            <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+              <button type="button" class="zozo-scanner-trigger-btn" onclick="window.openReceiptQrScanner && window.openReceiptQrScanner({ targetTxnInputId: 'custFormTxnId', targetScreenshotInputId: 'custFormScreenshot' })">
+                <span>📷</span>
+                <span>Scan / Capture Receipt QR</span>
+              </button>
+            </div>
+
             <div class="details-form-group">
-              <label for="custFormTxnId" style="font-size:0.8rem; font-weight:700; display:flex; justify-content:space-between;">
+              <label for="custFormTxnId" style="font-size:0.8rem; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
                 <span>Transaction ID / Reference Code *</span>
-                <span style="color:var(--nepal-blue); font-size:0.7rem;">Enter code from receipt</span>
+                <span style="color:var(--nepal-blue); font-size:0.7rem;">Auto-parsed via camera scan</span>
               </label>
               <input type="text" id="custFormTxnId" class="details-form-input" placeholder="e.g. 5A92X789" required>
             </div>
@@ -5668,6 +5675,8 @@
     }
   </script>
   <script src="/sw-push-manager.js"></script>
+  <script src="/jsqr.js"></script>
+  <script src="/receipt-qr-scanner.js"></script>
   <script src="/order-history-component.js"></script>
   <script src="/wishlist-component.js"></script>
 </body>

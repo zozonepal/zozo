@@ -1,6 +1,6 @@
 {
   "name": "Zozo Nepal",
   "description": "Zozo Nepal - Premium Gadget Accessories and Tech Shopping",
-  "requestFramePermissions": ["microphone"],
+  "requestFramePermissions": ["microphone", "camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

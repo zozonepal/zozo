@@ -808,9 +808,9 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 14px;
       margin: 18px 0 16px 0;
-      padding: 10px 16px;
+      padding: 12px 16px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 14px;
@@ -842,6 +842,174 @@
       border-radius: 20px;
       border: 1px solid var(--border-color);
     }
+
+    /* --- Catalog Price Range Slider Filter --- */
+    .catalog-toolbar-center {
+      display: flex;
+      align-items: center;
+      flex: 1 1 290px;
+      max-width: 380px;
+      min-width: 240px;
+    }
+    .catalog-price-filter-box {
+      width: 100%;
+      background: var(--frame-bg, #f8fafc);
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 12px;
+      padding: 6px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .catalog-price-filter-box:hover,
+    .catalog-price-filter-box:focus-within {
+      border-color: var(--nepal-blue, #9333ea);
+      box-shadow: 0 2px 8px rgba(147, 51, 234, 0.08);
+    }
+    .price-filter-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      user-select: none;
+    }
+    .price-filter-heading {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted, #64748b);
+      white-space: nowrap;
+    }
+    .price-filter-badges {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--text-main, #0f172a);
+    }
+    .price-badge {
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border-color, #cbd5e1);
+      padding: 1px 6px;
+      border-radius: 6px;
+      color: var(--nepal-blue, #9333ea);
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    .price-separator {
+      color: var(--text-muted, #94a3b8);
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+    .price-reset-pill-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 12px;
+      padding: 1px 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .price-reset-pill-btn:hover {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+    .range-slider-container {
+      position: relative;
+      width: 100%;
+      height: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .range-slider-track-bg {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: var(--border-color, #e2e8f0);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .range-slider-highlight-bar {
+      position: absolute;
+      height: 5px;
+      background: linear-gradient(90deg, var(--nepal-blue, #9333ea) 0%, #ec4899 100%);
+      border-radius: 4px;
+      pointer-events: none;
+      left: 0%;
+      width: 100%;
+      transition: left 0.04s ease, width 0.04s ease;
+    }
+    .dual-range-input {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      margin: 0;
+      padding: 0;
+      -webkit-appearance: none;
+      appearance: none;
+      pointer-events: none;
+      z-index: 10;
+      outline: none;
+    }
+    .dual-range-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      pointer-events: auto;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2.5px solid var(--nepal-blue, #9333ea);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+      cursor: grab;
+      transition: transform 0.1s ease, border-color 0.1s ease;
+      touch-action: pan-x;
+    }
+    .dual-range-input::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      border-color: #ec4899;
+    }
+    .dual-range-input::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.25);
+      box-shadow: 0 0 0 6px rgba(147, 51, 234, 0.2);
+    }
+    .dual-range-input::-moz-range-thumb {
+      pointer-events: auto;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2.5px solid var(--nepal-blue, #9333ea);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
+      cursor: grab;
+      transition: transform 0.1s ease, border-color 0.1s ease;
+    }
+    .dual-range-input::-moz-range-thumb:hover {
+      transform: scale(1.2);
+      border-color: #ec4899;
+    }
+    .dual-range-input::-moz-range-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.25);
+      box-shadow: 0 0 0 6px rgba(147, 51, 234, 0.2);
+    }
+
     .catalog-toolbar-right {
       display: flex;
       align-items: center;
@@ -960,6 +1128,17 @@
       color: var(--nepal-blue);
     }
 
+    @media (max-width: 860px) {
+      .catalog-toolbar {
+        gap: 12px;
+      }
+      .catalog-toolbar-center {
+        order: 3;
+        flex: 1 1 100%;
+        max-width: 100%;
+      }
+    }
+
     @media (max-width: 640px) {
       .catalog-toolbar {
         padding: 10px 12px;
@@ -969,8 +1148,14 @@
         width: 100%;
         justify-content: space-between;
       }
+      .catalog-toolbar-center {
+        width: 100%;
+        order: 2;
+        max-width: 100%;
+      }
       .catalog-toolbar-right {
         width: 100%;
+        order: 3;
       }
       .catalog-sort-box {
         width: 100%;
@@ -2199,6 +2384,30 @@
           <span id="catalogResultsCount" class="catalog-results-badge">0 products</span>
         </div>
 
+        <div class="catalog-toolbar-center">
+          <div class="catalog-price-filter-box" id="catalogPriceFilterBox">
+            <div class="price-filter-top">
+              <div class="price-filter-heading">
+                <span>🏷️ Budget:</span>
+              </div>
+              <div class="price-filter-badges">
+                <span id="priceMinDisplay" class="price-badge">Rs. 0</span>
+                <span class="price-separator">–</span>
+                <span id="priceMaxDisplay" class="price-badge">Rs. 10,000</span>
+              </div>
+              <button id="priceFilterResetBtn" type="button" class="price-reset-pill-btn" onclick="resetCatalogPriceFilter()" title="Reset budget filter">
+                <span>✕ Reset</span>
+              </button>
+            </div>
+            <div class="range-slider-container">
+              <div class="range-slider-track-bg"></div>
+              <div id="rangeSliderHighlight" class="range-slider-highlight-bar"></div>
+              <input type="range" id="priceRangeMinSlider" class="dual-range-input range-input-min" min="0" max="10000" step="50" value="0" oninput="handlePriceRangeMinInput(this.value)" onchange="handlePriceRangeChange()" aria-label="Minimum price budget">
+              <input type="range" id="priceRangeMaxSlider" class="dual-range-input range-input-max" min="0" max="10000" step="50" value="10000" oninput="handlePriceRangeMaxInput(this.value)" onchange="handlePriceRangeChange()" aria-label="Maximum price budget">
+            </div>
+          </div>
+        </div>
+
         <div class="catalog-toolbar-right">
           <div class="catalog-sort-box">
             <button id="catalogSortDropdownBtn" type="button" class="catalog-sort-pill-btn" onclick="toggleCatalogSortDropdown(event)" aria-haspopup="listbox" aria-expanded="false" title="Change sorting order">
@@ -2669,6 +2878,9 @@
     let selectedPaymentMethod = "eSewa";
     let selectedCategoryFilter = urlParams.get('category') || null;
     let currentSortOption = "newest"; // "newest", "price-asc", "price-desc", "hot", "name-asc"
+    let catalogPriceBounds = { min: 0, max: 10000 };
+    let currentPriceFilter = { min: 0, max: 10000 };
+    let isPriceFilterActive = false;
     let currentSelectedProduct = null;
     let currentSelectedColor = "";
     let isUserLoggedInState = false;
@@ -2855,6 +3067,28 @@
           console.warn("Could not cache products:", e);
         }
 
+        // Calculate dynamic catalog price bounds
+        if (globalProductsCatalog.length > 0) {
+          const prices = globalProductsCatalog.map(p => Number(p.price) || 0).filter(p => p > 0);
+          if (prices.length > 0) {
+            let minP = Math.floor(Math.min(...prices) / 50) * 50;
+            let maxP = Math.ceil(Math.max(...prices) / 100) * 100;
+            if (minP === maxP) maxP = minP + 1000;
+
+            const wasFullRange = !isPriceFilterActive || (currentPriceFilter.min === catalogPriceBounds.min && currentPriceFilter.max === catalogPriceBounds.max);
+            catalogPriceBounds = { min: minP, max: maxP };
+            if (wasFullRange) {
+              currentPriceFilter = { min: minP, max: maxP };
+            } else {
+              currentPriceFilter.min = Math.max(minP, Math.min(currentPriceFilter.min, maxP - 50));
+              currentPriceFilter.max = Math.min(maxP, Math.max(currentPriceFilter.max, minP + 50));
+            }
+            if (typeof syncPriceFilterSliderUI === 'function') {
+              syncPriceFilterSliderUI();
+            }
+          }
+        }
+
         isInventoryLoaded = true;
         checkAppLoaded();
 
@@ -2995,6 +3229,9 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       updateThemeToggleUI();
+      if (typeof syncPriceFilterSliderUI === 'function') {
+        syncPriceFilterSliderUI();
+      }
     });
 
     // --- MOBILE DRAWER NAVIGATION & CATEGORY SYNC ---
@@ -3276,6 +3513,139 @@
       }
     });
 
+    // --- PRICE RANGE SLIDER CONTROLS ---
+    window.handlePriceRangeMinInput = function(val) {
+      let minVal = Number(val) || 0;
+      if (minVal > currentPriceFilter.max - 50) {
+        minVal = currentPriceFilter.max - 50;
+      }
+      currentPriceFilter.min = Math.max(catalogPriceBounds.min, minVal);
+
+      const minSlider = document.getElementById('priceRangeMinSlider');
+      const maxSlider = document.getElementById('priceRangeMaxSlider');
+      if (minSlider && maxSlider) {
+        if (minSlider.valueAsNumber > maxSlider.valueAsNumber - 100) {
+          minSlider.style.zIndex = "12";
+          maxSlider.style.zIndex = "10";
+        }
+      }
+
+      updatePriceFilterStateAndUI();
+    };
+
+    window.handlePriceRangeMaxInput = function(val) {
+      let maxVal = Number(val) || 0;
+      if (maxVal < currentPriceFilter.min + 50) {
+        maxVal = currentPriceFilter.min + 50;
+      }
+      currentPriceFilter.max = Math.min(catalogPriceBounds.max, maxVal);
+
+      const minSlider = document.getElementById('priceRangeMinSlider');
+      const maxSlider = document.getElementById('priceRangeMaxSlider');
+      if (minSlider && maxSlider) {
+        if (maxSlider.valueAsNumber < minSlider.valueAsNumber + 100) {
+          maxSlider.style.zIndex = "12";
+          minSlider.style.zIndex = "10";
+        }
+      }
+
+      updatePriceFilterStateAndUI();
+    };
+
+    window.handlePriceRangeChange = function() {
+      if (!selectedCategoryFilter) {
+        selectedCategoryFilter = 'all';
+        renderCategoryFilterBar();
+        renderSpecialSections();
+        renderDrawerCategories();
+      }
+      renderProductCatalogGrid();
+    };
+
+    function updatePriceFilterStateAndUI() {
+      isPriceFilterActive = (currentPriceFilter.min > catalogPriceBounds.min || currentPriceFilter.max < catalogPriceBounds.max);
+
+      const minDisplay = document.getElementById('priceMinDisplay');
+      const maxDisplay = document.getElementById('priceMaxDisplay');
+      const highlight = document.getElementById('rangeSliderHighlight');
+      const resetBtn = document.getElementById('priceFilterResetBtn');
+      const minSlider = document.getElementById('priceRangeMinSlider');
+      const maxSlider = document.getElementById('priceRangeMaxSlider');
+
+      if (minSlider) minSlider.value = currentPriceFilter.min;
+      if (maxSlider) maxSlider.value = currentPriceFilter.max;
+
+      if (minDisplay) minDisplay.innerText = "Rs. " + currentPriceFilter.min.toLocaleString();
+      if (maxDisplay) maxDisplay.innerText = "Rs. " + currentPriceFilter.max.toLocaleString();
+
+      const totalRange = (catalogPriceBounds.max - catalogPriceBounds.min) || 1;
+      const leftPercent = ((currentPriceFilter.min - catalogPriceBounds.min) / totalRange) * 100;
+      const rightPercent = ((currentPriceFilter.max - catalogPriceBounds.min) / totalRange) * 100;
+      const widthPercent = Math.max(0, rightPercent - leftPercent);
+
+      if (highlight) {
+        highlight.style.left = leftPercent + "%";
+        highlight.style.width = widthPercent + "%";
+      }
+
+      if (resetBtn) {
+        resetBtn.style.display = isPriceFilterActive ? "inline-flex" : "none";
+      }
+
+      if (!selectedCategoryFilter) {
+        selectedCategoryFilter = 'all';
+        renderCategoryFilterBar();
+        renderSpecialSections();
+        renderDrawerCategories();
+      }
+      renderProductCatalogGrid();
+    }
+
+    window.resetCatalogPriceFilter = function() {
+      currentPriceFilter = { min: catalogPriceBounds.min, max: catalogPriceBounds.max };
+      isPriceFilterActive = false;
+      syncPriceFilterSliderUI();
+      renderProductCatalogGrid();
+    };
+
+    window.syncPriceFilterSliderUI = function() {
+      const minSlider = document.getElementById('priceRangeMinSlider');
+      const maxSlider = document.getElementById('priceRangeMaxSlider');
+      const minDisplay = document.getElementById('priceMinDisplay');
+      const maxDisplay = document.getElementById('priceMaxDisplay');
+      const highlight = document.getElementById('rangeSliderHighlight');
+      const resetBtn = document.getElementById('priceFilterResetBtn');
+
+      if (minSlider) {
+        minSlider.min = catalogPriceBounds.min;
+        minSlider.max = catalogPriceBounds.max;
+        minSlider.value = currentPriceFilter.min;
+      }
+      if (maxSlider) {
+        maxSlider.min = catalogPriceBounds.min;
+        maxSlider.max = catalogPriceBounds.max;
+        maxSlider.value = currentPriceFilter.max;
+      }
+
+      if (minDisplay) minDisplay.innerText = "Rs. " + currentPriceFilter.min.toLocaleString();
+      if (maxDisplay) maxDisplay.innerText = "Rs. " + currentPriceFilter.max.toLocaleString();
+
+      const totalRange = (catalogPriceBounds.max - catalogPriceBounds.min) || 1;
+      const leftPercent = ((currentPriceFilter.min - catalogPriceBounds.min) / totalRange) * 100;
+      const rightPercent = ((currentPriceFilter.max - catalogPriceBounds.min) / totalRange) * 100;
+      const widthPercent = Math.max(0, rightPercent - leftPercent);
+
+      if (highlight) {
+        highlight.style.left = leftPercent + "%";
+        highlight.style.width = widthPercent + "%";
+      }
+
+      isPriceFilterActive = (currentPriceFilter.min > catalogPriceBounds.min || currentPriceFilter.max < catalogPriceBounds.max);
+      if (resetBtn) {
+        resetBtn.style.display = isPriceFilterActive ? "inline-flex" : "none";
+      }
+    };
+
     // --- 2. RENDER ENGINE GRID ---
     window.renderProductCatalogGrid = function() {
       const targetGrid = document.getElementById('productGrid');
@@ -3316,41 +3686,52 @@
       }
 
       let filteredItems = globalProductsCatalog.filter(p => {
-        if(activeFilter === 'all') return true;
-        const cat = (p.category || '').toLowerCase().trim();
-        const filter = activeFilter.toLowerCase().trim();
-        
-        if (filter === 'charger') {
-          return cat.includes('charger') || cat.includes('cable') || cat.includes('wire');
+        // Category filtering
+        if (activeFilter !== 'all') {
+          const cat = (p.category || '').toLowerCase().trim();
+          const filter = activeFilter.toLowerCase().trim();
+          
+          let matchesCat = false;
+          if (filter === 'charger') {
+            matchesCat = cat.includes('charger') || cat.includes('cable') || cat.includes('wire');
+          } else if (filter === 'mobile-coolers') {
+            matchesCat = cat.includes('cooler') || cat.includes('cooling');
+          } else if (filter === 'mini-fan') {
+            matchesCat = cat.includes('fan') || cat.includes('blower');
+          } else if (filter === 'mobile-covers') {
+            matchesCat = cat.includes('cover') || cat.includes('case');
+          } else if (filter === 'headphones') {
+            matchesCat = cat.includes('headphone') || cat.includes('earphone');
+          } else if (filter === 'speakers') {
+            matchesCat = cat.includes('speaker') || cat.includes('sound') || cat.includes('audio');
+          } else if (filter === 'earbuds') {
+            matchesCat = cat.includes('earbud') || cat.includes('buds') || cat.includes('airpod') || cat.includes('tws');
+          } else if (filter === 'power-sockets') {
+            matchesCat = cat.includes('socket') || cat.includes('plug') || cat.includes('extension') || cat.includes('power');
+          } else {
+            matchesCat = cat === filter || cat.includes(filter);
+          }
+          if (!matchesCat) return false;
         }
-        if (filter === 'mobile-coolers') {
-          return cat.includes('cooler') || cat.includes('cooling');
+
+        // Price Budget Range filtering
+        if (isPriceFilterActive) {
+          const priceVal = Number(p.price) || 0;
+          if (priceVal < currentPriceFilter.min || priceVal > currentPriceFilter.max) {
+            return false;
+          }
         }
-        if (filter === 'mini-fan') {
-          return cat.includes('fan') || cat.includes('blower');
-        }
-        if (filter === 'mobile-covers') {
-          return cat.includes('cover') || cat.includes('case');
-        }
-        if (filter === 'headphones') {
-          return cat.includes('headphone') || cat.includes('earphone');
-        }
-        if (filter === 'speakers') {
-          return cat.includes('speaker') || cat.includes('sound') || cat.includes('audio');
-        }
-        if (filter === 'earbuds') {
-          return cat.includes('earbud') || cat.includes('buds') || cat.includes('airpod') || cat.includes('tws');
-        }
-        if (filter === 'power-sockets') {
-          return cat.includes('socket') || cat.includes('plug') || cat.includes('extension') || cat.includes('power');
-        }
-        
-        return cat === filter || cat.includes(filter);
+
+        return true;
       });
 
       // Update results count badge
       if (countBadge) {
-        countBadge.innerText = `${filteredItems.length} ${filteredItems.length === 1 ? 'product' : 'products'}`;
+        let countText = `${filteredItems.length} ${filteredItems.length === 1 ? 'product' : 'products'}`;
+        if (isPriceFilterActive) {
+          countText += ` (Rs. ${currentPriceFilter.min.toLocaleString()} – Rs. ${currentPriceFilter.max.toLocaleString()})`;
+        }
+        countBadge.innerText = countText;
       }
 
       // Apply dynamic sorting
@@ -3367,7 +3748,20 @@
       }
 
       if (filteredItems.length === 0) {
-        targetGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-muted); font-weight:600;">No items available in this category currently.</p>`;
+        if (isPriceFilterActive) {
+          targetGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 12px; margin: 12px 0;">
+              <span style="font-size: 2.2rem; display: block; margin-bottom: 8px;">🏷️</span>
+              <p style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0 0 6px 0;">No products found in this budget</p>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 16px 0;">No items found between Rs. ${currentPriceFilter.min.toLocaleString()} and Rs. ${currentPriceFilter.max.toLocaleString()}.</p>
+              <button class="btn btn-crimson" onclick="resetCatalogPriceFilter()" style="font-size: 0.82rem; padding: 8px 18px; border-radius: 20px; font-weight: 700;">
+                ✕ Reset Price Filter
+              </button>
+            </div>
+          `;
+        } else {
+          targetGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-muted); font-weight:600;">No items available in this category currently.</p>`;
+        }
         return;
       }
 

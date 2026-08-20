@@ -475,6 +475,186 @@
       background: #ffffff;
       padding: 4px;
     }
+
+    /* --- ADMIN REAL-TIME DELIVERY NOTIFICATION SYSTEM STYLES --- */
+    .admin-notif-btn {
+      background: #ffffff !important;
+      color: var(--text-main) !important;
+      border: 1.5px solid var(--border-color) !important;
+      position: relative !important;
+      padding: 8px 12px !important;
+      min-height: 40px !important;
+      border-radius: 8px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .admin-notif-btn:hover {
+      background: #f8fafc !important;
+      border-color: var(--nepal-blue) !important;
+      transform: translateY(-1px);
+    }
+
+    .admin-notif-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+      animation: notifBadgePulse 2s infinite;
+    }
+
+    @keyframes notifBadgePulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); box-shadow: 0 0 10px rgba(239, 68, 68, 0.7); }
+      100% { transform: scale(1); }
+    }
+
+    .admin-notif-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 360px;
+      max-width: 90vw;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.18);
+      z-index: 10000;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes dropdownFadeIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .admin-notif-dropdown-header {
+      padding: 12px 14px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-notif-list {
+      max-height: 380px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-notif-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      background: #ffffff;
+      transition: background 0.15s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .admin-notif-item:hover {
+      background: #f8fafc;
+    }
+
+    .admin-notif-item.unread {
+      background: #fdf4ff;
+      border-left: 3px solid var(--nepal-blue);
+    }
+
+    /* Floating Toast Alerts Container */
+    .admin-delivery-toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 400px;
+      width: calc(100% - 40px);
+      pointer-events: none;
+    }
+
+    .admin-delivery-toast {
+      background: #ffffff;
+      border: 1px solid #c084fc;
+      border-left: 6px solid #9333ea;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 15px 30px rgba(147, 51, 234, 0.2), 0 4px 10px rgba(0, 0, 0, 0.08);
+      pointer-events: auto;
+      position: relative;
+      overflow: hidden;
+      animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes toastSlideIn {
+      from { opacity: 0; transform: translateX(110%) scale(0.95); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    .admin-delivery-toast.toast-closing {
+      animation: toastSlideOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes toastSlideOut {
+      from { opacity: 1; transform: translateX(0) scale(1); }
+      to { opacity: 0; transform: translateX(110%) scale(0.9); }
+    }
+
+    .admin-delivery-toast .toast-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #9333ea, #3b82f6);
+      width: 100%;
+      transform-origin: left;
+      animation: toastProgressBar 10s linear forwards;
+    }
+
+    @keyframes toastProgressBar {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+
+    .order-card-highlighted {
+      animation: orderCardGlowPulse 2.5s ease-in-out infinite alternate !important;
+      border-left: 6px solid #9333ea !important;
+    }
+
+    @keyframes orderCardGlowPulse {
+      0% {
+        box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(147, 51, 234, 0.15);
+        background-color: #faf5ff;
+      }
+      100% {
+        box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.7), 0 8px 25px rgba(147, 51, 234, 0.35);
+        background-color: #f3e8ff;
+      }
+    }
   </style>
 </head>
 <body>
@@ -503,6 +683,47 @@
         <p>Operational control tower for catalog, promos, delivery logistics, resources, and orders.</p>
       </div>
       <div class="header-actions">
+        <!-- Live Delivery Notification Center Bell -->
+        <div style="position: relative;">
+          <button class="action-btn admin-notif-btn" id="adminNotifBellBtn" title="Customer Delivery Order Notifications" type="button">
+            <span style="font-size: 1.15rem; line-height: 1;">🔔</span>
+            <span id="adminNotifBadge" class="admin-notif-badge" style="display: none;">0</span>
+          </button>
+
+          <!-- Notification Dropdown Panel -->
+          <div id="adminNotifDropdown" class="admin-notif-dropdown">
+            <div class="admin-notif-dropdown-header">
+              <div>
+                <h3 style="font-size: 0.92rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 6px;">
+                  <span>🚨 Delivery Alerts</span>
+                  <span id="adminNotifDropdownCountBadge" style="background: var(--nepal-blue); color: white; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 12px;">0 New</span>
+                </h3>
+                <p style="font-size: 0.72rem; color: var(--text-muted); margin: 2px 0 0 0;">Dedicated alerts for zozonepal admin</p>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button id="adminTestChimeBtn" type="button" class="action-btn" style="background: #f1f5f9; color: var(--text-main); padding: 4px 8px; font-size: 0.72rem; min-height: 28px; border: 1px solid var(--border-color);" title="Play Notification Chime Test">🎵 Test Chime</button>
+                <button id="adminClearNotifsBtn" type="button" class="action-btn" style="background: var(--nepal-blue); color: white; padding: 4px 8px; font-size: 0.72rem; min-height: 28px;">Mark Read</button>
+              </div>
+            </div>
+            <div style="padding: 8px 14px; background: #faf5ff; border-bottom: 1px solid #f3e8ff; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem;">
+              <span style="font-weight: 700; color: var(--nepal-blue); display: flex; align-items: center; gap: 6px;">
+                <span>🔊 Chime Sound Alerts</span>
+              </span>
+              <label class="toggle-switch" style="width: 38px; height: 20px;">
+                <input type="checkbox" id="adminSoundAlertToggle" checked>
+                <span class="slider-round" style="border-radius: 20px;"></span>
+              </label>
+            </div>
+            <div id="adminNotifList" class="admin-notif-list">
+              <div style="text-align: center; color: var(--text-muted); padding: 28px 14px; font-size: 0.82rem;">
+                <div style="font-size: 1.6rem; margin-bottom: 6px;">📭</div>
+                <div style="font-weight: 700; color: var(--text-main);">No new delivery alerts</div>
+                <div style="font-size: 0.75rem; margin-top: 2px;">Incoming customer deliveries will appear here in real-time.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button class="action-btn" id="refreshAllFeedsBtn" style="background: var(--nepal-blue);">🔄 Refresh Feeds</button>
         <button class="action-btn btn-danger" id="adminSignoutBtn">🚪 Sign Out</button>
       </div>
@@ -540,7 +761,20 @@
               <option value="Delivered">Delivered ✅</option>
             </select>
           </h2>
-          <p class="sub-label">Incoming checkout transactions stored. Maintain order delivery status streams below.</p>
+
+          <!-- Real-Time Delivery Stream Status Banner -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #15803d; font-weight: 700;">
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.3); animation: notifBadgePulse 2s infinite;"></span>
+              <span>Real-Time Delivery Notification Stream Active</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 0.76rem; color: #166534; font-weight: 600;">
+              <span>Target Admin Account: <strong id="adminLiveAccountEmailBadge" style="color: var(--nepal-blue);">zozonepal</strong></span>
+              <button onclick="window.testAdminDeliveryNotification()" style="background: white; border: 1px solid #86efac; color: #15803d; font-weight: 700; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; cursor: pointer;">🚨 Send Test Delivery Alert</button>
+            </div>
+          </div>
+
+          <p class="sub-label">Incoming customer orders and deliveries stored. Maintain order delivery status streams below.</p>
           <div id="ordersListContainer" style="display: flex; flex-direction: column; gap: 14px;">
             <p style="text-align: center; color: var(--text-muted); padding: 30px;">Syncing orders stream...</p>
           </div>
@@ -1459,6 +1693,12 @@
       document.getElementById('adminSignoutBtn').addEventListener('click', async () => {
         if (confirm("Are you sure you want to sign out?")) {
           try {
+            if (ordersSnapshotUnsubscribe) {
+              ordersSnapshotUnsubscribe();
+              ordersSnapshotUnsubscribe = null;
+            }
+            sessionStorage.removeItem('zozo_admin_session');
+            localStorage.removeItem('zozo_admin_session');
             await signOut(auth);
           } catch (err) {
             console.error("Sign-out execution crash:", err);
@@ -1467,7 +1707,7 @@
       });
 
       async function refreshAllFeeds() {
-        fetchCustomerOrders();
+        initRealtimeOrdersDeliveryNotificationStream();
         await fetchInventoryProducts();
         listenToCategories();
         fetchStoreQrsAdmin();
@@ -2150,8 +2390,402 @@
       };
 
 
-      // --- 2. ORDERS LOGISTICS ENGINE ---
+      // --- 2. ORDERS LOGISTICS & REAL-TIME NOTIFICATION ENGINE ---
       let allOrdersCache = [];
+      let ordersSnapshotUnsubscribe = null;
+      let isInitialOrdersLoad = true;
+      const acknowledgedOrderIds = new Set();
+      let deliveryNotifsList = []; // in-memory notification queue for dropdown
+      let audioCtx = null;
+
+      // STRICT USER AUTH CHECK: Restrict delivery notifications strictly to authorized zozonepal admin devices
+      function isCurrentDeviceZozoAdmin() {
+        const user = auth.currentUser;
+        let sessionEmail = "";
+        let isAuthorized = false;
+        try {
+          const saved = sessionStorage.getItem('zozo_admin_session') || localStorage.getItem('zozo_admin_session');
+          if (saved) {
+            const sess = JSON.parse(saved);
+            sessionEmail = (sess.email || "").toLowerCase().trim();
+            isAuthorized = !!sess.isAuthorized;
+          }
+        } catch(e) {}
+
+        const activeEmail = (user && user.email ? user.email : sessionEmail).toLowerCase().trim();
+        if (!activeEmail && !isAuthorized) return false;
+
+        // Specific constraint check: Only notify devices signed in using zozonepal gmail or master whitelist
+        const isZozo = activeEmail.includes("zozonepal") || 
+                       activeEmail === "zozonepal5@gmail.com" || 
+                       activeEmail === "zozonepal@gmail.com" || 
+                       activeEmail === "admin@zozonepal.com" ||
+                       activeEmail === "fitoorbhandari38@gmail.com";
+        return isZozo;
+      }
+
+      // Audio notification chime using Web Audio API
+      function playDeliveryOrderChime() {
+        const toggle = document.getElementById('adminSoundAlertToggle');
+        const soundEnabled = toggle ? toggle.checked : true;
+        if (!soundEnabled) return;
+
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          if (!audioCtx) {
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+
+          const now = audioCtx.currentTime;
+          // Melodic 4-tone notification chime (C5 -> E5 -> G5 -> C6)
+          const notes = [
+            { freq: 523.25, offset: 0.0, dur: 0.15 },
+            { freq: 659.25, offset: 0.12, dur: 0.15 },
+            { freq: 783.99, offset: 0.24, dur: 0.18 },
+            { freq: 1046.50, offset: 0.38, dur: 0.45 }
+          ];
+
+          notes.forEach(note => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(note.freq, now + note.offset);
+
+            gain.gain.setValueAtTime(0.001, now + note.offset);
+            gain.gain.exponentialRampToValueAtTime(0.3, now + note.offset + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + note.offset + note.dur);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now + note.offset);
+            osc.stop(now + note.offset + note.dur);
+          });
+        } catch (err) {
+          console.warn("Audio chime playback notice:", err);
+        }
+      }
+      window.testDeliveryChime = playDeliveryOrderChime;
+
+      // In-app interactive floating toast for new incoming delivery orders
+      function showDeliveryToast(order) {
+        let container = document.getElementById('adminDeliveryToastContainer');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'adminDeliveryToastContainer';
+          container.className = 'admin-delivery-toast-container';
+          document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'admin-delivery-toast';
+        toast.id = `toast-order-${order.id}`;
+
+        const customerName = order.customerName || 'Customer (Guest)';
+        const amount = (order.amountPaid || 0).toLocaleString();
+        const phone = order.customerPhone || 'N/A';
+        const location = order.deliveryLocation || 'Nepal';
+        const landmark = order.famousPlace ? ` (Near ${order.famousPlace})` : '';
+        const items = order.productName || 'Catalog items';
+        const payment = order.paymentMethod || 'COD';
+
+        toast.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1.1rem; animation: notifBadgePulse 1.5s infinite;">🚨</span>
+              <span style="font-weight: 800; font-size: 0.85rem; color: #7e22ce; text-transform: uppercase; letter-spacing: 0.05em;">New Delivery Order!</span>
+            </div>
+            <button type="button" style="background: none; border: none; font-size: 1.1rem; color: #94a3b8; cursor: pointer; padding: 0 4px; line-height: 1;" onclick="dismissDeliveryToast('${order.id}')">✕</button>
+          </div>
+
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a; margin-bottom: 2px;">${customerName}</div>
+            <div style="font-size: 0.8rem; color: #475569; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span>📍 ${location}${landmark}</span>
+            </div>
+            <div style="font-size: 0.82rem; font-weight: 700; color: var(--nepal-blue); margin-top: 4px;">
+              💰 Rs. ${amount} <span style="font-size: 0.75rem; color: #16a34a; font-weight: 600;">(${payment})</span>
+            </div>
+            <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px; line-height: 1.3;">
+              🛍️ ${items}
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #f3e8ff;">
+            <button type="button" class="action-btn" style="flex: 1; background: #9333ea; color: white; padding: 6px 10px; font-size: 0.76rem; border-radius: 6px; font-weight: 700; text-align: center; border: none; cursor: pointer;" onclick="highlightAndFocusOrder('${order.id}'); dismissDeliveryToast('${order.id}');">
+              👁️ View & Manage Order
+            </button>
+            ${phone !== 'N/A' ? `
+              <a href="tel:${phone}" class="action-btn" style="background: #10b981; color: white; padding: 6px 10px; font-size: 0.76rem; border-radius: 6px; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                📞 Call
+              </a>
+            ` : ''}
+          </div>
+          <div class="toast-progress"></div>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto dismiss after 10 seconds
+        setTimeout(() => {
+          dismissDeliveryToast(order.id);
+        }, 10000);
+      }
+
+      window.dismissDeliveryToast = function(orderId) {
+        const toast = document.getElementById(`toast-order-${orderId}`);
+        if (toast && !toast.classList.contains('toast-closing')) {
+          toast.classList.add('toast-closing');
+          setTimeout(() => {
+            if (toast.parentNode) {
+              toast.parentNode.removeChild(toast);
+            }
+          }, 300);
+        }
+      };
+
+      // Add notification item to the header dropdown list
+      function addNotificationToDropdown(order) {
+        const notifObj = {
+          id: order.id,
+          customerName: order.customerName || 'Customer',
+          phone: order.customerPhone || 'N/A',
+          location: order.deliveryLocation || 'Nepal',
+          amount: order.amountPaid || 0,
+          items: order.productName || 'Order items',
+          time: new Date(),
+          unread: true
+        };
+
+        deliveryNotifsList.unshift(notifObj);
+        if (deliveryNotifsList.length > 30) {
+          deliveryNotifsList.pop();
+        }
+
+        renderNotificationDropdown();
+      }
+
+      function renderNotificationDropdown() {
+        const listContainer = document.getElementById('adminNotifList');
+        const badge = document.getElementById('adminNotifBadge');
+        const countBadge = document.getElementById('adminNotifDropdownCountBadge');
+        if (!listContainer) return;
+
+        const unreadCount = deliveryNotifsList.filter(n => n.unread).length;
+
+        if (badge) {
+          if (unreadCount > 0) {
+            badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+            badge.style.display = 'inline-flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+
+        if (countBadge) {
+          countBadge.innerText = `${unreadCount} New`;
+          countBadge.style.background = unreadCount > 0 ? '#ef4444' : '#64748b';
+        }
+
+        if (deliveryNotifsList.length === 0) {
+          listContainer.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 28px 14px; font-size: 0.82rem;">
+              <div style="font-size: 1.6rem; margin-bottom: 6px;">📭</div>
+              <div style="font-weight: 700; color: var(--text-main);">No new delivery alerts</div>
+              <div style="font-size: 0.75rem; margin-top: 2px;">Incoming customer deliveries will appear here in real-time.</div>
+            </div>
+          `;
+          return;
+        }
+
+        listContainer.innerHTML = deliveryNotifsList.map(n => {
+          const timeStr = n.time ? n.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
+          return `
+            <div class="admin-notif-item ${n.unread ? 'unread' : ''}" onclick="highlightAndFocusOrder('${n.id}'); markNotifAsRead('${n.id}');">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-main);">
+                  ${n.customerName}
+                </div>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">${timeStr}</span>
+              </div>
+              <div style="font-size: 0.78rem; color: #475569;">
+                📍 ${n.location} • <strong style="color: var(--nepal-blue);">Rs. ${Number(n.amount).toLocaleString()}</strong>
+              </div>
+              <div style="font-size: 0.72rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                🛍️ ${n.items}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      window.markNotifAsRead = function(orderId) {
+        const item = deliveryNotifsList.find(n => n.id === orderId);
+        if (item) {
+          item.unread = false;
+          renderNotificationDropdown();
+        }
+      };
+
+      window.clearAllDeliveryNotifications = function() {
+        deliveryNotifsList.forEach(n => n.unread = false);
+        renderNotificationDropdown();
+      };
+
+      // Handler for new delivery order incoming from real-time Firestore stream
+      function handleNewDeliveryOrderNotification(order) {
+        // 1. Play auditory chime
+        playDeliveryOrderChime();
+
+        // 2. Display interactive UI toast
+        showDeliveryToast(order);
+
+        // 3. Add to dropdown notification history
+        addNotificationToDropdown(order);
+
+        // 4. Trigger system / browser notification if permitted
+        if ("Notification" in window) {
+          if (Notification.permission === "granted") {
+            try {
+              new Notification("🚨 New Delivery Order Received! - Zozo Nepal", {
+                body: `${order.customerName || 'Customer'} placed an order for Rs. ${(order.amountPaid || 0).toLocaleString()} (${order.deliveryLocation || 'Nepal'})`,
+                icon: "/zozonepal.png",
+                tag: `delivery-${order.id}`
+              });
+            } catch(e) {}
+          } else if (Notification.permission !== "denied") {
+            Notification.requestPermission();
+          }
+        }
+      }
+
+      // Smooth scroll and pulse highlight on selected order card
+      window.highlightAndFocusOrder = function(orderId) {
+        // Switch to orders tab
+        if (typeof switchAdminTab === 'function') {
+          switchAdminTab('orders');
+        }
+
+        // Ensure filter shows the order
+        const filterDropdown = document.getElementById('ordersFilterDropdown');
+        if (filterDropdown && filterDropdown.value !== 'All') {
+          filterDropdown.value = 'All';
+          renderFilteredOrders();
+        }
+
+        // Scroll and highlight
+        setTimeout(() => {
+          const card = document.getElementById(`order-card-${orderId}`);
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('order-card-highlighted');
+            setTimeout(() => {
+              card.classList.remove('order-card-highlighted');
+            }, 6000);
+          }
+        }, 120);
+
+        // Close dropdown
+        const dropdown = document.getElementById('adminNotifDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+      };
+
+      // Manual test delivery alert function
+      window.testAdminDeliveryNotification = function() {
+        if (!isCurrentDeviceZozoAdmin()) {
+          alert("⚠️ Notifications are strictly restricted to devices signed in with a zozonepal account.");
+          return;
+        }
+        const sampleOrder = {
+          id: "DEMO-" + Math.floor(1000 + Math.random() * 9000),
+          customerName: "Aarav Sharma (Sample Delivery)",
+          customerPhone: "9841000000",
+          customerEmail: "customer.sample@gmail.com",
+          deliveryLocation: "Thamel, Kathmandu",
+          famousPlace: "Near Garden of Dreams",
+          amountPaid: 2890,
+          paymentMethod: "Cash on Delivery",
+          productName: "Supreme Cotton Hoodie (Black) x 1",
+          timestamp: new Date(),
+          status: "Pending"
+        };
+        handleNewDeliveryOrderNotification(sampleOrder);
+      };
+
+      // Setup Real-time Firestore snapshot listener for incoming customer delivery orders
+      function initRealtimeOrdersDeliveryNotificationStream() {
+        if (ordersSnapshotUnsubscribe) {
+          ordersSnapshotUnsubscribe();
+          ordersSnapshotUnsubscribe = null;
+        }
+
+        // Display current active logged-in email
+        const user = auth.currentUser;
+        let sessionEmail = "";
+        try {
+          const saved = sessionStorage.getItem('zozo_admin_session') || localStorage.getItem('zozo_admin_session');
+          if (saved) sessionEmail = JSON.parse(saved).email || "";
+        } catch(e) {}
+        const activeEmail = (user && user.email ? user.email : sessionEmail) || "zozonepal5@gmail.com";
+        const emailBadge = document.getElementById('adminLiveAccountEmailBadge');
+        if (emailBadge) {
+          emailBadge.innerText = activeEmail;
+        }
+
+        isInitialOrdersLoad = true;
+
+        try {
+          const q = query(collection(db, "transactions"), orderBy("timestamp", "desc"));
+          ordersSnapshotUnsubscribe = onSnapshot(q, (snapshot) => {
+            const incomingDocs = snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+
+            if (isInitialOrdersLoad) {
+              allOrdersCache = incomingDocs;
+              allOrdersCache.forEach(order => acknowledgedOrderIds.add(order.id));
+              isInitialOrdersLoad = false;
+              renderFilteredOrders();
+              return;
+            }
+
+            // Check for freshly created customer orders
+            snapshot.docChanges().forEach(change => {
+              if (change.type === "added") {
+                const newOrder = { id: change.doc.id, ...change.doc.data() };
+                if (!acknowledgedOrderIds.has(newOrder.id)) {
+                  acknowledgedOrderIds.add(newOrder.id);
+                  
+                  // ONLY notify devices signed in with zozonepal account
+                  if (isCurrentDeviceZozoAdmin()) {
+                    handleNewDeliveryOrderNotification(newOrder);
+                  } else {
+                    console.log("Customer placed delivery, but device is not signed in with zozonepal email - notification suppressed.");
+                  }
+                }
+              }
+            });
+
+            allOrdersCache = incomingDocs;
+            allOrdersCache.sort((a, b) => {
+              const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
+              const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : new Date(0);
+              return tB - tA;
+            });
+            renderFilteredOrders();
+          }, (err) => {
+            console.warn("Real-time orders onSnapshot failed, falling back to one-time fetch:", err);
+            fetchCustomerOrders();
+          });
+        } catch (err) {
+          console.warn("Could not attach real-time order snapshot stream:", err);
+          fetchCustomerOrders();
+        }
+      }
+
       async function fetchCustomerOrders() {
         const container = document.getElementById('ordersListContainer');
         if (!container) return;
@@ -2171,6 +2805,8 @@
           }
           
           allOrdersCache = snapshot.docs.map(docSnapshot => ({ id: docSnapshot.id, ...docSnapshot.data() }));
+
+          allOrdersCache.forEach(order => acknowledgedOrderIds.add(order.id));
 
           // Robust client-side sort (newest first)
           allOrdersCache.sort((a, b) => {
@@ -2246,7 +2882,7 @@
           }
 
           return `
-            <div class="order-card">
+            <div class="order-card" id="order-card-${order.id}">
               <div class="order-row">
                 <div>
                   <h3 style="font-size: 1rem; color: var(--text-main); font-weight: 800;">${order.customerName || 'Guest'}</h3>
@@ -3042,8 +3678,45 @@
 
       document.getElementById('esewaQrFileInput').addEventListener('change', (e) => handleStoreQrCodeUpload(e, 'esewa'));
       document.getElementById('khaltiQrFileInput').addEventListener('change', (e) => handleStoreQrCodeUpload(e, 'khalti'));
+
+      // Notification Center UI interactions
+      const bellBtn = document.getElementById('adminNotifBellBtn');
+      const notifDropdown = document.getElementById('adminNotifDropdown');
+      const testChimeBtn = document.getElementById('adminTestChimeBtn');
+      const clearNotifsBtn = document.getElementById('adminClearNotifsBtn');
+
+      if (bellBtn && notifDropdown) {
+        bellBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isHidden = notifDropdown.style.display === 'none' || !notifDropdown.style.display;
+          notifDropdown.style.display = isHidden ? 'flex' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+          if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== bellBtn && !bellBtn.contains(e.target)) {
+            notifDropdown.style.display = 'none';
+          }
+        });
+      }
+
+      if (testChimeBtn) {
+        testChimeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          playDeliveryOrderChime();
+        });
+      }
+
+      if (clearNotifsBtn) {
+        clearNotifsBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          clearAllDeliveryNotifications();
+        });
+      }
     });
   </script>
   <script src="/sw-push-manager.js"></script>
+
+  <!-- Floating In-App Toast Container for Delivery Order Alerts -->
+  <div id="adminDeliveryToastContainer" class="admin-delivery-toast-container"></div>
 </body>
 </html>

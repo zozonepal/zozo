@@ -932,6 +932,47 @@
       display: flex;
       align-items: center;
     }
+    .price-slider-tooltip {
+      position: absolute;
+      top: -24px;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.70rem;
+      font-weight: 800;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 25;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+      opacity: 0;
+      transition: opacity 0.16s ease, transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.14s ease;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .price-slider-tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid #0f172a;
+    }
+    .range-slider-container:hover .price-slider-tooltip,
+    .range-slider-container:focus-within .price-slider-tooltip,
+    .catalog-price-filter-box:hover .price-slider-tooltip,
+    .price-slider-tooltip.is-active,
+    .price-slider-tooltip.is-dragging {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+    .price-slider-tooltip.tooltip-stagger-top {
+      top: -38px;
+    }
     .range-slider-track-bg {
       position: absolute;
       left: 0;
@@ -2402,8 +2443,10 @@
             <div class="range-slider-container">
               <div class="range-slider-track-bg"></div>
               <div id="rangeSliderHighlight" class="range-slider-highlight-bar"></div>
-              <input type="range" id="priceRangeMinSlider" class="dual-range-input range-input-min" min="0" max="10000" step="50" value="0" oninput="handlePriceRangeMinInput(this.value)" onchange="handlePriceRangeChange()" aria-label="Minimum price budget">
-              <input type="range" id="priceRangeMaxSlider" class="dual-range-input range-input-max" min="0" max="10000" step="50" value="10000" oninput="handlePriceRangeMaxInput(this.value)" onchange="handlePriceRangeChange()" aria-label="Maximum price budget">
+              <div id="priceMinTooltip" class="price-slider-tooltip min-tooltip" aria-hidden="true">Rs. 0</div>
+              <div id="priceMaxTooltip" class="price-slider-tooltip max-tooltip" aria-hidden="true">Rs. 10,000</div>
+              <input type="range" id="priceRangeMinSlider" class="dual-range-input range-input-min" min="0" max="10000" step="50" value="0" oninput="handlePriceRangeMinInput(this.value)" onchange="handlePriceRangeChange()" onpointerdown="setPriceSliderDragging('min', true)" onpointerup="setPriceSliderDragging('min', false)" ontouchstart="setPriceSliderDragging('min', true)" ontouchend="setPriceSliderDragging('min', false)" onfocus="setPriceSliderDragging('min', true)" onblur="setPriceSliderDragging('min', false)" aria-label="Minimum price budget">
+              <input type="range" id="priceRangeMaxSlider" class="dual-range-input range-input-max" min="0" max="10000" step="50" value="10000" oninput="handlePriceRangeMaxInput(this.value)" onchange="handlePriceRangeChange()" onpointerdown="setPriceSliderDragging('max', true)" onpointerup="setPriceSliderDragging('max', false)" ontouchstart="setPriceSliderDragging('max', true)" ontouchend="setPriceSliderDragging('max', false)" onfocus="setPriceSliderDragging('max', true)" onblur="setPriceSliderDragging('max', false)" aria-label="Maximum price budget">
             </div>
           </div>
         </div>
@@ -3514,6 +3557,58 @@
     });
 
     // --- PRICE RANGE SLIDER CONTROLS ---
+    window.setPriceSliderDragging = function(handleType, isDragging) {
+      const minTooltip = document.getElementById('priceMinTooltip');
+      const maxTooltip = document.getElementById('priceMaxTooltip');
+      if (handleType === 'min' && minTooltip) {
+        if (isDragging) {
+          minTooltip.classList.add('is-dragging');
+        } else {
+          minTooltip.classList.remove('is-dragging');
+        }
+      } else if (handleType === 'max' && maxTooltip) {
+        if (isDragging) {
+          maxTooltip.classList.add('is-dragging');
+        } else {
+          maxTooltip.classList.remove('is-dragging');
+        }
+      }
+    };
+
+    // Clean up drag states on window release
+    window.addEventListener('pointerup', () => {
+      window.setPriceSliderDragging('min', false);
+      window.setPriceSliderDragging('max', false);
+    });
+    window.addEventListener('touchend', () => {
+      window.setPriceSliderDragging('min', false);
+      window.setPriceSliderDragging('max', false);
+    });
+
+    function updatePriceTooltipsPosition() {
+      const minTooltip = document.getElementById('priceMinTooltip');
+      const maxTooltip = document.getElementById('priceMaxTooltip');
+      if (!minTooltip || !maxTooltip) return;
+
+      const totalRange = (catalogPriceBounds.max - catalogPriceBounds.min) || 1;
+      const minRatio = Math.max(0, Math.min(1, (currentPriceFilter.min - catalogPriceBounds.min) / totalRange));
+      const maxRatio = Math.max(0, Math.min(1, (currentPriceFilter.max - catalogPriceBounds.min) / totalRange));
+
+      minTooltip.innerText = "Rs. " + currentPriceFilter.min.toLocaleString();
+      maxTooltip.innerText = "Rs. " + currentPriceFilter.max.toLocaleString();
+
+      // Exact center alignment with slider thumb
+      minTooltip.style.left = `calc(${minRatio * 100}% + ${8 - 16 * minRatio}px)`;
+      maxTooltip.style.left = `calc(${maxRatio * 100}% + ${8 - 16 * maxRatio}px)`;
+
+      // Collision detection: stagger vertically if thumbs are close
+      if ((maxRatio - minRatio) < 0.16) {
+        maxTooltip.classList.add('tooltip-stagger-top');
+      } else {
+        maxTooltip.classList.remove('tooltip-stagger-top');
+      }
+    }
+
     window.handlePriceRangeMinInput = function(val) {
       let minVal = Number(val) || 0;
       if (minVal > currentPriceFilter.max - 50) {
@@ -3530,6 +3625,7 @@
         }
       }
 
+      window.setPriceSliderDragging('min', true);
       updatePriceFilterStateAndUI();
     };
 
@@ -3549,6 +3645,7 @@
         }
       }
 
+      window.setPriceSliderDragging('max', true);
       updatePriceFilterStateAndUI();
     };
 
@@ -3591,6 +3688,8 @@
       if (resetBtn) {
         resetBtn.style.display = isPriceFilterActive ? "inline-flex" : "none";
       }
+
+      updatePriceTooltipsPosition();
 
       if (!selectedCategoryFilter) {
         selectedCategoryFilter = 'all';
@@ -3644,6 +3743,8 @@
       if (resetBtn) {
         resetBtn.style.display = isPriceFilterActive ? "inline-flex" : "none";
       }
+
+      updatePriceTooltipsPosition();
     };
 
     // --- 2. RENDER ENGINE GRID ---

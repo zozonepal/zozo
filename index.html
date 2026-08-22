@@ -2765,24 +2765,44 @@
               </div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
-              <button type="button" class="zozo-scanner-trigger-btn" onclick="window.openReceiptQrScanner && window.openReceiptQrScanner({ targetTxnInputId: 'custFormTxnId', targetScreenshotInputId: 'custFormScreenshot' })">
-                <span>📷</span>
-                <span>Scan / Capture Receipt QR</span>
-              </button>
+            <!-- SAFE PAYMENT MANDATORY BADGE -->
+            <div style="background: rgba(147, 51, 234, 0.06); border: 1px solid rgba(147, 51, 234, 0.22); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; text-align: left; display: flex; align-items: flex-start; gap: 8px;">
+              <span style="font-size: 1.15rem; line-height: 1;">🛡️</span>
+              <div style="font-size: 0.78rem; color: var(--text-main); line-height: 1.4;">
+                <strong style="color: var(--nepal-blue);">Compulsory Safe Payment Verification:</strong>
+                To protect against fraudulent orders and ensure instant verification, both the <strong>Transaction Reference ID / Code</strong> and <strong>Payment Screenshot Proof</strong> are mandatory.
+              </div>
             </div>
 
             <div class="details-form-group">
               <label for="custFormTxnId" style="font-size:0.8rem; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
-                <span>Transaction ID / Reference Code *</span>
-                <span style="color:var(--nepal-blue); font-size:0.7rem;">Auto-parsed via camera scan</span>
+                <span id="custFormTxnLabelText">Transaction ID / Reference Code <span style="color:var(--nepal-red);">* (Compulsory)</span></span>
+                <span style="color:var(--nepal-blue); font-size:0.7rem; font-weight:600;">eSewa / Khalti Ref ID</span>
               </label>
-              <input type="text" id="custFormTxnId" class="details-form-input" placeholder="e.g. 5A92X789" required>
+              <input type="text" id="custFormTxnId" class="details-form-input" placeholder="e.g. 5A92X789 or 12-digit Ref Code" required autocomplete="off" oninput="document.getElementById('custFormTxnError').style.display='none'">
+              <small id="custFormTxnError" style="color: var(--nepal-red); font-size: 0.72rem; font-weight: 600; display: none; margin-top: 2px;">⚠️ Transaction ID / Reference Code is compulsory for safe payment.</small>
             </div>
 
             <div class="details-form-group" style="margin-bottom:0;">
-              <label id="custFormScreenshotLabel" for="custFormScreenshot" style="font-size:0.8rem; font-weight:700;">Upload Payment Screenshot *</label>
-              <input type="file" id="custFormScreenshot" class="details-form-input" accept="image/*" style="font-size:0.8rem; padding:6px;" required>
+              <label id="custFormScreenshotLabel" for="custFormScreenshot" style="font-size:0.8rem; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+                <span id="custFormScreenshotLabelText">Upload Payment Screenshot <span style="color:var(--nepal-red);">* (Compulsory)</span></span>
+                <span style="color:var(--text-muted); font-size:0.7rem; font-weight:600;">JPG, PNG, JPEG</span>
+              </label>
+              <input type="file" id="custFormScreenshot" class="details-form-input" accept="image/*" style="font-size:0.8rem; padding:6px; height: auto;" required onchange="handleIndexScreenshotPreview(this)">
+              
+              <!-- Live Preview Card -->
+              <div id="indexScreenshotPreviewZone" style="display:none; margin-top: 8px; padding: 8px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <img id="indexScreenshotThumb" src="" alt="Screenshot Proof" style="width: 46px; height: 46px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                  <div style="flex: 1; min-width: 0;">
+                    <span style="display: inline-block; font-size: 0.65rem; font-weight: 800; background: #dcfce7; color: #15803d; padding: 1px 6px; border-radius: 4px; margin-bottom: 2px;">✓ Screenshot Attached</span>
+                    <div id="indexScreenshotName" style="font-size: 0.78rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">receipt.jpg</div>
+                    <div id="indexScreenshotSize" style="font-size: 0.7rem; color: var(--text-muted);"></div>
+                  </div>
+                  <button type="button" onclick="clearIndexScreenshot()" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; padding: 3px 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;" title="Remove screenshot">✕ Clear</button>
+                </div>
+              </div>
+              <small id="custFormScreenshotError" style="color: var(--nepal-red); font-size: 0.72rem; font-weight: 600; display: none; margin-top: 2px;">⚠️ Uploading payment screenshot is compulsory for safe payment.</small>
             </div>
           </div>
 
@@ -4567,13 +4587,45 @@
       renderQrPaymentInstructions();
     };
 
+    window.handleIndexScreenshotPreview = function(input) {
+      const previewZone = document.getElementById('indexScreenshotPreviewZone');
+      const thumb = document.getElementById('indexScreenshotThumb');
+      const nameEl = document.getElementById('indexScreenshotName');
+      const sizeEl = document.getElementById('indexScreenshotSize');
+      const errorEl = document.getElementById('custFormScreenshotError');
+
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (nameEl) nameEl.innerText = file.name;
+        if (sizeEl) sizeEl.innerText = (file.size / 1024).toFixed(1) + " KB";
+        if (errorEl) errorEl.style.display = 'none';
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (thumb) thumb.src = e.target.result;
+          if (previewZone) previewZone.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        if (previewZone) previewZone.style.display = 'none';
+      }
+    };
+
+    window.clearIndexScreenshot = function() {
+      const input = document.getElementById('custFormScreenshot');
+      const previewZone = document.getElementById('indexScreenshotPreviewZone');
+      if (input) input.value = '';
+      if (previewZone) previewZone.style.display = 'none';
+    };
+
     window.renderQrPaymentInstructions = function() {
       const qrSection = document.getElementById('qrPaymentDetailsSection');
       const badge = document.getElementById('qrMethodBadge');
       const qrImg = document.getElementById('storeDynamicPaymentQrImage');
       const placeholderMsg = document.getElementById('qrPlaceholderMessage');
       const txnInput = document.getElementById('custFormTxnId');
-      const screenshotLabel = document.getElementById('custFormScreenshotLabel');
+      const txnLabelText = document.getElementById('custFormTxnLabelText');
+      const screenshotLabelText = document.getElementById('custFormScreenshotLabelText');
       const indexCodBox = document.getElementById('indexCodNoticeBox');
       const instructions = document.getElementById('indexPaymentInstructionsText');
 
@@ -4584,7 +4636,8 @@
         indexCodBox.style.display = 'block';
         qrSection.style.display = 'block';
         if (txnInput) txnInput.setAttribute('required', 'true');
-        if (screenshotLabel) screenshotLabel.innerText = "Upload Delivery Payment Screenshot *";
+        if (txnLabelText) txnLabelText.innerHTML = 'Delivery Advance Txn Code <span style="color:var(--nepal-red);">* (Compulsory)</span>';
+        if (screenshotLabelText) screenshotLabelText.innerHTML = 'Delivery Advance Screenshot <span style="color:var(--nepal-red);">* (Compulsory)</span>';
 
         if (codAdvEsewa && codAdvKhalti) {
           codAdvEsewa.className = "method-selector-card" + (indexCodAdvanceMethod === 'eSewa' ? ' active-esewa' : '');
@@ -4593,10 +4646,10 @@
 
         const activeMethod = indexCodAdvanceMethod;
         if (activeMethod === 'eSewa') {
-          badge.innerText = `eSewa - Advance Delivery (Rs. ${calculatedDeliveryChargeAmount})`;
+          badge.innerText = `eSewa - Advance Delivery Charge (Rs. ${calculatedDeliveryChargeAmount})`;
           badge.style.background = "#dcfce7";
           badge.style.color = "#15803d";
-          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDeliveryChargeAmount}</strong> via eSewa. The remaining balance can be paid in cash upon delivery.`;
+          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDeliveryChargeAmount}</strong> via eSewa. The remaining balance will be paid in cash on delivery.`;
           if (storeQrSettings && storeQrSettings.esewaQr) {
             qrImg.src = storeQrSettings.esewaQr;
             qrImg.style.display = "block";
@@ -4606,10 +4659,10 @@
             placeholderMsg.style.display = "block";
           }
         } else {
-          badge.innerText = `Khalti - Advance Delivery (Rs. ${calculatedDeliveryChargeAmount})`;
+          badge.innerText = `Khalti - Advance Delivery Charge (Rs. ${calculatedDeliveryChargeAmount})`;
           badge.style.background = "#f3e8ff";
           badge.style.color = "#6b21a8";
-          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDeliveryChargeAmount}</strong> via Khalti. The remaining balance can be paid in cash upon delivery.`;
+          instructions.innerHTML = `Scan this QR to pay the advance delivery charge of <strong>Rs. ${calculatedDeliveryChargeAmount}</strong> via Khalti. The remaining balance will be paid in cash on delivery.`;
           if (storeQrSettings && storeQrSettings.khaltiQr) {
             qrImg.src = storeQrSettings.khaltiQr;
             qrImg.style.display = "block";
@@ -4625,13 +4678,14 @@
       indexCodBox.style.display = 'none';
       qrSection.style.display = 'block';
       if (txnInput) txnInput.setAttribute('required', 'true');
-      if (screenshotLabel) screenshotLabel.innerText = "Upload Payment Screenshot *";
+      if (txnLabelText) txnLabelText.innerHTML = 'Transaction ID / Reference Code <span style="color:var(--nepal-red);">* (Compulsory)</span>';
+      if (screenshotLabelText) screenshotLabelText.innerHTML = 'Upload Payment Screenshot <span style="color:var(--nepal-red);">* (Compulsory)</span>';
 
       if (selectedPaymentMethod === 'eSewa') {
         badge.innerText = "eSewa Wallet Scan & Pay";
         badge.style.background = "#dcfce7";
         badge.style.color = "#15803d";
-        instructions.innerHTML = "Scan this QR using your payment wallet, complete the transfer, and fill in details below.";
+        instructions.innerHTML = "Scan this QR using your eSewa app, transfer the full amount, and enter the transaction ID & screenshot below.";
         if (storeQrSettings && storeQrSettings.esewaQr) {
           qrImg.src = storeQrSettings.esewaQr;
           qrImg.style.display = "block";
@@ -4644,7 +4698,7 @@
         badge.innerText = "Khalti Card / Wallet Scan & Pay";
         badge.style.background = "#f3e8ff";
         badge.style.color = "#6b21a8";
-        instructions.innerHTML = "Scan this QR using your payment wallet, complete the transfer, and fill in details below.";
+        instructions.innerHTML = "Scan this QR using your Khalti app, transfer the full amount, and enter the transaction ID & screenshot below.";
         if (storeQrSettings && storeQrSettings.khaltiQr) {
           qrImg.src = storeQrSettings.khaltiQr;
           qrImg.style.display = "block";
@@ -4959,19 +5013,29 @@
         let txnIdVal = "";
 
         txnIdVal = document.getElementById('custFormTxnId').value.trim();
+        const txnError = document.getElementById('custFormTxnError');
         if (!txnIdVal) {
-          alert("Please enter your Transaction Reference ID.");
+          if (txnError) txnError.style.display = 'block';
+          document.getElementById('custFormTxnId').focus();
+          alert("⚠️ Compulsory Safe Payment: Please enter your Transaction Reference Code / ID.");
           btn.disabled = false;
           btn.innerText = originalBtnText;
           return;
+        } else {
+          if (txnError) txnError.style.display = 'none';
         }
 
         const fileInput = document.getElementById('custFormScreenshot');
+        const screenshotError = document.getElementById('custFormScreenshotError');
         if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-          alert("Please upload your payment screenshot proof before placing your order.");
+          if (screenshotError) screenshotError.style.display = 'block';
+          if (fileInput) fileInput.focus();
+          alert("⚠️ Compulsory Safe Payment: Please upload your payment screenshot proof before placing your order.");
           btn.disabled = false;
           btn.innerText = originalBtnText;
           return;
+        } else {
+          if (screenshotError) screenshotError.style.display = 'none';
         }
 
         if (fileInput.files && fileInput.files.length > 0) {
@@ -6170,8 +6234,6 @@
     }
   </script>
   <script src="/sw-push-manager.js"></script>
-  <script src="/jsqr.js"></script>
-  <script src="/receipt-qr-scanner.js"></script>
   <script src="/order-history-component.js"></script>
   <script src="/wishlist-component.js"></script>
 </body>

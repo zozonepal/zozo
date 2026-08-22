@@ -459,7 +459,7 @@
           <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px dashed #e2e8f0; padding-bottom:14px; margin-bottom:16px;">
             <div>
               <img src="zozonepal.png" alt="Zozo Nepal" style="height:36px; object-fit:contain; margin-bottom:4px;">
-              <p style="margin:0; font-size:0.75rem; color:#64748b;">Official Purchase Receipt</p>
+              <p style="margin:0; font-size:0.75rem; color:#64748b;">Official Purchase Receipt & Tax Invoice</p>
             </div>
             <div style="text-align:right;">
               <span id="invOrderId" style="font-size:0.85rem; font-weight:800; color:#9333ea; display:block;">#ORDER-ID</span>
@@ -484,9 +484,16 @@
             <span id="invTotalAmount" style="font-size:1.3rem; font-weight:800; color:#9333ea;">Rs. 0</span>
           </div>
 
-          <div style="display:flex; gap:10px;">
-            <button onclick="window.print()" style="flex:1; padding:10px; font-weight:700; background:#9333ea; color:#ffffff; border:none; border-radius:8px; cursor:pointer;">🖨️ Print / Save Receipt</button>
-            <button onclick="document.getElementById('zozoInvoiceModal').style.display='none'" style="padding:10px 16px; font-weight:700; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer;">Close</button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="invDownloadPdfBtn" onclick="OrderHistoryComponent.downloadCurrentInvoicePdf(this)" style="flex:1; min-width:160px; padding:10px 14px; font-weight:800; background:linear-gradient(135deg, #7c3aed, #9333ea); color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(124, 58, 237, 0.25);">
+              <span>📥</span> Download PDF Receipt
+            </button>
+            <button onclick="window.print()" style="padding:10px 14px; font-weight:700; background:#f8fafc; color:#0f172a; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <span>🖨️</span> Print
+            </button>
+            <button onclick="document.getElementById('zozoInvoiceModal').style.display='none'" style="padding:10px 16px; font-weight:700; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer;">
+              Close
+            </button>
           </div>
         </div>
       `;
@@ -690,6 +697,9 @@
               <button class="oh-action-btn" onclick="OrderHistoryComponent.showInvoiceModal('${orderId}')">
                 📄 View Receipt
               </button>
+              <button class="oh-action-btn" style="background:#f5f3ff; color:#7c3aed; border-color:#ddd6fe; font-weight:800;" onclick="OrderHistoryComponent.downloadOrderReceiptPdf('${orderId}', this)">
+                📥 Download PDF
+              </button>
               <button class="oh-action-btn primary" onclick="OrderHistoryComponent.reorderItems('${orderId}')">
                 🔄 Buy Again
               </button>
@@ -699,14 +709,378 @@
       }).join('');
     },
 
+    activeInvoiceOrderId: null,
+
+    ensureJsPdfLoaded: function () {
+      return new Promise((resolve, reject) => {
+        if (window.jspdf && window.jspdf.jsPDF) {
+          return resolve(window.jspdf.jsPDF);
+        }
+        if (window.jsPDF) {
+          return resolve(window.jsPDF);
+        }
+        const existingScript = document.getElementById('zozoJsPdfScript');
+        if (existingScript) {
+          existingScript.addEventListener('load', () => {
+            const cls = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+            if (cls) resolve(cls);
+            else reject(new Error('jsPDF initialized with empty class'));
+          });
+          existingScript.addEventListener('error', () => reject(new Error('Failed to load jsPDF library')));
+          return;
+        }
+        const script = document.createElement('script');
+        script.id = 'zozoJsPdfScript';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = () => {
+          const cls = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+          if (cls) resolve(cls);
+          else reject(new Error('jsPDF loaded without constructor'));
+        };
+        script.onerror = () => reject(new Error('Failed to download jsPDF from CDN'));
+        document.head.appendChild(script);
+      });
+    },
+
+    downloadCurrentInvoicePdf: function (btnEl) {
+      if (!this.activeInvoiceOrderId) {
+        alert("No active order receipt selected for PDF download.");
+        return;
+      }
+      this.downloadOrderReceiptPdf(this.activeInvoiceOrderId, btnEl);
+    },
+
+    downloadOrderReceiptPdf: async function (orderId, triggerBtnEl) {
+      let btn = triggerBtnEl;
+      let originalBtnHtml = '';
+      if (btn) {
+        originalBtnHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳</span> Generating PDF...';
+      }
+
+      try {
+        let order = this.cachedOrders.find(o => o.id === orderId);
+        
+        // Fallback checks if order is not in cachedOrders
+        if (!order) {
+          try {
+            const localSaved = JSON.parse(localStorage.getItem('zozo_user_orders') || '[]');
+            order = localSaved.find(o => o.id === orderId);
+          } catch (e) {}
+        }
+        if (!order && window.currentActiveOrder && window.currentActiveOrder.id === orderId) {
+          order = window.currentActiveOrder;
+        }
+
+        if (!order) {
+          alert("Unable to find full order record for generating PDF receipt.");
+          return;
+        }
+
+        const jsPDFClass = await this.ensureJsPdfLoaded();
+        const doc = new jsPDFClass({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+        const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+        const margin = 14;
+        const contentWidth = pageWidth - (margin * 2); // 182mm
+
+        // 1. Top Decorative Brand Bar
+        doc.setFillColor(124, 58, 237); // #7c3aed
+        doc.rect(0, 0, pageWidth, 5, 'F');
+
+        // 2. Header Container
+        doc.setFillColor(248, 250, 252); // #f8fafc
+        doc.roundedRect(margin, 10, contentWidth, 34, 3, 3, 'F');
+        doc.setDrawColor(226, 232, 240); // #e2e8f0
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, 10, contentWidth, 34, 3, 3, 'S');
+
+        // Brand Name
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(30, 27, 75); // #1e1b4b
+        doc.text('ZOZO NEPAL', margin + 6, 22);
+
+        // Brand Subtitle & Tagline
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(100, 116, 139); // #64748b
+        doc.text("Nepal's Premier Smart Tech & Mobile Accessories Hub", margin + 6, 27);
+        doc.text("Kathmandu, Nepal  •  support@zozonepal.com  •  www.zozonepal.com", margin + 6, 32);
+        doc.text("100% Genuine Certified Goods  •  Zozo Express Nepal Delivery", margin + 6, 37);
+
+        // Right Side: Tax Receipt Badge Box
+        doc.setFillColor(124, 58, 237);
+        doc.roundedRect(pageWidth - margin - 64, 15, 58, 8, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(255, 255, 255);
+        doc.text('OFFICIAL ORDER RECEIPT', pageWidth - margin - 35, 20.5, { align: 'center' });
+
+        const cleanId = (order.id || 'ORDER').substring(0, 20);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(15, 23, 42);
+        doc.text(`ID: #${cleanId}`, pageWidth - margin - 6, 29, { align: 'right' });
+
+        const orderDateStr = order.timestamp && order.timestamp.seconds 
+          ? new Date(order.timestamp.seconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : (order.date || new Date().toLocaleDateString());
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Date: ${orderDateStr}`, pageWidth - margin - 6, 34, { align: 'right' });
+
+        const statusStr = (order.status || 'Pending').toUpperCase();
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        if (statusStr === 'DELIVERED') {
+          doc.setTextColor(22, 163, 74);
+        } else if (statusStr === 'CANCELLED') {
+          doc.setTextColor(220, 38, 38);
+        } else {
+          doc.setTextColor(217, 119, 6);
+        }
+        doc.text(`Status: ${statusStr}`, pageWidth - margin - 6, 39, { align: 'right' });
+
+        let currentY = 50;
+
+        // 3. Two-Column Metadata Box (Customer & Shipping vs. Payment & Verification)
+        const colWidth = (contentWidth - 6) / 2; // ~88mm
+
+        // Left Box: Customer & Delivery Details
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(226, 232, 240);
+        doc.roundedRect(margin, currentY, colWidth, 40, 3, 3, 'FD');
+
+        doc.setFillColor(241, 245, 249);
+        doc.rect(margin, currentY, colWidth, 7.5, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        doc.text('DELIVERY & CUSTOMER DETAILS', margin + 4, currentY + 5.2);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text(`Customer: ${order.customerName || 'Valued Customer'}`, margin + 4, currentY + 13.5);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(71, 85, 105);
+        doc.text(`Phone / Mobile: ${order.customerPhone || 'N/A'}`, margin + 4, currentY + 18.5);
+        
+        const locText = `Destination: ${order.deliveryLocation || 'Nepal'}`;
+        const splitLoc = doc.splitTextToSize(locText, colWidth - 8);
+        doc.text(splitLoc, margin + 4, currentY + 23.5);
+
+        if (order.famousPlace) {
+          doc.text(`Landmark: ${order.famousPlace}`, margin + 4, currentY + 34);
+        }
+
+        // Right Box: Payment & Transaction Summary
+        const rightColX = margin + colWidth + 6;
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(226, 232, 240);
+        doc.roundedRect(rightColX, currentY, colWidth, 40, 3, 3, 'FD');
+
+        doc.setFillColor(241, 245, 249);
+        doc.rect(rightColX, currentY, colWidth, 7.5, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        doc.text('PAYMENT & TRANSACTION INFO', rightColX + 4, currentY + 5.2);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text(`Method: ${order.paymentMethod || 'COD'}`, rightColX + 4, currentY + 13.5);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(71, 85, 105);
+        const txnCode = order.transactionId || order.txCode || 'Verified Transaction';
+        doc.text(`Txn / Ref ID: ${txnCode}`, rightColX + 4, currentY + 18.5);
+        doc.text(`Security Check: Safe Payment Verified`, rightColX + 4, currentY + 23.5);
+
+        if (order.couponApplied) {
+          doc.setTextColor(21, 128, 61);
+          doc.text(`Coupon Applied: ${order.couponApplied} (Rs. ${order.discountGiven || 0} OFF)`, rightColX + 4, currentY + 28.5);
+        } else {
+          doc.text(`Dispatch Channel: Zozo Nepal Express Courier`, rightColX + 4, currentY + 28.5);
+        }
+
+        currentY += 46;
+
+        // 4. Line Items Table Header
+        doc.setFillColor(30, 27, 75); // Dark Purple/Indigo #1e1b4b
+        doc.rect(margin, currentY, contentWidth, 8, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(255, 255, 255);
+        doc.text('#', margin + 4, currentY + 5.5);
+        doc.text('ITEM DESCRIPTION & PRODUCT DETAILS', margin + 14, currentY + 5.5);
+        doc.text('QTY', pageWidth - margin - 62, currentY + 5.5, { align: 'center' });
+        doc.text('UNIT PRICE', pageWidth - margin - 34, currentY + 5.5, { align: 'right' });
+        doc.text('TOTAL', pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
+
+        currentY += 8;
+
+        // Parse items
+        const rawItemsStr = order.productName || 'Zozo Nepal Selected Products';
+        const rawItemsList = rawItemsStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const items = rawItemsList.length > 0 ? rawItemsList : [rawItemsStr];
+
+        const totalBill = Number(order.amountPaid || 0);
+        const discountGiven = Number(order.discountGiven || 0);
+        const subtotal = totalBill + discountGiven;
+        const itemPriceEstimate = items.length > 0 ? Math.round(subtotal / items.length) : subtotal;
+
+        items.forEach((itemText, idx) => {
+          const isEven = idx % 2 === 0;
+          doc.setFillColor(isEven ? 255 : 248, isEven ? 255 : 250, isEven ? 255 : 252);
+          
+          const itemLines = doc.splitTextToSize(itemText, 95);
+          const rowHeight = Math.max(10, (itemLines.length * 4.5) + 5);
+
+          doc.rect(margin, currentY, contentWidth, rowHeight, 'F');
+          doc.setDrawColor(226, 232, 240);
+          doc.line(margin, currentY + rowHeight, pageWidth - margin, currentY + rowHeight);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(15, 23, 42);
+          doc.text(String(idx + 1), margin + 4, currentY + 6);
+          doc.text(itemLines, margin + 14, currentY + 6);
+
+          doc.text('1', pageWidth - margin - 62, currentY + 6, { align: 'center' });
+          doc.text(`Rs. ${itemPriceEstimate.toLocaleString()}`, pageWidth - margin - 34, currentY + 6, { align: 'right' });
+          doc.setFont('helvetica', 'bold');
+          doc.text(`Rs. ${itemPriceEstimate.toLocaleString()}`, pageWidth - margin - 4, currentY + 6, { align: 'right' });
+
+          currentY += rowHeight;
+        });
+
+        currentY += 6;
+
+        // 5. Total & Breakdown Summary Box
+        const summaryX = pageWidth - margin - 82;
+        const summaryWidth = 82;
+
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(summaryX, currentY, summaryWidth, 36, 2, 2, 'F');
+        doc.setDrawColor(226, 232, 240);
+        doc.roundedRect(summaryX, currentY, summaryWidth, 36, 2, 2, 'S');
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(71, 85, 105);
+        doc.text('Items Subtotal:', summaryX + 4, currentY + 7);
+        doc.text(`Rs. ${subtotal.toLocaleString()}`, pageWidth - margin - 4, currentY + 7, { align: 'right' });
+
+        doc.text('Delivery Fee (All Nepal):', summaryX + 4, currentY + 13.5);
+        doc.setTextColor(22, 163, 74);
+        doc.text('FREE (Rs. 0)', pageWidth - margin - 4, currentY + 13.5, { align: 'right' });
+
+        if (discountGiven > 0) {
+          doc.setTextColor(220, 38, 38);
+          doc.text(`Promo Discount:`, summaryX + 4, currentY + 20);
+          doc.text(`- Rs. ${discountGiven.toLocaleString()}`, pageWidth - margin - 4, currentY + 20, { align: 'right' });
+        } else {
+          doc.setTextColor(71, 85, 105);
+          doc.text(`Discount / Voucher:`, summaryX + 4, currentY + 20);
+          doc.text(`Rs. 0`, pageWidth - margin - 4, currentY + 20, { align: 'right' });
+        }
+
+        // Grand Total Highlight Bar
+        doc.setFillColor(124, 58, 237);
+        doc.roundedRect(summaryX + 2, currentY + 24, summaryWidth - 4, 10, 1.5, 1.5, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(255, 255, 255);
+        doc.text('TOTAL PAID:', summaryX + 5, currentY + 30.5);
+        doc.text(`Rs. ${totalBill.toLocaleString()}`, pageWidth - margin - 6, currentY + 30.5, { align: 'right' });
+
+        // Left Box: Verification Stamp & Customer Support Assurance
+        const sealX = margin;
+        const sealWidth = contentWidth - summaryWidth - 8;
+        doc.setFillColor(250, 245, 255); // #faf5ff
+        doc.setDrawColor(221, 214, 254); // #ddd6fe
+        doc.roundedRect(sealX, currentY, sealWidth, 36, 2, 2, 'FD');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(109, 40, 217); // #6d28d9
+        doc.text('✓ 100% OFFICIAL ZOZO NEPAL PURCHASE', sealX + 4, currentY + 7);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text('• 7-Day Free Replacement Guarantee on defective products.', sealX + 4, currentY + 13.5);
+        doc.text('• Dispatched securely via Zozo Express Nepal Courier logistics.', sealX + 4, currentY + 19);
+        doc.text('• Customer Support Email: support@zozonepal.com', sealX + 4, currentY + 24.5);
+        doc.text('• WhatsApp Helpline: +977-9800000000 / +977-9766706246', sealX + 4, currentY + 30);
+
+        currentY += 44;
+
+        // 6. Security Footer & Document Hash
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+
+        currentY += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`This is a computer-generated tax invoice & receipt issued by Zozo Nepal. Document Hash: ${cleanId}-${Date.now().toString(36).toUpperCase()}`, margin, currentY);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, currentY, { align: 'right' });
+
+        // Bottom Decorative Bar
+        doc.setFillColor(124, 58, 237);
+        doc.rect(0, pageHeight - 3, pageWidth, 3, 'F');
+
+        // Save and trigger file download
+        const filename = `ZozoNepal_Receipt_${cleanId}.pdf`;
+        doc.save(filename);
+
+        if (window.showToastNotification) {
+          window.showToastNotification(`📄 Receipt PDF downloaded: ${filename}`);
+        }
+      } catch (err) {
+        console.error("PDF receipt generation error:", err);
+        alert("Could not generate PDF receipt directly. Falling back to the printable receipt window.");
+        this.showInvoiceModal(orderId);
+      } finally {
+        if (btn && originalBtnHtml) {
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
+        }
+      }
+    },
+
     showInvoiceModal: function (orderId) {
-      const order = this.cachedOrders.find(o => o.id === orderId);
+      let order = this.cachedOrders.find(o => o.id === orderId);
+      if (!order) {
+        try {
+          const localSaved = JSON.parse(localStorage.getItem('zozo_user_orders') || '[]');
+          order = localSaved.find(o => o.id === orderId);
+        } catch (e) {}
+      }
       if (!order) return;
+
+      this.activeInvoiceOrderId = order.id || orderId;
 
       document.getElementById('invOrderId').innerText = `#${order.id || 'RECEIPT'}`;
       document.getElementById('invDate').innerText = order.timestamp && order.timestamp.seconds 
         ? new Date(order.timestamp.seconds * 1000).toLocaleDateString()
-        : 'Recent Order';
+        : (order.date || 'Recent Order');
 
       document.getElementById('invCustomerName').innerText = order.customerName || 'Valued Customer';
       document.getElementById('invCustomerPhone').innerText = order.customerPhone || '-';
@@ -753,6 +1127,9 @@
   window.OrderHistoryComponent = OrderHistoryComponent;
   window.openOrderHistoryModal = function (filter) {
     OrderHistoryComponent.openModal(filter);
+  };
+  window.downloadOrderReceiptPdf = function (orderId, btnEl) {
+    OrderHistoryComponent.downloadOrderReceiptPdf(orderId, btnEl);
   };
 
   if (document.readyState === 'loading') {

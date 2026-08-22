@@ -2847,7 +2847,12 @@
         <p style="border-top:1px solid var(--border-color); margin-top:6px; padding-top:4px;"><strong>Items:</strong> <span id="replyReceiptItems"></span></p>
         <p style="font-size:0.95rem; color:var(--nepal-blue); font-weight:800; margin-top:2px;"><strong>Total Amount:</strong> <span id="replyReceiptBill"></span></p>
       </div>
-      <button class="btn btn-crimson" style="width:100%; margin-top:12px; padding:10px;" onclick="document.getElementById('orderSuccessModalFrame').style.display='none'">Continue Shopping</button>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+        <button class="btn" style="width:100%; padding:10px 14px; font-weight:800; background:linear-gradient(135deg, #7c3aed, #9333ea); color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(124, 58, 237, 0.25);" onclick="if(window.lastPlacedOrderId && window.downloadOrderReceiptPdf) { window.downloadOrderReceiptPdf(window.lastPlacedOrderId, this); } else if (window.OrderHistoryComponent) { window.OrderHistoryComponent.openModal(); }">
+          <span>📥</span> Download PDF Receipt
+        </button>
+        <button class="btn btn-crimson" style="width:100%; padding:10px;" onclick="document.getElementById('orderSuccessModalFrame').style.display='none'">Continue Shopping</button>
+      </div>
     </div>
   </div>
 
@@ -5099,9 +5104,13 @@
           const existing = JSON.parse(localStorage.getItem('zozo_user_orders') || '[]');
           existing.unshift(newOrderObj);
           localStorage.setItem('zozo_user_orders', JSON.stringify(existing));
+          window.lastPlacedOrderId = newDocRef.id;
+          window.currentActiveOrder = newOrderObj;
         } catch (e) {
           console.warn("Local order history cache write warning:", e);
         }
+
+        window.lastPlacedOrderId = newDocRef.id;
 
         document.getElementById('replyReceiptName').innerText = temporaryShippingData.name;
         document.getElementById('replyReceiptPhone').innerText = temporaryShippingData.phone;
@@ -6244,6 +6253,7 @@
     }
   </script>
   <script src="/sw-push-manager.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="/order-history-component.js"></script>
   <script src="/wishlist-component.js"></script>
 </body>

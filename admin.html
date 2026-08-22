@@ -906,6 +906,7 @@
       <div class="tabs-rail">
         <button class="tab-trigger active" onclick="switchAdminTab('orders')">🛒 Orders & Sales</button>
         <button class="tab-trigger" onclick="switchAdminTab('products')">📦 Catalog Inventory</button>
+        <button class="tab-trigger" onclick="switchAdminTab('combos')">🎁 Combo Deals</button>
         <button class="tab-trigger" onclick="switchAdminTab('promos')">🏷️ Promo Codes</button>
         <button class="tab-trigger" onclick="switchAdminTab('delivery')">📍 Delivery Rates</button>
         <button class="tab-trigger" onclick="switchAdminTab('banners')">🖼️ Carousel Banners</button>
@@ -955,6 +956,24 @@
 
       <!-- ================== TAB: PRODUCTS ================== -->
       <section id="tabPane-products" class="tab-pane">
+        <!-- Combo Deals Quick Launcher Banner -->
+        <div style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1.5px solid #c4b5fd; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.05);">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #7c3aed; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);">🎁</div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <strong style="color: #5b21b6; font-size: 1rem;">2-Product Combo Deal Builder</strong>
+                <span style="background: #7c3aed; color: #ffffff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">New Feature</span>
+              </div>
+              <span style="font-size: 0.8rem; color: #6d28d9; margin-top: 2px; display: block;">Bundle any 2 catalog products into an irresistible value pack with auto-calculated discounts and composite artwork!</span>
+            </div>
+          </div>
+          <button type="button" onclick="switchAdminTab('combos')" class="action-btn" style="background: #7c3aed; color: #ffffff; font-weight: 700; font-size: 0.82rem; padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(124, 58, 237, 0.25);">
+            <span>⚡ Open Combo Deal Maker</span>
+            <span>➔</span>
+          </button>
+        </div>
+
         <div class="dashboard-grid">
           <!-- Create Catalog Item -->
           <div class="panel-card">
@@ -1064,8 +1083,15 @@
           </div>
 
           <!-- Active Products Inventory -->
-          <div class="panel-card">
-            <h2>📦 Active Inventory Items</h2>
+          <div class="panel-card" style="grid-column: 1 / -1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+              <h2 style="margin: 0;">📦 Active Inventory Items</h2>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" id="invFilterBtn-all" class="action-btn" style="background: var(--nepal-blue); color: white; padding: 5px 12px; font-size: 0.78rem;" onclick="setInventoryFilter('all')">All Items (<span id="invCountAll">0</span>)</button>
+                <button type="button" id="invFilterBtn-standard" class="action-btn" style="background: #e2e8f0; color: #475569; padding: 5px 12px; font-size: 0.78rem;" onclick="setInventoryFilter('standard')">Standard (<span id="invCountStd">0</span>)</button>
+                <button type="button" id="invFilterBtn-combos" class="action-btn" style="background: #f5f3ff; color: #7c3aed; border: 1px solid #c4b5fd; padding: 5px 12px; font-size: 0.78rem;" onclick="setInventoryFilter('combos')">🎁 Combo Deals (<span id="invCountCombos">0</span>)</button>
+              </div>
+            </div>
             <div id="productsListContainer" class="list-feed">
               <div class="feed-item" style="background:#ffffff; display:flex; gap:12px; padding:12px; border:1px solid var(--border-color); border-radius:8px;">
                 <div class="skeleton-box" style="width:45px; height:45px; border-radius:6px; flex-shrink:0;"></div>
@@ -1074,6 +1100,214 @@
                   <div class="skeleton-box" style="width:35%; height:12px;"></div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== TAB: COMBO DEALS ================== -->
+      <section id="tabPane-combos" class="tab-pane">
+        <div class="dashboard-grid">
+          <!-- Combo Deal Builder Studio -->
+          <div class="panel-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <h2 id="comboFormTitle" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>🎁 2-Product Combo Deal Builder</span>
+              </h2>
+              <span style="background: #f3e8ff; color: #7e22ce; font-weight: 700; font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; border: 1px solid #d8b4fe;">2-in-1 Bundle Engine</span>
+            </div>
+            <p class="sub-label" style="margin-bottom: 16px;">Select any 2 active catalog products, configure special combo pricing with instant discount calculations, generate dual-composite artwork, and deploy directly to the live store.</p>
+
+            <form id="comboDealForm">
+              <!-- Dual Product Selector Workspace -->
+              <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                  <span>🛒 Step 1: Select Two Catalog Products to Combine</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center;">
+                  <!-- Product 1 Selector -->
+                  <div style="min-width: 0;">
+                    <label style="font-size: 0.78rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">📦 Product #1 (Base Item) *</label>
+                    <select id="comboProduct1Select" class="form-control" style="font-size: 0.82rem; padding: 8px;" onchange="handleComboProductSelection()" required>
+                      <option value="">-- Choose Product #1 --</option>
+                    </select>
+
+                    <!-- Product 1 Live Card Preview -->
+                    <div id="comboP1PreviewCard" style="display: none; margin-top: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                      <div style="display: flex; gap: 10px; align-items: center;">
+                        <img id="comboP1PreviewImg" src="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; flex-shrink: 0;">
+                        <div style="min-width: 0; flex: 1;">
+                          <strong id="comboP1PreviewTitle" style="font-size: 0.82rem; color: #0f172a; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Product 1</strong>
+                          <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                            <span id="comboP1PreviewPrice" style="color: #2563eb; font-weight: 800; font-size: 0.82rem;">Rs. 0</span>
+                            <span id="comboP1PreviewCategory" class="badge badge-blue" style="font-size: 0.6rem;">category</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Connector / Swap Action -->
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 4px;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #7c3aed; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);">➕</div>
+                    <button type="button" onclick="swapComboProducts()" class="action-btn" style="margin-top: 6px; padding: 3px 8px; font-size: 0.68rem; background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; cursor: pointer; white-space: nowrap;" title="Swap Product 1 & 2">⇄ Swap</button>
+                  </div>
+
+                  <!-- Product 2 Selector -->
+                  <div style="min-width: 0;">
+                    <label style="font-size: 0.78rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">🎁 Product #2 (Bundle Item) *</label>
+                    <select id="comboProduct2Select" class="form-control" style="font-size: 0.82rem; padding: 8px;" onchange="handleComboProductSelection()" required>
+                      <option value="">-- Choose Product #2 --</option>
+                    </select>
+
+                    <!-- Product 2 Live Card Preview -->
+                    <div id="comboP2PreviewCard" style="display: none; margin-top: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                      <div style="display: flex; gap: 10px; align-items: center;">
+                        <img id="comboP2PreviewImg" src="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; flex-shrink: 0;">
+                        <div style="min-width: 0; flex: 1;">
+                          <strong id="comboP2PreviewTitle" style="font-size: 0.82rem; color: #0f172a; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Product 2</strong>
+                          <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                            <span id="comboP2PreviewPrice" style="color: #2563eb; font-weight: 800; font-size: 0.82rem;">Rs. 0</span>
+                            <span id="comboP2PreviewCategory" class="badge badge-blue" style="font-size: 0.6rem;">category</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pricing & Value Engine -->
+              <div style="background: #faf5ff; border: 1.5px solid #e9d5ff; border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-weight: 800; font-size: 0.85rem; color: #581c87; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                  <span>💰 Step 2: Combo Deal Pricing & Savings Calculator</span>
+                  <span style="font-size: 0.78rem; font-weight: 700; color: #7e22ce;">Individual Sum: <strong id="comboOriginalTotalDisplay" style="color: #0f172a; font-size: 0.95rem;">Rs. 0</strong></span>
+                </div>
+
+                <!-- Quick Discount Preset Buttons -->
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 0.72rem; font-weight: 700; color: #6b21a8; display: block; margin-bottom: 6px;">⚡ Quick Bundle Discount Presets:</label>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" onclick="applyComboDiscountPreset(10)" class="action-btn combo-preset-btn" style="padding: 4px 10px; font-size: 0.72rem; background: #ffffff; border: 1px solid #d8b4fe; color: #6b21a8; font-weight: 700; border-radius: 6px;">10% OFF</button>
+                    <button type="button" onclick="applyComboDiscountPreset(15)" class="action-btn combo-preset-btn" style="padding: 4px 10px; font-size: 0.72rem; background: #ffffff; border: 1px solid #d8b4fe; color: #6b21a8; font-weight: 700; border-radius: 6px;">15% OFF</button>
+                    <button type="button" onclick="applyComboDiscountPreset(20)" class="action-btn combo-preset-btn" style="padding: 4px 10px; font-size: 0.72rem; background: #7c3aed; border: 1px solid #7c3aed; color: #ffffff; font-weight: 700; border-radius: 6px;">20% OFF (Popular)</button>
+                    <button type="button" onclick="applyComboDiscountPreset(25)" class="action-btn combo-preset-btn" style="padding: 4px 10px; font-size: 0.72rem; background: #ffffff; border: 1px solid #d8b4fe; color: #6b21a8; font-weight: 700; border-radius: 6px;">25% OFF</button>
+                    <button type="button" onclick="applyComboDiscountPreset(30)" class="action-btn combo-preset-btn" style="padding: 4px 10px; font-size: 0.72rem; background: #ffffff; border: 1px solid #d8b4fe; color: #6b21a8; font-weight: 700; border-radius: 6px;">30% OFF</button>
+                    <button type="button" onclick="applyComboDiscountPreset(35)" class="action-btn combo-preset-btn" style="padding: 4px 10px; font-size: 0.72rem; background: #ffffff; border: 1px solid #d8b4fe; color: #6b21a8; font-weight: 700; border-radius: 6px;">35% OFF</button>
+                    <button type="button" onclick="applyComboDiscountPreset(40)" class="action-btn combo-preset-btn" style="padding: 4px 10px; font-size: 0.72rem; background: #ffffff; border: 1px solid #d8b4fe; color: #6b21a8; font-weight: 700; border-radius: 6px;">40% OFF</button>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="color: #581c87; font-weight: 700;">Combo Selling Price (Rs.) *</label>
+                    <input type="number" id="comboPriceInput" class="form-control" placeholder="e.g. 2199" oninput="handleComboPriceChange()" required>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="color: #581c87; font-weight: 700;">Original Combined Total (Rs.) *</label>
+                    <input type="number" id="comboOldPriceInput" class="form-control" placeholder="e.g. 2798" oninput="handleComboPriceChange()" required>
+                  </div>
+                </div>
+
+                <!-- Live Savings Callout Badge -->
+                <div id="comboSavingsBanner" style="display: none; margin-top: 10px; padding: 10px 14px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; font-weight: 700; color: #15803d; font-size: 0.84rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span>🔥 Customer Value Proposition:</span>
+                    <span id="comboSavedAmount">Save Rs. 0</span>
+                  </div>
+                  <span id="comboSavedPercentBadge" style="background: #16a34a; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 800;">0% OFF</span>
+                </div>
+              </div>
+
+              <!-- Step 3: Combo Artwork Studio -->
+              <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                  <span>🖼️ Step 3: Combo Display Artwork & Cover</span>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" id="comboImgModeAutoBtn" onclick="setComboImageMode('auto')" class="action-btn" style="padding: 3px 8px; font-size: 0.72rem; background: #7c3aed; color: #ffffff; border: none; border-radius: 4px; font-weight: 700;">⚡ Auto 2-in-1 Artwork</button>
+                    <button type="button" id="comboImgModeUploadBtn" onclick="setComboImageMode('upload')" class="action-btn" style="padding: 3px 8px; font-size: 0.72rem; background: #e2e8f0; color: #475569; border: none; border-radius: 4px; font-weight: 700;">📁 Custom Upload</button>
+                  </div>
+                </div>
+
+                <div id="comboAutoImageSection">
+                  <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">Our smart compositor automatically combines the images of Product #1 and Product #2 side-by-side with high-contrast combo branding.</p>
+                  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <button type="button" id="generateComboArtworkBtn" onclick="triggerComboArtworkGeneration()" class="action-btn" style="background: #7c3aed; color: #ffffff; padding: 7px 16px; font-size: 0.78rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer;">
+                      🎨 Re-Generate Composite Artwork
+                    </button>
+                    <span id="comboArtworkGenStatus" style="font-size: 0.75rem; color: #15803d; font-weight: 600;"></span>
+                  </div>
+                </div>
+
+                <div id="comboUploadImageSection" style="display: none;">
+                  <label style="font-size: 0.78rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Upload Dedicated Combo Banner Image</label>
+                  <input type="file" id="comboCustomImgFile" class="form-control" accept="image/*">
+                </div>
+
+                <!-- Live Artwork Preview Box -->
+                <div id="comboArtworkPreviewZone" style="display: none; margin-top: 12px; background: #0f172a; padding: 12px; border-radius: 8px; text-align: center;">
+                  <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 6px;">Live Combo Cover Preview</span>
+                  <img id="comboArtworkPreviewImg" src="" style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 6px; border: 1px solid #334155;">
+                </div>
+              </div>
+
+              <!-- Step 4: Product Info & Copywriting -->
+              <div class="form-group">
+                <label>Combo Deal Title / Name *</label>
+                <input type="text" id="comboNameInput" class="form-control" placeholder="e.g. Smart Watch + Wireless Earbuds Mega Combo" required>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                  <label>Category Tag *</label>
+                  <input type="text" id="comboCategoryTag" class="form-control" value="combo-deals" required>
+                </div>
+                <div class="form-group">
+                  <label>Color Variants (Optional)</label>
+                  <input type="text" id="comboColorsInput" class="form-control" placeholder="Combo Pack, Black+Black, White+Black">
+                </div>
+              </div>
+
+              <div class="form-group" style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 14px;">
+                <label style="font-weight: 700; color: var(--text-main); display: block; margin-bottom: 8px;">📌 Feature Affiliation Flags</label>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" id="comboIsHot" checked> 🔥 Hot Combo Deal
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" id="comboIsGaming"> 🎮 Gaming Combo Pack
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Short Description *</label>
+                <textarea id="comboDescriptionInput" class="form-control" style="height: 70px;" placeholder="Catchy promo pitch for this 2-in-1 combo bundle..." required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>What's Included & Highlights (One line per bullet) *</label>
+                <textarea id="comboSpecsInput" class="form-control" style="height: 110px;" placeholder="📦 1x Primary Item&#10;📦 1x Secondary Item&#10;💰 Special Combo Discount&#10;⚡ 100% Genuine Zozo Nepal Guarantee" required></textarea>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button type="submit" id="deployComboSubmitBtn" class="submit-btn" style="background: #7c3aed; color: #ffffff; flex: 1;">🚀 Deploy Combo Deal Live</button>
+                <button type="button" id="cancelComboEditBtn" class="submit-btn" style="background: #ef4444; display: none; flex: 1;" onclick="cancelComboEdit()">Cancel Edit</button>
+                <button type="button" class="action-btn" style="background: #e2e8f0; color: #334155; font-weight: 700; padding: 0 16px;" onclick="resetComboBuilder()">🔄 Clear</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Active Combo Deals Inventory Card -->
+          <div class="panel-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <h2 style="margin: 0;">🎁 Active Combo Deals (<span id="comboDealsCountBadge">0</span>)</h2>
+              <button type="button" onclick="fetchInventoryProducts()" class="action-btn" style="font-size: 0.72rem; padding: 4px 10px; background: #e2e8f0; color: #334155; border: none; border-radius: 6px; cursor: pointer; font-weight: 700;">🔄 Sync Combos</button>
+            </div>
+            <p class="sub-label">Manage active 2-in-1 bundles, update prices, toggle Hot status, or remove expired combo offers.</p>
+
+            <div id="comboDealsListContainer" class="list-feed">
               <div class="feed-item" style="background:#ffffff; display:flex; gap:12px; padding:12px; border:1px solid var(--border-color); border-radius:8px;">
                 <div class="skeleton-box" style="width:45px; height:45px; border-radius:6px; flex-shrink:0;"></div>
                 <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
@@ -2151,6 +2385,7 @@
       // --- 1. DYNAMIC CATEGORIES LOGIC ---
       let globalCategoriesCache = [];
       const defaultCategories = [
+        { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' },
         { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
         { code: 'headphones', name: 'Headphones', emoji: '🎧' },
         { code: 'charger', name: 'Chargers', emoji: '🔌' },
@@ -2490,12 +2725,134 @@
         }
       };
 
-      async function fetchInventoryProducts() {
+      // --- INVENTORY FILTER & COMBO STATE ---
+      let activeInventoryFilter = 'all';
+      let editingComboId = null;
+      let currentComboImgMode = 'auto';
+      let comboCustomImgBase64 = '';
+      let comboGeneratedArtworkBase64 = '';
+      let comboSelectedP1 = null;
+      let comboSelectedP2 = null;
+
+      window.setInventoryFilter = (filterType) => {
+        activeInventoryFilter = filterType;
+        ['all', 'standard', 'combos'].forEach(t => {
+          const btn = document.getElementById(`invFilterBtn-${t}`);
+          if (btn) {
+            if (t === filterType) {
+              btn.style.background = t === 'combos' ? '#7c3aed' : 'var(--nepal-blue)';
+              btn.style.color = '#ffffff';
+              btn.style.borderColor = 'transparent';
+            } else {
+              btn.style.background = '#e2e8f0';
+              btn.style.color = '#475569';
+              btn.style.borderColor = t === 'combos' ? '#c4b5fd' : 'transparent';
+            }
+          }
+        });
+        renderInventoryProductsGrid();
+      };
+
+      function renderInventoryProductsGrid() {
         const container = document.getElementById('productsListContainer');
+        if (!container) return;
+
+        if (!globalProductsCache || globalProductsCache.length === 0) {
+          container.innerHTML = `<p style="text-align:center; color:gray; padding:20px;">No products currently in stock.</p>`;
+          return;
+        }
+
+        let filtered = globalProductsCache;
+        if (activeInventoryFilter === 'standard') {
+          filtered = globalProductsCache.filter(p => !p.isCombo && p.category !== 'combo-deals');
+        } else if (activeInventoryFilter === 'combos') {
+          filtered = globalProductsCache.filter(p => !!p.isCombo || p.category === 'combo-deals');
+        }
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1;">
+            <p style="font-weight:700; margin-bottom:4px;">No items match this filter.</p>
+            <small>Switch filter or create a new ${activeInventoryFilter === 'combos' ? 'combo deal' : 'product'}.</small>
+          </div>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map(item => {
+          const colorsStr = item.colors ? (Array.isArray(item.colors) ? item.colors.map(c => c.name || 'Standard').join(', ') : item.colors) : 'Standard';
+          const isHot = !!item.isHot;
+          const isGaming = !!item.isGaming;
+          const isCombo = !!item.isCombo || item.category === 'combo-deals';
+          const savings = (item.oldPrice && item.oldPrice > item.price) ? (item.oldPrice - item.price) : 0;
+          const savingsPercent = (item.oldPrice && item.oldPrice > item.price) ? Math.round(((item.oldPrice - item.price) / item.oldPrice) * 100) : 0;
+
+          // If combo item, render linked items preview
+          let comboComponentsHtml = '';
+          if (isCombo && item.comboProducts && Array.isArray(item.comboProducts) && item.comboProducts.length > 0) {
+            comboComponentsHtml = `
+              <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:6px; padding:6px 10px; margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:0.75rem;">
+                <span style="font-weight:800; color:#7c3aed;">🎁 Bundled Items:</span>
+                ${item.comboProducts.map(cp => `
+                  <span style="background:#ffffff; border:1px solid #c4b5fd; padding:2px 8px; border-radius:4px; color:#5b21b6; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+                    ${cp.imageUrl ? `<img src="${cp.imageUrl}" style="width:14px; height:14px; border-radius:2px; object-fit:cover;">` : '📦'}
+                    ${cp.name} (Rs. ${cp.price})
+                  </span>
+                `).join('<span style="color:#7c3aed; font-weight:800;">+</span>')}
+              </div>
+            `;
+          }
+
+          return `
+            <div class="feed-item" style="background:#ffffff; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; border: 1.5px solid ${isCombo ? '#c4b5fd' : 'var(--border-color)'}; border-radius: 8px; box-shadow: ${isCombo ? '0 2px 5px rgba(124, 58, 237, 0.05)' : 'none'};">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap: 12px; min-width: 0;">
+                <div style="display:flex; align-items:center; gap:12px; min-width: 0; flex: 1;">
+                  <div style="position:relative; flex-shrink:0;">
+                    <img src="${item.imageUrl}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color);">
+                    ${isCombo ? `<span style="position:absolute; bottom:-4px; right:-4px; background:#7c3aed; color:#fff; font-size:0.55rem; font-weight:900; padding:1px 4px; border-radius:3px;">COMBO</span>` : ''}
+                  </div>
+                  <div style="min-width: 0; flex: 1;">
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                      <strong style="font-size:0.95rem; color:var(--text-main); overflow-wrap: anywhere; word-break: break-word;">${item.name}</strong>
+                      ${isCombo ? `<span style="background:#ede9fe; color:#6d28d9; border:1px solid #c4b5fd; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">🎁 2-in-1 Combo</span>` : ''}
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                      <span style="color:var(--nepal-blue); font-weight:800;">Rs. ${Number(item.price).toLocaleString()}</span> 
+                      ${item.oldPrice ? `<span style="text-decoration:line-through; font-size:0.75rem; color:gray;">Rs. ${Number(item.oldPrice).toLocaleString()}</span>` : ''}
+                      ${savings > 0 ? `<span style="color:#15803d; font-weight:700; font-size:0.75rem; background:#dcfce7; padding:1px 5px; border-radius:3px;">Save Rs. ${savings.toLocaleString()} (${savingsPercent}% OFF)</span>` : ''}
+                      &bull; <span class="badge badge-blue" style="font-size:0.6rem;">${item.category}</span>
+                    </div>
+                    ${!isCombo ? `<small style="font-size:0.75rem; color:gray; display:block; margin-top:1px;">Colors: ${colorsStr}</small>` : ''}
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-shrink: 0; align-items: center;">
+                  <button class="action-btn edit-btn" style="padding: 6px 14px; min-height: 36px; font-size:0.8rem; background: ${isCombo ? '#7c3aed' : 'var(--nepal-blue)'}; color: white; white-space: nowrap; flex-shrink: 0;" onclick="${isCombo ? `startEditCombo('${item.id}')` : `startEditProduct('${item.id}')`}">Edit</button>
+                  <button class="action-btn btn-danger remove-btn" style="padding: 6px 14px; min-height: 36px; font-size:0.8rem; white-space: nowrap; flex-shrink: 0;" onclick="deleteCatalogProduct('${item.id}')">Remove</button>
+                </div>
+              </div>
+              
+              ${comboComponentsHtml}
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; align-items: center;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Sections:</span>
+                <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isHot ? '#ef4444' : '#e2e8f0'}; color: ${isHot ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isHot', ${isHot})">
+                  🔥 Hot
+                </button>
+                <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isGaming ? '#3b82f6' : '#e2e8f0'}; color: ${isGaming ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isGaming', ${isGaming})">
+                  🎮 Gaming
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      async function fetchInventoryProducts() {
         try {
           const snapshot = await getDocs(collection(db, "products"));
           if (snapshot.empty) {
-            container.innerHTML = `<p style="text-align:center; color:gray; padding:20px;">No products currently in stock.</p>`;
+            globalProductsCache = [];
+            renderInventoryProductsGrid();
+            populateComboProductSelects();
+            renderComboDealsList();
             return;
           }
 
@@ -2505,52 +2862,35 @@
           }));
           globalProductsCache = rawProducts;
 
-          // Sort client-side (newest first, fallback to Unix epoch if timestamp missing)
+          // Sort client-side (newest first)
           rawProducts.sort((a, b) => {
             const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
             const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : new Date(0);
             return tB - tA;
           });
 
-          container.innerHTML = rawProducts.map(item => {
-            const colorsStr = item.colors ? (Array.isArray(item.colors) ? item.colors.map(c => c.name || 'Standard').join(', ') : item.colors) : 'Standard';
-            const isHot = !!item.isHot;
-            const isGaming = !!item.isGaming;
+          // Update counts
+          const totalCount = rawProducts.length;
+          const comboCount = rawProducts.filter(p => !!p.isCombo || p.category === 'combo-deals').length;
+          const stdCount = totalCount - comboCount;
 
-            return `
-              <div class="feed-item" style="background:#ffffff; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap: 12px; min-width: 0;">
-                  <div style="display:flex; align-items:center; gap:12px; min-width: 0; flex: 1;">
-                    <img src="${item.imageUrl}" style="width:45px; height:45px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color); flex-shrink: 0;">
-                    <div style="min-width: 0; flex: 1;">
-                      <strong style="font-size:0.95rem; color:var(--text-main); display: block; overflow-wrap: anywhere; word-break: break-word;">${item.name}</strong>
-                      <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
-                        <span style="color:var(--nepal-blue); font-weight:800;">Rs. ${item.price}</span> 
-                        &bull; <span class="badge badge-blue" style="font-size:0.6rem;">${item.category}</span>
-                      </div>
-                      <small style="font-size:0.75rem; color:gray; display:block; margin-top:1px;">Colors: ${colorsStr}</small>
-                    </div>
-                  </div>
-                  <div style="display: flex; gap: 8px; flex-shrink: 0; align-items: center;">
-                    <button class="action-btn edit-btn" style="padding: 6px 14px; min-height: 36px; font-size:0.8rem; background: var(--nepal-blue); color: white; white-space: nowrap; flex-shrink: 0;" onclick="startEditProduct('${item.id}')">Edit</button>
-                    <button class="action-btn btn-danger remove-btn" style="padding: 6px 14px; min-height: 36px; font-size:0.8rem; white-space: nowrap; flex-shrink: 0;" onclick="deleteCatalogProduct('${item.id}')">Remove</button>
-                  </div>
-                </div>
-                
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; align-items: center;">
-                  <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Sections:</span>
-                  <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isHot ? '#ef4444' : '#e2e8f0'}; color: ${isHot ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isHot', ${isHot})">
-                    🔥 Hot
-                  </button>
-                  <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isGaming ? '#3b82f6' : '#e2e8f0'}; color: ${isGaming ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isGaming', ${isGaming})">
-                    🎮 Gaming
-                  </button>
-                </div>
-              </div>
-            `;
-          }).join('');
+          const countAllEl = document.getElementById('invCountAll');
+          const countStdEl = document.getElementById('invCountStd');
+          const countCombosEl = document.getElementById('invCountCombos');
+          const countBadgeEl = document.getElementById('comboDealsCountBadge');
+
+          if (countAllEl) countAllEl.innerText = totalCount;
+          if (countStdEl) countStdEl.innerText = stdCount;
+          if (countCombosEl) countCombosEl.innerText = comboCount;
+          if (countBadgeEl) countBadgeEl.innerText = comboCount;
+
+          renderInventoryProductsGrid();
+          populateComboProductSelects();
+          renderComboDealsList();
         } catch (e) { 
-          container.innerHTML = "Error syncing products catalog."; 
+          console.error("Error fetching inventory:", e);
+          const container = document.getElementById('productsListContainer');
+          if (container) container.innerHTML = "Error syncing products catalog."; 
         }
       }
 
@@ -2559,6 +2899,659 @@
           await deleteDoc(doc(db, "products", docId));
           fetchInventoryProducts();
         }
+      };
+
+      // --- 🎁 2-PRODUCT COMBO DEAL ENGINE & COMPOSITOR ---
+      
+      // Helper to load image for canvas safely
+      function loadCanvasImage(src) {
+        return new Promise((resolve) => {
+          if (!src) return resolve(null);
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve(img);
+          img.onerror = () => {
+            console.warn("Could not load image into canvas:", src.substring(0, 50));
+            resolve(null);
+          };
+          img.src = src;
+        });
+      }
+
+      window.populateComboProductSelects = () => {
+        const sel1 = document.getElementById('comboProduct1Select');
+        const sel2 = document.getElementById('comboProduct2Select');
+        if (!sel1 || !sel2) return;
+
+        const currentVal1 = sel1.value;
+        const currentVal2 = sel2.value;
+
+        // Filter standard products (or all catalog items)
+        const candidates = globalProductsCache.filter(p => !p.isCombo && p.category !== 'combo-deals');
+        const listToUse = candidates.length >= 2 ? candidates : globalProductsCache;
+
+        let optionsHtml = '<option value="">-- Choose a Catalog Product --</option>';
+        listToUse.forEach(p => {
+          optionsHtml += `<option value="${p.id}">📦 ${p.name} — Rs. ${Number(p.price).toLocaleString()} [${p.category || 'general'}]</option>`;
+        });
+
+        sel1.innerHTML = optionsHtml;
+        sel2.innerHTML = optionsHtml;
+
+        if (currentVal1) sel1.value = currentVal1;
+        if (currentVal2) sel2.value = currentVal2;
+      };
+
+      window.handleComboProductSelection = async () => {
+        const id1 = document.getElementById('comboProduct1Select').value;
+        const id2 = document.getElementById('comboProduct2Select').value;
+
+        comboSelectedP1 = globalProductsCache.find(p => p.id === id1) || null;
+        comboSelectedP2 = globalProductsCache.find(p => p.id === id2) || null;
+
+        // Render Product 1 preview card
+        const p1Card = document.getElementById('comboP1PreviewCard');
+        if (comboSelectedP1) {
+          document.getElementById('comboP1PreviewImg').src = comboSelectedP1.imageUrl || 'zozonepal.png';
+          document.getElementById('comboP1PreviewTitle').innerText = comboSelectedP1.name || 'Product 1';
+          document.getElementById('comboP1PreviewPrice').innerText = `Rs. ${Number(comboSelectedP1.price).toLocaleString()}`;
+          document.getElementById('comboP1PreviewCategory').innerText = comboSelectedP1.category || 'item';
+          p1Card.style.display = 'block';
+        } else {
+          p1Card.style.display = 'none';
+        }
+
+        // Render Product 2 preview card
+        const p2Card = document.getElementById('comboP2PreviewCard');
+        if (comboSelectedP2) {
+          document.getElementById('comboP2PreviewImg').src = comboSelectedP2.imageUrl || 'zozonepal.png';
+          document.getElementById('comboP2PreviewTitle').innerText = comboSelectedP2.name || 'Product 2';
+          document.getElementById('comboP2PreviewPrice').innerText = `Rs. ${Number(comboSelectedP2.price).toLocaleString()}`;
+          document.getElementById('comboP2PreviewCategory').innerText = comboSelectedP2.category || 'item';
+          p2Card.style.display = 'block';
+        } else {
+          p2Card.style.display = 'none';
+        }
+
+        // Compute pricing
+        if (comboSelectedP1 && comboSelectedP2) {
+          const sumOriginal = (Number(comboSelectedP1.price) || 0) + (Number(comboSelectedP2.price) || 0);
+          document.getElementById('comboOriginalTotalDisplay').innerText = `Rs. ${sumOriginal.toLocaleString()}`;
+          document.getElementById('comboOldPriceInput').value = sumOriginal;
+
+          // If combo price is empty or was from previous calculation, set default 20% discount
+          const currentPriceInput = document.getElementById('comboPriceInput');
+          if (!currentPriceInput.value || editingComboId === null) {
+            const defaultDiscounted = Math.round(sumOriginal * 0.80);
+            currentPriceInput.value = defaultDiscounted;
+          }
+
+          handleComboPriceChange();
+
+          // Auto-generate title if not currently editing custom name
+          const nameInput = document.getElementById('comboNameInput');
+          if (!editingComboId || !nameInput.value) {
+            nameInput.value = `${comboSelectedP1.name} + ${comboSelectedP2.name} 2-in-1 Combo Pack`;
+          }
+
+          // Auto-generate description
+          const descInput = document.getElementById('comboDescriptionInput');
+          if (!editingComboId || !descInput.value) {
+            descInput.value = `✨ Special 2-in-1 Value Deal: Get the ${comboSelectedP1.name} and ${comboSelectedP2.name} bundled together at an unbeatable discounted combo price! Limited stock bundle package.`;
+          }
+
+          // Auto-generate specifications
+          const specsInput = document.getElementById('comboSpecsInput');
+          if (!editingComboId || !specsInput.value) {
+            const savings = Math.max(0, sumOriginal - (Number(currentPriceInput.value) || 0));
+            specsInput.value = `📦 Includes: 1x ${comboSelectedP1.name}\n📦 Includes: 1x ${comboSelectedP2.name}\n💰 Original Individual Value: Rs. ${sumOriginal.toLocaleString()} (Save Rs. ${savings.toLocaleString()})\n⚡ 100% Genuine Zozo Nepal Quality Guarantee\n🚚 Express Fast Delivery across all of Nepal\n🔒 Verified Safe Payment via Screenshot & Transaction Code`;
+          }
+
+          // Trigger automated artwork compositor if in auto mode
+          if (currentComboImgMode === 'auto') {
+            await triggerComboArtworkGeneration();
+          }
+        } else {
+          document.getElementById('comboOriginalTotalDisplay').innerText = 'Rs. 0';
+          document.getElementById('comboSavingsBanner').style.display = 'none';
+        }
+      };
+
+      window.swapComboProducts = () => {
+        const sel1 = document.getElementById('comboProduct1Select');
+        const sel2 = document.getElementById('comboProduct2Select');
+        const temp = sel1.value;
+        sel1.value = sel2.value;
+        sel2.value = temp;
+        handleComboProductSelection();
+      };
+
+      window.applyComboDiscountPreset = (percent) => {
+        const oldPrice = Number(document.getElementById('comboOldPriceInput').value) || 0;
+        if (oldPrice <= 0) {
+          alert("Please select Product #1 and Product #2 first.");
+          return;
+        }
+        const discounted = Math.round(oldPrice * (1 - percent / 100));
+        document.getElementById('comboPriceInput').value = discounted;
+        handleComboPriceChange();
+
+        if (currentComboImgMode === 'auto' && comboSelectedP1 && comboSelectedP2) {
+          triggerComboArtworkGeneration();
+        }
+      };
+
+      window.handleComboPriceChange = () => {
+        const comboPrice = Number(document.getElementById('comboPriceInput').value) || 0;
+        const oldPrice = Number(document.getElementById('comboOldPriceInput').value) || 0;
+        const banner = document.getElementById('comboSavingsBanner');
+        const savedAmountEl = document.getElementById('comboSavedAmount');
+        const savedPercentBadge = document.getElementById('comboSavedPercentBadge');
+
+        if (oldPrice > 0 && comboPrice > 0 && oldPrice > comboPrice) {
+          const saved = oldPrice - comboPrice;
+          const pct = Math.round((saved / oldPrice) * 100);
+          savedAmountEl.innerText = `Save Rs. ${saved.toLocaleString()}`;
+          savedPercentBadge.innerText = `${pct}% OFF`;
+          banner.style.display = 'flex';
+        } else {
+          banner.style.display = 'none';
+        }
+      };
+
+      window.setComboImageMode = (mode) => {
+        currentComboImgMode = mode;
+        const autoBtn = document.getElementById('comboImgModeAutoBtn');
+        const uploadBtn = document.getElementById('comboImgModeUploadBtn');
+        const autoSec = document.getElementById('comboAutoImageSection');
+        const uploadSec = document.getElementById('comboUploadImageSection');
+
+        if (mode === 'auto') {
+          autoBtn.style.background = '#7c3aed';
+          autoBtn.style.color = '#ffffff';
+          uploadBtn.style.background = '#e2e8f0';
+          uploadBtn.style.color = '#475569';
+          autoSec.style.display = 'block';
+          uploadSec.style.display = 'none';
+          if (comboGeneratedArtworkBase64) {
+            document.getElementById('comboArtworkPreviewImg').src = comboGeneratedArtworkBase64;
+            document.getElementById('comboArtworkPreviewZone').style.display = 'block';
+          }
+        } else {
+          uploadBtn.style.background = '#7c3aed';
+          uploadBtn.style.color = '#ffffff';
+          autoBtn.style.background = '#e2e8f0';
+          autoBtn.style.color = '#475569';
+          autoSec.style.display = 'none';
+          uploadSec.style.display = 'block';
+          if (comboCustomImgBase64) {
+            document.getElementById('comboArtworkPreviewImg').src = comboCustomImgBase64;
+            document.getElementById('comboArtworkPreviewZone').style.display = 'block';
+          }
+        }
+      };
+
+      // Custom combo image upload listener
+      const customImgInput = document.getElementById('comboCustomImgFile');
+      if (customImgInput) {
+        customImgInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          try {
+            const compressed = await compressAndConvertImage(file, 1800);
+            comboCustomImgBase64 = compressed;
+            document.getElementById('comboArtworkPreviewImg').src = compressed;
+            document.getElementById('comboArtworkPreviewZone').style.display = 'block';
+          } catch (err) {
+            console.error("Error reading combo custom image:", err);
+            alert("Could not load custom combo image.");
+          }
+        });
+      }
+
+      // HIGH-FIDELITY CANVAS COMPOSITOR FOR 2-PRODUCT COMBO ARTWORK
+      window.triggerComboArtworkGeneration = async () => {
+        if (!comboSelectedP1 || !comboSelectedP2) {
+          alert("Please select Product #1 and Product #2 first.");
+          return;
+        }
+
+        const statusEl = document.getElementById('comboArtworkGenStatus');
+        const genBtn = document.getElementById('generateComboArtworkBtn');
+        if (statusEl) statusEl.innerText = "⏳ Generating dual composite artwork...";
+        if (genBtn) genBtn.disabled = true;
+
+        try {
+          const comboPrice = Number(document.getElementById('comboPriceInput').value) || (comboSelectedP1.price + comboSelectedP2.price);
+          const oldPrice = Number(document.getElementById('comboOldPriceInput').value) || (comboSelectedP1.price + comboSelectedP2.price);
+          
+          const artworkDataUrl = await generateCompositeComboArtwork(comboSelectedP1, comboSelectedP2, comboPrice, oldPrice);
+          if (artworkDataUrl) {
+            comboGeneratedArtworkBase64 = artworkDataUrl;
+            document.getElementById('comboArtworkPreviewImg').src = artworkDataUrl;
+            document.getElementById('comboArtworkPreviewZone').style.display = 'block';
+            if (statusEl) statusEl.innerText = "✅ 2-in-1 Composite Artwork Ready!";
+          }
+        } catch (err) {
+          console.error("Error in canvas compositor:", err);
+          if (statusEl) statusEl.innerText = "⚠️ Artwork generation warning, using fallback.";
+        } finally {
+          if (genBtn) genBtn.disabled = false;
+        }
+      };
+
+      async function generateCompositeComboArtwork(p1, p2, comboPrice, oldPrice) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1000;
+        canvas.height = 700;
+        const ctx = canvas.getContext('2d');
+
+        // 1. Background Gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, 1000, 700);
+        bgGrad.addColorStop(0, '#0f172a');
+        bgGrad.addColorStop(0.5, '#1e1b4b');
+        bgGrad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, 1000, 700);
+
+        // 2. Glow Accents
+        const glowLeft = ctx.createRadialGradient(250, 320, 20, 250, 320, 280);
+        glowLeft.addColorStop(0, 'rgba(124, 58, 237, 0.35)');
+        glowLeft.addColorStop(1, 'rgba(124, 58, 237, 0)');
+        ctx.fillStyle = glowLeft;
+        ctx.beginPath();
+        ctx.arc(250, 320, 280, 0, Math.PI * 2);
+        ctx.fill();
+
+        const glowRight = ctx.createRadialGradient(750, 320, 20, 750, 320, 280);
+        glowRight.addColorStop(0, 'rgba(219, 39, 119, 0.35)');
+        glowRight.addColorStop(1, 'rgba(219, 39, 119, 0)');
+        ctx.fillStyle = glowRight;
+        ctx.beginPath();
+        ctx.arc(750, 320, 280, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3. Top Header Ribbon
+        const ribbonGrad = ctx.createLinearGradient(0, 0, 1000, 0);
+        ribbonGrad.addColorStop(0, '#7c3aed');
+        ribbonGrad.addColorStop(0.5, '#9333ea');
+        ribbonGrad.addColorStop(1, '#db2777');
+        ctx.fillStyle = ribbonGrad;
+        ctx.fillRect(0, 0, 1000, 70);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🎁 ZOZO TECH • 2-IN-1 MEGA COMBO DEAL', 500, 35);
+
+        // Load images
+        const [img1, img2] = await Promise.all([
+          loadCanvasImage(p1.imageUrl),
+          loadCanvasImage(p2.imageUrl)
+        ]);
+
+        // Helper to draw rounded rectangle
+        function drawRoundedRect(x, y, w, h, radius, fill, stroke) {
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y);
+          ctx.lineTo(x + w - radius, y);
+          ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+          ctx.lineTo(x + w, y + h - radius);
+          ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+          ctx.lineTo(x + radius, y + h);
+          ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+          ctx.lineTo(x, y + radius);
+          ctx.quadraticCurveTo(x, y, x + radius, y);
+          ctx.closePath();
+          if (fill) {
+            ctx.fillStyle = fill;
+            ctx.fill();
+          }
+          if (stroke) {
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+        }
+
+        // Draw Product 1 Card (Left: x 50, y 100, w 410, h 470)
+        drawRoundedRect(50, 100, 410, 470, 16, '#ffffff', '#c4b5fd');
+        if (img1) {
+          // Draw image centered in 370x320 area
+          const maxW = 370, maxH = 320;
+          let dw = img1.width, dh = img1.height;
+          const ratio = Math.min(maxW / dw, maxH / dh);
+          dw = dw * ratio;
+          dh = dh * ratio;
+          const dx = 50 + (410 - dw) / 2;
+          const dy = 120 + (320 - dh) / 2;
+          ctx.drawImage(img1, dx, dy, dw, dh);
+        } else {
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(p1.name, 255, 270);
+        }
+
+        // P1 Details Box inside card
+        drawRoundedRect(65, 450, 380, 105, 10, '#f8fafc', '#e2e8f0');
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        const p1Title = p1.name.length > 28 ? (p1.name.substring(0, 26) + '...') : p1.name;
+        ctx.fillText(p1Title, 255, 485);
+        ctx.fillStyle = '#2563eb';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText(`Value: Rs. ${Number(p1.price).toLocaleString()}`, 255, 525);
+
+        // Draw Product 2 Card (Right: x 540, y 100, w 410, h 470)
+        drawRoundedRect(540, 100, 410, 470, 16, '#ffffff', '#fbcfe8');
+        if (img2) {
+          const maxW = 370, maxH = 320;
+          let dw = img2.width, dh = img2.height;
+          const ratio = Math.min(maxW / dw, maxH / dh);
+          dw = dw * ratio;
+          dh = dh * ratio;
+          const dx = 540 + (410 - dw) / 2;
+          const dy = 120 + (320 - dh) / 2;
+          ctx.drawImage(img2, dx, dy, dw, dh);
+        } else {
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(p2.name, 745, 270);
+        }
+
+        // P2 Details Box inside card
+        drawRoundedRect(555, 450, 380, 105, 10, '#f8fafc', '#e2e8f0');
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        const p2Title = p2.name.length > 28 ? (p2.name.substring(0, 26) + '...') : p2.name;
+        ctx.fillText(p2Title, 745, 485);
+        ctx.fillStyle = '#db2777';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText(`Value: Rs. ${Number(p2.price).toLocaleString()}`, 745, 525);
+
+        // 4. Center Plus Badge (x 500, y 335)
+        ctx.beginPath();
+        ctx.arc(500, 335, 38, 0, Math.PI * 2);
+        ctx.fillStyle = '#7c3aed';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('➕', 500, 335);
+
+        // 5. Bottom Value & Savings Banner
+        drawRoundedRect(40, 595, 920, 85, 14, '#1e1b4b', '#7c3aed');
+        const savings = Math.max(0, oldPrice - comboPrice);
+        const savingsPct = oldPrice > 0 ? Math.round((savings / oldPrice) * 100) : 0;
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText(`Combined Value: Rs. ${oldPrice.toLocaleString()}`, 70, 638);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#4ade80';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText(`COMBO: Rs. ${comboPrice.toLocaleString()}`, 930, 638);
+
+        if (savings > 0) {
+          ctx.fillStyle = '#fde047';
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`⚡ YOU SAVE RS. ${savings.toLocaleString()} (${savingsPct}% OFF) 🔥`, 500, 638);
+        }
+
+        return canvas.toDataURL('image/jpeg', 0.88);
+      }
+
+      // COMBO FORM SUBMIT HANDLER
+      document.getElementById('comboDealForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('deployComboSubmitBtn');
+        const id1 = document.getElementById('comboProduct1Select').value;
+        const id2 = document.getElementById('comboProduct2Select').value;
+
+        if (!id1 || !id2) {
+          alert("Please select both Product #1 and Product #2 to form a combo deal.");
+          return;
+        }
+
+        if (id1 === id2) {
+          alert("Please select two distinct products for the 2-product combo deal.");
+          return;
+        }
+
+        const p1 = globalProductsCache.find(p => p.id === id1);
+        const p2 = globalProductsCache.find(p => p.id === id2);
+        if (!p1 || !p2) {
+          alert("Could not load selected product details.");
+          return;
+        }
+
+        const comboPrice = Number(document.getElementById('comboPriceInput').value);
+        const oldPrice = Number(document.getElementById('comboOldPriceInput').value) || (p1.price + p2.price);
+
+        if (!comboPrice || comboPrice <= 0) {
+          alert("Please enter a valid combo selling price.");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "⏳ Deploying Combo Deal...";
+
+        try {
+          // Determine combo artwork
+          let finalImage = "";
+          if (currentComboImgMode === 'upload' && comboCustomImgBase64) {
+            finalImage = comboCustomImgBase64;
+          } else if (comboGeneratedArtworkBase64) {
+            finalImage = comboGeneratedArtworkBase64;
+          } else {
+            // Auto generate on the fly
+            btn.innerText = "⏳ Generating 2-in-1 Artwork...";
+            finalImage = await generateCompositeComboArtwork(p1, p2, comboPrice, oldPrice);
+          }
+
+          if (!finalImage) {
+            finalImage = p1.imageUrl || p2.imageUrl || "zozonepal.png";
+          }
+
+          const specsRaw = document.getElementById('comboSpecsInput').value.trim();
+          const cleanSpecs = specsRaw ? specsRaw.split('\n').map(s => s.trim()).filter(s => s) : [];
+
+          const colorsRaw = document.getElementById('comboColorsInput').value.trim();
+          const colorsArray = colorsRaw ? colorsRaw.split(',').map(c => ({
+            name: c.trim(),
+            hex: getColorHex(c.trim()),
+            imageUrl: ""
+          })).filter(c => c.name) : [{ name: "Combo Pack", hex: "#7c3aed", imageUrl: "" }];
+
+          const payload = {
+            name: String(document.getElementById('comboNameInput').value).trim(),
+            price: comboPrice,
+            oldPrice: oldPrice,
+            imageUrl: finalImage,
+            category: String(document.getElementById('comboCategoryTag').value).trim() || 'combo-deals',
+            description: String(document.getElementById('comboDescriptionInput').value).trim(),
+            specifications: cleanSpecs,
+            colors: colorsArray,
+            isHot: document.getElementById('comboIsHot').checked,
+            isGaming: document.getElementById('comboIsGaming').checked,
+            isCombo: true,
+            comboProductIds: [p1.id, p2.id],
+            comboProducts: [
+              { id: p1.id, name: p1.name, price: p1.price, imageUrl: p1.imageUrl || "" },
+              { id: p2.id, name: p2.name, price: p2.price, imageUrl: p2.imageUrl || "" }
+            ],
+            timestamp: new Date()
+          };
+
+          if (editingComboId) {
+            await updateDoc(doc(db, "products", editingComboId), payload);
+            alert("Combo deal updated successfully!");
+            cancelComboEdit();
+          } else {
+            await addDoc(collection(db, "products"), payload);
+            alert("🎉 2-Product Combo Deal deployed live to catalog successfully!");
+            resetComboBuilder();
+          }
+
+          await fetchInventoryProducts();
+        } catch (err) {
+          console.error("Error deploying combo deal:", err);
+          alert("Could not deploy combo deal: " + (err.message || "Unknown error"));
+        } finally {
+          btn.disabled = false;
+          btn.innerText = editingComboId ? "💾 Save Combo Changes" : "🚀 Deploy Combo Deal Live";
+        }
+      });
+
+      window.startEditCombo = (docId) => {
+        const item = globalProductsCache.find(p => p.id === docId);
+        if (!item) return;
+
+        editingComboId = item.id;
+        switchAdminTab('combos');
+
+        document.getElementById('comboFormTitle').innerHTML = `<span>📝 Edit Combo Deal</span>`;
+        document.getElementById('deployComboSubmitBtn').innerText = "💾 Save Combo Changes";
+        document.getElementById('cancelComboEditBtn').style.display = "block";
+
+        if (item.comboProductIds && Array.isArray(item.comboProductIds) && item.comboProductIds.length >= 2) {
+          document.getElementById('comboProduct1Select').value = item.comboProductIds[0] || "";
+          document.getElementById('comboProduct2Select').value = item.comboProductIds[1] || "";
+        }
+
+        document.getElementById('comboNameInput').value = item.name || "";
+        document.getElementById('comboPriceInput').value = item.price || "";
+        document.getElementById('comboOldPriceInput').value = item.oldPrice || "";
+        document.getElementById('comboCategoryTag').value = item.category || "combo-deals";
+        document.getElementById('comboDescriptionInput').value = item.description || "";
+
+        const specs = Array.isArray(item.specifications) ? item.specifications.join('\n') : (item.specifications || "");
+        document.getElementById('comboSpecsInput').value = specs;
+
+        const colorsStr = item.colors ? (Array.isArray(item.colors) ? item.colors.map(c => c.name).join(', ') : item.colors) : "";
+        document.getElementById('comboColorsInput').value = colorsStr;
+
+        document.getElementById('comboIsHot').checked = !!item.isHot;
+        document.getElementById('comboIsGaming').checked = !!item.isGaming;
+
+        if (item.imageUrl) {
+          comboGeneratedArtworkBase64 = item.imageUrl;
+          document.getElementById('comboArtworkPreviewImg').src = item.imageUrl;
+          document.getElementById('comboArtworkPreviewZone').style.display = 'block';
+        }
+
+        handleComboProductSelection();
+        document.getElementById('comboFormTitle').scrollIntoView({ behavior: 'smooth' });
+      };
+
+      window.cancelComboEdit = () => {
+        editingComboId = null;
+        document.getElementById('comboFormTitle').innerHTML = `<span>🎁 2-Product Combo Deal Builder</span>`;
+        document.getElementById('deployComboSubmitBtn').innerText = "🚀 Deploy Combo Deal Live";
+        document.getElementById('cancelComboEditBtn').style.display = "none";
+        resetComboBuilder();
+      };
+
+      window.resetComboBuilder = () => {
+        document.getElementById('comboDealForm').reset();
+        document.getElementById('comboP1PreviewCard').style.display = 'none';
+        document.getElementById('comboP2PreviewCard').style.display = 'none';
+        document.getElementById('comboArtworkPreviewZone').style.display = 'none';
+        document.getElementById('comboSavingsBanner').style.display = 'none';
+        document.getElementById('comboOriginalTotalDisplay').innerText = 'Rs. 0';
+        document.getElementById('comboCategoryTag').value = 'combo-deals';
+        document.getElementById('comboIsHot').checked = true;
+        comboGeneratedArtworkBase64 = '';
+        comboCustomImgBase64 = '';
+        comboSelectedP1 = null;
+        comboSelectedP2 = null;
+        setComboImageMode('auto');
+      };
+
+      window.renderComboDealsList = () => {
+        const container = document.getElementById('comboDealsListContainer');
+        if (!container) return;
+
+        const combos = globalProductsCache.filter(p => !!p.isCombo || p.category === 'combo-deals');
+        const countBadge = document.getElementById('comboDealsCountBadge');
+        if (countBadge) countBadge.innerText = combos.length;
+
+        if (combos.length === 0) {
+          container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1;">
+            <span style="font-size:2rem; display:block; margin-bottom:8px;">🎁</span>
+            <p style="font-weight:700; color:#334155; margin-bottom:4px;">No Combo Deals Deployed Yet</p>
+            <p style="font-size:0.8rem;">Select 2 products from the builder on the left to deploy your first high-margin 2-in-1 combo pack!</p>
+          </div>`;
+          return;
+        }
+
+        container.innerHTML = combos.map(combo => {
+          const savings = (combo.oldPrice && combo.oldPrice > combo.price) ? (combo.oldPrice - combo.price) : 0;
+          const savingsPct = (combo.oldPrice && combo.oldPrice > combo.price) ? Math.round(((combo.oldPrice - combo.price) / combo.oldPrice) * 100) : 0;
+          const isHot = !!combo.isHot;
+
+          let componentChips = '';
+          if (combo.comboProducts && Array.isArray(combo.comboProducts) && combo.comboProducts.length > 0) {
+            componentChips = combo.comboProducts.map(cp => `
+              <span style="background:#ffffff; border:1px solid #c4b5fd; padding:3px 8px; border-radius:4px; font-size:0.72rem; color:#5b21b6; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+                ${cp.imageUrl ? `<img src="${cp.imageUrl}" style="width:14px; height:14px; border-radius:2px; object-fit:cover;">` : '📦'}
+                ${cp.name}
+              </span>
+            `).join('<span style="color:#7c3aed; font-weight:800; font-size:0.75rem;">+</span>');
+          }
+
+          return `
+            <div class="feed-item" style="background:#ffffff; flex-direction: column; align-items: stretch; gap: 10px; padding: 14px; border: 1.5px solid #c4b5fd; border-radius: 10px; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.06);">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; min-width: 0;">
+                <div style="display:flex; align-items:center; gap:12px; min-width: 0; flex: 1;">
+                  <img src="${combo.imageUrl || 'zozonepal.png'}" style="width:55px; height:55px; object-fit:cover; border-radius:8px; border:1px solid #c4b5fd; flex-shrink:0;">
+                  <div style="min-width: 0; flex: 1;">
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                      <strong style="font-size:0.95rem; color:#1e1b4b; overflow-wrap: anywhere; word-break: break-word;">${combo.name}</strong>
+                      <span style="background:#ede9fe; color:#6d28d9; border:1px solid #c4b5fd; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">🎁 2-in-1 Combo</span>
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--text-muted); margin-top:3px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                      <span style="color:#7c3aed; font-weight:800; font-size:0.9rem;">Rs. ${Number(combo.price).toLocaleString()}</span>
+                      ${combo.oldPrice ? `<span style="text-decoration:line-through; font-size:0.75rem; color:gray;">Rs. ${Number(combo.oldPrice).toLocaleString()}</span>` : ''}
+                      ${savings > 0 ? `<span style="color:#15803d; font-weight:700; font-size:0.72rem; background:#dcfce7; padding:2px 6px; border-radius:4px;">Save Rs. ${savings.toLocaleString()} (${savingsPct}% OFF)</span>` : ''}
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px; flex-shrink:0;">
+                  <button class="action-btn" style="padding:6px 14px; min-height:36px; font-size:0.8rem; background:#7c3aed; color:white;" onclick="startEditCombo('${combo.id}')">Edit</button>
+                  <button class="action-btn btn-danger remove-btn" style="padding:6px 14px; min-height:36px; font-size:0.8rem;" onclick="deleteCatalogProduct('${combo.id}')">Remove</button>
+                </div>
+              </div>
+
+              ${componentChips ? `
+                <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:6px; padding:6px 10px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                  <span style="font-size:0.72rem; font-weight:800; color:#7c3aed;">Bundled:</span>
+                  ${componentChips}
+                </div>
+              ` : ''}
+
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px dashed #e2e8f0;">
+                <span style="font-size:0.72rem; color:gray;">Category: <strong>${combo.category}</strong></span>
+                <button class="action-btn" style="padding:3px 8px; font-size:0.7rem; background:${isHot ? '#ef4444' : '#e2e8f0'}; color:${isHot ? '#ffffff' : '#475569'}; border:none; border-radius:4px; cursor:pointer;" onclick="toggleProductSectionFlag('${combo.id}', 'isHot', ${isHot})">
+                  🔥 ${isHot ? 'Hot Deal Active' : 'Set as Hot Deal'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
       };
 
 

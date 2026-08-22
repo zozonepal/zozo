@@ -3181,6 +3181,7 @@
         // If categories collection is empty, use the default categories
         if (cats.length === 0) {
           globalCategories = [
+            { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' },
             { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
             { code: 'headphones', name: 'Headphones', emoji: '🎧' },
             { code: 'charger', name: 'Chargers', emoji: '🔌' },
@@ -3199,6 +3200,7 @@
         console.error("Firestore listening categories issue:", error);
         // Robust fallback to default list so frontend stays fully operational
         globalCategories = [
+          { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' },
           { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
           { code: 'headphones', name: 'Headphones', emoji: '🎧' },
           { code: 'charger', name: 'Chargers', emoji: '🔌' },
@@ -3416,8 +3418,15 @@
 
       const isSaved = window.ZozoWishlist ? window.ZozoWishlist.isSaved(p.id) : false;
       
+      const isCombo = !!p.isCombo || p.category === 'combo-deals';
+      const comboBadge = isCombo ? `
+        <div style="position:absolute; top:8px; left:8px; background:linear-gradient(135deg, #7c3aed, #db2777); color:#ffffff; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; z-index:4; box-shadow:0 2px 6px rgba(0,0,0,0.25); display:flex; align-items:center; gap:3px;">
+          <span>🎁</span> 2-IN-1 COMBO
+        </div>
+      ` : '';
+      
       return `
-        <div class="product-card" id="card-${p.id}" onclick="openProductQuickViewModal('${p.id}')" style="cursor:pointer;">
+        <div class="product-card ${isCombo ? 'combo-product-card' : ''}" id="card-${p.id}" onclick="openProductQuickViewModal('${p.id}')" style="cursor:pointer; ${isCombo ? 'border-color:#c4b5fd;' : ''}">
           <button class="card-wishlist-heart-btn ${isSaved ? 'is-saved' : ''}" 
                   id="wishlist-btn-${p.id}"
                   data-product-id="${p.id}"
@@ -3429,9 +3438,10 @@
             </svg>
           </button>
           <div class="image-frame" style="position:relative; width:100%; aspect-ratio:1/1; overflow:hidden;">
+            ${comboBadge}
             <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="280" height="280" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null; this.src='zozonepal.png'">
             <div class="card-quick-view-overlay-btn">
-              <span>⚡ Buy Now</span>
+              <span>⚡ ${isCombo ? 'View Combo Pack' : 'Buy Now'}</span>
             </div>
           </div>
           <div class="product-meta">
@@ -3442,7 +3452,7 @@
                 ${actionPriceBlock}
                 <span class="price">Rs. ${p.price.toLocaleString()}</span>
               </div>
-              <button class="btn btn-crimson" onclick="event.stopPropagation(); openProductQuickViewModal('${p.id}')" style="font-size:0.82rem; padding:6px 12px; font-weight:800; white-space:nowrap;">⚡ ${buttonText}</button>
+              <button class="btn btn-crimson" onclick="event.stopPropagation(); openProductQuickViewModal('${p.id}')" style="font-size:0.82rem; padding:6px 12px; font-weight:800; white-space:nowrap; ${isCombo ? 'background:linear-gradient(135deg, #7c3aed, #9333ea);' : ''}">⚡ ${isCombo ? 'View Deal' : buttonText}</button>
             </div>
           </div>
         </div>

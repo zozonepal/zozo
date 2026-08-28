@@ -1141,6 +1141,38 @@
                   <input type="text" id="secSubtitle" class="form-control" placeholder="e.g. Limited time markdowns on selected gadgets">
                 </div>
 
+                <!-- Section Action Button Manipulation Controls -->
+                <div style="background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                      <label style="margin: 0; font-weight: 700; font-size: 0.82rem; color: var(--text-main); display: block;">🔘 Show Section Action Button</label>
+                      <span style="font-size: 0.72rem; color: var(--text-muted);">Include 'View All' or custom action button on section header</span>
+                    </div>
+                    <input type="checkbox" id="secShowButton" checked style="width: 18px; height: 18px; cursor: pointer;" onchange="document.getElementById('secButtonConfigZone').style.display = this.checked ? 'grid' : 'none'">
+                  </div>
+                  
+                  <div id="secButtonConfigZone" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+                    <div>
+                      <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 2px; display: block;">Button Text Label</label>
+                      <input type="text" id="secBtnText" class="form-control" placeholder="e.g. View All →, Shop Deals →" value="View All &rarr;" style="font-size: 0.78rem; padding: 5px 8px;">
+                    </div>
+                    <div>
+                      <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 2px; display: block;">Action Link / Target</label>
+                      <select id="secBtnAction" class="form-control" style="font-size: 0.78rem; padding: 5px 8px;">
+                        <option value="all">🛍️ All Products Catalog</option>
+                        <option value="hot">🔥 Hot Deals Category</option>
+                        <option value="gaming">🎮 Gaming Category</option>
+                        <option value="headphones">🎧 Headphones Category</option>
+                        <option value="charger">🔌 Chargers Category</option>
+                        <option value="mobile-coolers">❄️ Mobile Coolers</option>
+                        <option value="speakers">🔊 Speakers Category</option>
+                        <option value="earbuds">🎵 Earbuds Category</option>
+                        <option value="power-sockets">⚡ Power Sockets</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="form-group" style="background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
                   <div>
                     <label style="margin: 0; font-weight: 700; font-size: 0.82rem; color: var(--text-main); display: block;">Show on Storefront Home Page</label>
@@ -2781,26 +2813,36 @@
           return;
         }
 
-        container.innerHTML = globalSectionsCache.map(sec => {
+        container.innerHTML = globalSectionsCache.map((sec, idx) => {
           const taggedCount = (globalProductsCache || []).filter(p => isProductInSection(p, sec.code)).length;
           const isHomeVisible = sec.showOnHome !== false;
+          const hasButton = sec.showButton !== false && sec.showViewAllBtn !== false;
+          const btnLabel = sec.btnText || 'View All →';
+          const isFirst = idx === 0;
+          const isLast = idx === globalSectionsCache.length - 1;
 
           const actionBtns = sec.id 
-            ? `<div style="display: flex; gap: 6px; align-items: center;">
-                 <button class="action-btn" style="padding: 3px 8px; font-size: 0.72rem; background: #e2e8f0; color: #334155;" onclick="startEditSection('${sec.id}')">Edit</button>
-                 <button class="action-btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;" onclick="deleteSection('${sec.id}')">Delete</button>
+            ? `<div style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                 <button class="action-btn" title="Move Up" style="padding: 3px 6px; font-size: 0.72rem; background: #f1f5f9; color: #334155; ${isFirst ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="moveSectionOrder('${sec.id}', -1)" ${isFirst ? 'disabled' : ''}>▲</button>
+                 <button class="action-btn" title="Move Down" style="padding: 3px 6px; font-size: 0.72rem; background: #f1f5f9; color: #334155; ${isLast ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="moveSectionOrder('${sec.id}', 1)" ${isLast ? 'disabled' : ''}>▼</button>
+                 <button class="action-btn" style="padding: 3px 8px; font-size: 0.72rem; background: #e2e8f0; color: #334155;" onclick="startEditSection('${sec.id}')">✏️ Edit</button>
+                 <button class="action-btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;" onclick="deleteSection('${sec.id}', '${sec.code}')">🗑️ Delete</button>
                </div>`
-            : `<span style="font-size:0.65rem; color:#64748b; background:#e2e8f0; padding:2px 6px; border-radius:4px;">Default</span>`;
+            : `<div style="display: flex; gap: 4px; align-items: center;">
+                 <span style="font-size:0.65rem; color:#64748b; background:#e2e8f0; padding:2px 6px; border-radius:4px;">Default</span>
+                 <button class="action-btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;" onclick="deleteSection('', '${sec.code}')">🗑️ Remove</button>
+               </div>`;
             
           return `
-            <div style="display: flex; flex-direction: column; gap: 6px; background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1.5px solid ${sec.badgeColor || '#cbd5e1'}33;">
+            <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1.5px solid ${sec.badgeColor || '#cbd5e1'}33; transition: all 0.2s ease;">
+              <!-- Section Header & Actions -->
               <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 1.2rem; background: ${sec.badgeColor || '#7c3aed'}15; padding: 4px 8px; border-radius: 6px;">${sec.emoji || '📌'}</span>
+                  <span style="font-size: 1.25rem; background: ${sec.badgeColor || '#7c3aed'}15; padding: 4px 8px; border-radius: 6px;">${sec.emoji || '📌'}</span>
                   <div>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                      <strong style="font-size: 0.88rem; color: var(--text-main);">${sec.name}</strong>
-                      <span style="font-size: 0.65rem; font-weight: 800; background: ${sec.badgeColor || '#7c3aed'}; color: #ffffff; padding: 1px 6px; border-radius: 4px;">#${sec.order || 1}</span>
+                      <strong style="font-size: 0.9rem; color: var(--text-main);">${sec.name}</strong>
+                      <span style="font-size: 0.65rem; font-weight: 800; background: ${sec.badgeColor || '#7c3aed'}; color: #ffffff; padding: 1px 6px; border-radius: 4px;">Order #${sec.order || (idx + 1)}</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
                       <code>tag: ${sec.code}</code>
@@ -2811,16 +2853,41 @@
                 </div>
                 ${actionBtns}
               </div>
+
               ${sec.subtitle ? `<p style="font-size: 0.75rem; color: var(--text-muted); margin: 0; padding-left: 2px;">${sec.subtitle}</p>` : ''}
-              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px dashed #e2e8f0; font-size: 0.72rem;">
-                <span style="display: flex; align-items: center; gap: 4px; color: ${isHomeVisible ? '#15803d' : '#64748b'}; font-weight: 700;">
-                  <span>${isHomeVisible ? '🟢' : '⚪'}</span> ${isHomeVisible ? 'Visible on Home Page' : 'Hidden from Home Page'}
-                </span>
-                ${sec.id ? `
-                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.68rem; background: ${isHomeVisible ? '#fee2e2' : '#dcfce7'}; color: ${isHomeVisible ? '#dc2626' : '#15803d'}; border: none; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionHomeVisibility('${sec.id}', ${isHomeVisible})">
-                    ${isHomeVisible ? 'Hide from Home' : 'Show on Home'}
-                  </button>
-                ` : ''}
+              
+              <!-- Quick Manipulation Bar -->
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px dashed #e2e8f0; font-size: 0.75rem; flex-wrap: wrap; gap: 8px;">
+                <!-- Button Manipulation -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-weight: 700; color: ${hasButton ? 'var(--nepal-blue)' : '#64748b'}; font-size: 0.72rem;">
+                    ${hasButton ? `🔘 Button: Active (${btnLabel})` : '🚫 Button: Removed / Hidden'}
+                  </span>
+                  ${sec.id ? `
+                    <button class="action-btn" style="padding: 2px 7px; font-size: 0.68rem; background: ${hasButton ? '#fee2e2' : '#dcfce7'}; color: ${hasButton ? '#dc2626' : '#15803d'}; border: 1px solid ${hasButton ? '#fca5a5' : '#86efac'}; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionButtonVisibility('${sec.id}', ${hasButton})">
+                      ${hasButton ? '✕ Remove Button' : '➕ Show Button'}
+                    </button>
+                  ` : ''}
+                </div>
+
+                <!-- Home Visibility & Product Clear Manipulation -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  ${taggedCount > 0 ? `
+                    <button class="action-btn" style="padding: 2px 7px; font-size: 0.68rem; background: #fff1f2; color: #e11d48; border: 1px solid #fda4af; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="clearSectionProducts('${sec.code}', '${sec.name}')" title="Remove all products from this section">
+                      🧹 Clear ${taggedCount} ${taggedCount === 1 ? 'Item' : 'Items'}
+                    </button>
+                  ` : ''}
+                  
+                  <span style="display: flex; align-items: center; gap: 4px; color: ${isHomeVisible ? '#15803d' : '#64748b'}; font-weight: 700; font-size: 0.72rem;">
+                    <span>${isHomeVisible ? '🟢' : '⚪'}</span> ${isHomeVisible ? 'Live on Home' : 'Hidden'}
+                  </span>
+
+                  ${sec.id ? `
+                    <button class="action-btn" style="padding: 2px 7px; font-size: 0.68rem; background: ${isHomeVisible ? '#f1f5f9' : '#e0e7ff'}; color: ${isHomeVisible ? '#475569' : 'var(--nepal-blue)'}; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionHomeVisibility('${sec.id}', ${isHomeVisible})">
+                      ${isHomeVisible ? 'Hide' : 'Show'}
+                    </button>
+                  ` : ''}
+                </div>
               </div>
             </div>
           `;
@@ -2860,6 +2927,13 @@
         document.getElementById('secBadgeColor').value = sec.badgeColor || '#7c3aed';
         document.getElementById('secOrder').value = sec.order || 1;
         document.getElementById('secSubtitle').value = sec.subtitle || '';
+        
+        const hasBtn = sec.showButton !== false && sec.showViewAllBtn !== false;
+        document.getElementById('secShowButton').checked = hasBtn;
+        document.getElementById('secButtonConfigZone').style.display = hasBtn ? 'grid' : 'none';
+        document.getElementById('secBtnText').value = sec.btnText || 'View All &rarr;';
+        if (sec.btnAction) document.getElementById('secBtnAction').value = sec.btnAction;
+
         document.getElementById('secShowOnHome').checked = sec.showOnHome !== false;
 
         document.getElementById('sectionFormTitle').innerHTML = `<span>📝 Edit Section</span>`;
@@ -2872,24 +2946,44 @@
         document.getElementById('editingSectionDocId').value = '';
         document.getElementById('sectionAddForm').reset();
         document.getElementById('secBadgeColor').value = '#dc2626';
+        document.getElementById('secShowButton').checked = true;
+        document.getElementById('secButtonConfigZone').style.display = 'grid';
+        document.getElementById('secBtnText').value = 'View All &rarr;';
+        document.getElementById('secBtnAction').value = 'all';
         document.getElementById('secShowOnHome').checked = true;
         document.getElementById('sectionFormTitle').innerHTML = `<span>✨ Section Maker</span>`;
         document.getElementById('addSecBtn').innerText = "➕ Deploy Section";
         document.getElementById('cancelSecEditBtn').style.display = "none";
       };
 
-      window.deleteSection = async (docId) => {
-        if (!docId || docId === 'undefined') {
-          alert("This is a default preset section. Please click 'Deploy Default Sections' first to sync all defaults to the database.");
+      window.deleteSection = async (docId, secCode) => {
+        if (!confirm(`Are you sure you want to remove this section? Products assigned to it will remain in your store catalog.`)) {
           return;
         }
-        if (confirm("Are you sure you want to delete this product section? Products previously assigned to this section will remain in your catalog.")) {
-          try {
+
+        try {
+          if (docId) {
             await deleteDoc(doc(db, "sections", docId));
-          } catch (e) {
-            console.error("Error deleting section:", e);
-            alert("Could not delete section: " + (e.message || "Unknown error"));
+          } else if (secCode) {
+            // Default section without doc: deploy a suppression record or clean it
+            const existingInCache = globalSectionsCache.find(s => s.code === secCode);
+            if (existingInCache && existingInCache.id) {
+              await deleteDoc(doc(db, "sections", existingInCache.id));
+            } else {
+              // Add as hidden suppression record
+              await addDoc(collection(db, "sections"), {
+                name: (existingInCache && existingInCache.name) || secCode,
+                code: secCode,
+                showOnHome: false,
+                isDeleted: true,
+                createdAt: new Date().toISOString()
+              });
+            }
           }
+          alert("Section removed successfully!");
+        } catch (e) {
+          console.error("Error deleting section:", e);
+          alert("Could not delete section: " + (e.message || "Unknown error"));
         }
       };
 
@@ -2905,6 +2999,82 @@
         }
       };
 
+      window.toggleSectionButtonVisibility = async (docId, currentHasButton) => {
+        if (!docId) return;
+        try {
+          await updateDoc(doc(db, "sections", docId), {
+            showButton: !currentHasButton,
+            showViewAllBtn: !currentHasButton
+          });
+        } catch (err) {
+          console.error("Error toggling section button visibility:", err);
+          alert("Could not update button setting: " + (err.message || "Unknown error"));
+        }
+      };
+
+      window.moveSectionOrder = async (docId, delta) => {
+        const secIndex = globalSectionsCache.findIndex(s => s.id === docId);
+        if (secIndex === -1) return;
+        
+        const targetIndex = secIndex + delta;
+        if (targetIndex < 0 || targetIndex >= globalSectionsCache.length) return;
+
+        const currentSec = globalSectionsCache[secIndex];
+        const swapSec = globalSectionsCache[targetIndex];
+
+        try {
+          const currentOrder = Number(currentSec.order) || (secIndex + 1);
+          const swapOrder = Number(swapSec.order) || (targetIndex + 1);
+
+          // Update both
+          await updateDoc(doc(db, "sections", currentSec.id), {
+            order: swapOrder === currentOrder ? currentOrder + delta : swapOrder
+          });
+          if (swapSec.id) {
+            await updateDoc(doc(db, "sections", swapSec.id), {
+              order: currentOrder
+            });
+          }
+        } catch (err) {
+          console.error("Error reordering sections:", err);
+        }
+      };
+
+      window.clearSectionProducts = async (secCode, secName) => {
+        const matchingProducts = (globalProductsCache || []).filter(p => isProductInSection(p, secCode));
+        if (matchingProducts.length === 0) {
+          alert(`No products are currently assigned to ${secName || secCode}.`);
+          return;
+        }
+
+        if (!confirm(`Are you sure you want to remove all ${matchingProducts.length} products from the "${secName || secCode}" section? The products will stay in your general catalog.`)) {
+          return;
+        }
+
+        let updatedCount = 0;
+        try {
+          for (const p of matchingProducts) {
+            let curSections = Array.isArray(p.sections) ? [...p.sections] : (p.sections ? [p.sections] : []);
+            curSections = curSections.filter(s => s !== secCode);
+            
+            const updatePayload = {
+              sections: curSections
+            };
+            if (secCode === 'hot') updatePayload.isHot = false;
+            if (secCode === 'gaming') updatePayload.isGaming = false;
+            if (secCode === 'specialoffer') updatePayload.isSpecialOffer = false;
+
+            await updateDoc(doc(db, "products", p.id), updatePayload);
+            updatedCount++;
+          }
+          alert(`Successfully cleared ${updatedCount} products from "${secName || secCode}"!`);
+          fetchInventoryProducts();
+        } catch (err) {
+          console.error("Error clearing section products:", err);
+          alert("Could not clear products: " + (err.message || "Unknown error"));
+        }
+      };
+
       // Form submission for new or edited section
       document.getElementById('sectionAddForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -2915,6 +3085,9 @@
         const badgeColor = document.getElementById('secBadgeColor').value || '#7c3aed';
         const order = Number(document.getElementById('secOrder').value) || 1;
         const subtitle = document.getElementById('secSubtitle').value.trim();
+        const showButton = document.getElementById('secShowButton').checked;
+        const btnText = document.getElementById('secBtnText').value.trim() || 'View All &rarr;';
+        const btnAction = document.getElementById('secBtnAction').value || 'all';
         const showOnHome = document.getElementById('secShowOnHome').checked;
 
         if (!name || !code) return;
@@ -2932,6 +3105,10 @@
             badgeBg: badgeColor + '12',
             order,
             subtitle,
+            showButton,
+            showViewAllBtn: showButton,
+            btnText,
+            btnAction,
             showOnHome,
             updatedAt: new Date().toISOString()
           };

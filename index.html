@@ -3526,7 +3526,7 @@
       }
 
       const sectionsToRender = (globalSections && globalSections.length > 0)
-        ? globalSections.filter(s => s.showOnHome !== false)
+        ? globalSections.filter(s => s.showOnHome !== false && s.isDeleted !== true)
         : defaultStorefrontSections;
 
       let anyRendered = false;
@@ -3548,6 +3548,15 @@
           anyRendered = true;
           const badgeColor = sec.badgeColor || '#dc2626';
           const badgeBg = sec.badgeBg || '#fffcfc';
+          const showButton = sec.showButton !== false && sec.showViewAllBtn !== false;
+          const btnText = sec.btnText || 'View All &rarr;';
+          const btnAction = sec.btnAction || 'all';
+
+          const buttonHtml = showButton ? `
+            <button class="btn" style="font-size: 0.78rem; padding: 6px 14px; background: #ffffff; color: ${badgeColor}; border: 1.5px solid ${badgeColor}55; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px ${badgeColor}12; transition: all 0.15s ease;" onclick="switchCategoryFilter('${btnAction}')">
+              <span>${btnText}</span>
+            </button>
+          ` : '';
 
           html += `
             <section id="section-${sec.code}" style="display: block; background: ${badgeBg}; border: 1.5px solid ${badgeColor}33; padding: 20px; border-radius: 12px; box-shadow: 0 4px 14px ${badgeColor}0d; transition: transform 0.2s ease;">
@@ -3560,9 +3569,7 @@
                   </h2>
                   ${sec.subtitle ? `<p style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0;">${sec.subtitle}</p>` : ''}
                 </div>
-                <button class="btn" style="font-size: 0.75rem; padding: 5px 12px; background: #ffffff; color: ${badgeColor}; border: 1.5px solid ${badgeColor}55; border-radius: 6px; font-weight: 800; cursor: pointer;" onclick="switchCategoryFilter('all')">
-                  View All &rarr;
-                </button>
+                ${buttonHtml}
               </div>
               <div class="catalog-grid" style="gap: 16px;">
                 ${matchingItems.map(p => createProductCardHtml(p)).join('')}

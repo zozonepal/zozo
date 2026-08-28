@@ -2378,15 +2378,7 @@
 
       <!-- CATEGORY BAR (PLACED DIRECTLY BELOW HERO BANNER) -->
       <div class="categories-filter-bar" id="categoriesFilterBar" style="margin-top: 18px; margin-bottom: 12px;">
-        <button id="catBtn-all" class="category-pill-btn" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
-        <button id="catBtn-mobile-covers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-covers')">📱 Mobile Covers</button>
-        <button id="catBtn-headphones" class="category-pill-btn" onclick="switchCategoryFilter('headphones')">🎧 Headphones</button>
-        <button id="catBtn-charger" class="category-pill-btn" onclick="switchCategoryFilter('charger')">🔌 Chargers</button>
-        <button id="catBtn-mobile-coolers" class="category-pill-btn" onclick="switchCategoryFilter('mobile-coolers')">❄️ Mobile Coolers</button>
-        <button id="catBtn-mini-fan" class="category-pill-btn" onclick="switchCategoryFilter('mini-fan')">🌬️ Mini Fans</button>
-        <button id="catBtn-speakers" class="category-pill-btn" onclick="switchCategoryFilter('speakers')">🔊 Speakers</button>
-        <button id="catBtn-earbuds" class="category-pill-btn" onclick="switchCategoryFilter('earbuds')">🎵 Earbuds</button>
-        <button id="catBtn-power-sockets" class="category-pill-btn" onclick="switchCategoryFilter('power-sockets')">⚡ Power Sockets</button>
+        <button id="catBtn-all" class="category-pill-btn active-category" onclick="switchCategoryFilter('all')">🛍️ All Products</button>
       </div>
 
       <!-- FEATURED SPECIAL SECTIONS (HOT PRODUCTS & GAMING GEARS DIRECTLY BELOW CATEGORIES) -->
@@ -3060,6 +3052,54 @@
     }, 2500);
 
     // --- 1. CONNECT & LIVE STREAM REAL PRODUCTS FROM FIRESTORE ---
+    // Instant cache hydration for immediate LCP / 0ms perceived lag
+    function hydrateCachedInventory() {
+      try {
+        const cachedRaw = localStorage.getItem("zozo_products_cache");
+        if (cachedRaw) {
+          const parsed = JSON.parse(cachedRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            globalProductsCatalog = parsed.map(p => ({
+              id: p.id,
+              name: p.name,
+              price: Number(p.price) || 0,
+              oldPrice: p.oldPrice ? Number(p.oldPrice) : null,
+              category: p.category || "all",
+              description: p.description || "Premium imported collection, selected carefully for style and high utility guidelines.",
+              specifications: Array.isArray(p.specifications) ? p.specifications : (p.specifications ? p.specifications.split('\n').map(s => s.trim()).filter(s => s) : []),
+              image: p.image || p.imageUrl || "zozonepal.png",
+              images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [(p.image || p.imageUrl || "zozonepal.png")],
+              colors: sanitizeColors(p.colors),
+              isHot: !!p.isHot,
+              isGaming: !!p.isGaming,
+              isSpecialOffer: !!p.isSpecialOffer,
+              isCombo: !!p.isCombo || p.category === 'combo-deals',
+              comboProducts: p.comboProducts || [],
+              sections: Array.isArray(p.sections) ? p.sections : (p.sections ? [p.sections] : []),
+              timestamp: p.timestamp || Date.now()
+            }));
+
+            const prices = globalProductsCatalog.map(p => Number(p.price) || 0).filter(p => p > 0);
+            if (prices.length > 0) {
+              let minP = Math.floor(Math.min(...prices) / 50) * 50;
+              let maxP = Math.ceil(Math.max(...prices) / 100) * 100;
+              if (minP === maxP) maxP = minP + 1000;
+              catalogPriceBounds = { min: minP, max: maxP };
+              currentPriceFilter = { min: minP, max: maxP };
+            }
+
+            isInventoryLoaded = true;
+            renderProductCatalogGrid();
+            renderSpecialSections();
+            updateEffectiveCategories();
+          }
+        }
+      } catch (e) {
+        console.warn("Inventory cache hydration notice:", e);
+      }
+    }
+    hydrateCachedInventory();
+
     function listenToLiveInventory() {
       const productGrid = document.getElementById('productGrid');
       
@@ -3130,8 +3170,11 @@
             oldPrice: p.oldPrice,
             category: p.category,
             image: (p.image && p.image.length > 500 && p.image.startsWith('data:')) ? 'zozonepal.png' : p.image,
+            images: (p.images || []).map(img => (img && img.length > 500 && img.startsWith('data:')) ? 'zozonepal.png' : img),
             isHot: p.isHot,
             isGaming: p.isGaming,
+            isSpecialOffer: p.isSpecialOffer,
+            isCombo: p.isCombo,
             sections: p.sections
           }));
           safeSetItem("zozo_products_cache", JSON.stringify(cacheableProducts));
@@ -3167,6 +3210,7 @@
         // Trigger safe re-render anytime catalog contents update in Firestore
         renderProductCatalogGrid();
         renderSpecialSections();
+        updateEffectiveCategories();
 
         // Check for delivered orders notification
         if (typeof window.checkForDeliveredOrdersNotification === 'function') {
@@ -3179,47 +3223,77 @@
     }
 
     // --- 1B. CONNECT & LIVE STREAM REAL CATEGORIES FROM FIRESTORE ---
+    let globalCustomCategories = [];
     let globalCategories = [];
-    function listenToLiveCategories() {
-      onSnapshot(collection(db, "categories"), (snapshot) => {
-        const cats = [];
-        snapshot.forEach((doc) => {
-          cats.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // If categories collection is empty, use the default categories
-        if (cats.length === 0) {
-          globalCategories = [
-            { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' },
-            { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
-            { code: 'headphones', name: 'Headphones', emoji: '🎧' },
-            { code: 'charger', name: 'Chargers', emoji: '🔌' },
-            { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
-            { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' },
-            { code: 'speakers', name: 'Speakers', emoji: '🔊' },
-            { code: 'earbuds', name: 'Earbuds', emoji: '🎵' },
-            { code: 'power-sockets', name: 'Power Sockets', emoji: '⚡' }
-          ];
-        } else {
-          globalCategories = cats;
+
+    function updateEffectiveCategories() {
+      if (Array.isArray(globalCustomCategories) && globalCustomCategories.length > 0) {
+        globalCategories = globalCustomCategories;
+      } else {
+        // Dynamically derive categories ONLY from products that actually exist in the store catalog!
+        const catMap = new Map();
+        if (Array.isArray(globalProductsCatalog)) {
+          globalProductsCatalog.forEach(p => {
+            if (p.isCombo || p.category === 'combo-deals') {
+              if (!catMap.has('combo-deals')) {
+                catMap.set('combo-deals', { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' });
+              }
+            } else if (p.category && p.category !== 'all' && p.category !== 'hot' && p.category !== 'gaming') {
+              const rawCat = p.category.trim();
+              const cleanCode = rawCat.toLowerCase().replace(/[^a-z0-9-_]+/g, '-');
+              if (cleanCode && !catMap.has(cleanCode)) {
+                let displayName = rawCat.split(/[-_\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                let emoji = '📦';
+                if (cleanCode.includes('cooler') || cleanCode.includes('cooling')) emoji = '❄️';
+                else if (cleanCode.includes('gaming')) emoji = '🎮';
+                else if (cleanCode.includes('cover') || cleanCode.includes('case')) emoji = '📱';
+                else if (cleanCode.includes('charger') || cleanCode.includes('cable')) emoji = '🔌';
+                else if (cleanCode.includes('headphone') || cleanCode.includes('earphone')) emoji = '🎧';
+                else if (cleanCode.includes('earbud') || cleanCode.includes('tws')) emoji = '🎵';
+                else if (cleanCode.includes('speaker') || cleanCode.includes('sound')) emoji = '🔊';
+                else if (cleanCode.includes('fan')) emoji = '🌬️';
+                else if (cleanCode.includes('socket') || cleanCode.includes('power')) emoji = '⚡';
+                else if (cleanCode.includes('watch') || cleanCode.includes('smartwatch')) emoji = '⌚';
+
+                catMap.set(cleanCode, { code: cleanCode, name: displayName, emoji: emoji });
+              }
+            }
+          });
         }
-        
-        renderCategoryFilterBar();
+        globalCategories = Array.from(catMap.values());
+      }
+
+      // Cache for instant startup
+      try {
+        localStorage.setItem("zozo_categories_cache", JSON.stringify(globalCategories));
+      } catch (e) {}
+
+      renderCategoryFilterBar();
+    }
+
+    function listenToLiveCategories() {
+      // Hydrate categories from cache first
+      try {
+        const raw = localStorage.getItem("zozo_categories_cache");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            globalCategories = parsed;
+            renderCategoryFilterBar();
+          }
+        }
+      } catch (e) {}
+
+      onSnapshot(doc(db, "settings", "store_categories"), (docSnap) => {
+        if (docSnap.exists() && Array.isArray(docSnap.data().list) && docSnap.data().list.length > 0) {
+          globalCustomCategories = docSnap.data().list;
+        } else {
+          globalCustomCategories = [];
+        }
+        updateEffectiveCategories();
       }, (error) => {
-        console.error("Firestore listening categories issue:", error);
-        // Robust fallback to default list so frontend stays fully operational
-        globalCategories = [
-          { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' },
-          { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
-          { code: 'headphones', name: 'Headphones', emoji: '🎧' },
-          { code: 'charger', name: 'Chargers', emoji: '🔌' },
-          { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
-          { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' },
-          { code: 'speakers', name: 'Speakers', emoji: '🔊' },
-          { code: 'earbuds', name: 'Earbuds', emoji: '🎵' },
-          { code: 'power-sockets', name: 'Power Sockets', emoji: '⚡' }
-        ];
-        renderCategoryFilterBar();
+        console.warn("Firestore listening categories warning:", error);
+        updateEffectiveCategories();
       });
     }
 

@@ -2512,15 +2512,23 @@
       let globalCategoriesCache = [];
       const defaultCategories = [
         { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' },
-        { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
-        { code: 'headphones', name: 'Headphones', emoji: '🎧' },
-        { code: 'charger', name: 'Chargers', emoji: '🔌' },
         { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
-        { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' },
-        { code: 'speakers', name: 'Speakers', emoji: '🔊' },
-        { code: 'earbuds', name: 'Earbuds', emoji: '🎵' },
-        { code: 'power-sockets', name: 'Power Sockets', emoji: '⚡' }
+        { code: 'gaming', name: 'Gaming Gear', emoji: '🎮' },
+        { code: 'charger', name: 'Chargers', emoji: '🔌' },
+        { code: 'earbuds', name: 'Earbuds', emoji: '🎵' }
       ];
+
+      async function persistCategoriesToFirestore(list) {
+        try {
+          await setDoc(doc(db, "settings", "store_categories"), {
+            list: list,
+            updatedAt: new Date().toISOString()
+          });
+        } catch (err) {
+          console.error("Failed to save categories to settings:", err);
+          throw err;
+        }
+      }
 
       window.deployDefaultCategories = async () => {
         const btn = document.getElementById('deployDefaultCatsBtn');
@@ -2530,17 +2538,19 @@
         }
         try {
           let addedCount = 0;
+          const currentList = [...globalCategoriesCache];
           for (const cat of defaultCategories) {
-            const exists = globalCategoriesCache.some(c => c.code === cat.code && c.id);
+            const exists = currentList.some(c => c.code === cat.code);
             if (!exists) {
-              await addDoc(collection(db, "categories"), { ...cat, createdAt: new Date().toISOString() });
+              currentList.push({ ...cat, id: 'cat_' + Date.now() + '_' + cat.code, createdAt: new Date().toISOString() });
               addedCount++;
             }
           }
           if (addedCount > 0) {
-            alert(`Successfully deployed ${addedCount} default categories to live database!`);
+            await persistCategoriesToFirestore(currentList);
+            alert(`Successfully added ${addedCount} default categories to live store settings!`);
           } else {
-            alert("All default categories are already deployed!");
+            alert("All default categories are already in your store settings!");
           }
         } catch (err) {
           console.error("Error deploying default categories:", err);
@@ -2558,34 +2568,20 @@
         if (isCategoriesListening) return;
         isCategoriesListening = true;
 
-        onSnapshot(collection(db, "categories"), async (snapshot) => {
-          if (snapshot.empty) {
-            console.log("Categories collection empty. Showing defaults & auto-seeding...");
-            globalCategoriesCache = defaultCategories.map(c => ({ ...c }));
-            renderAdminCategoriesList();
-            renderAdminCategorySelector();
-
-            try {
-              for (const cat of defaultCategories) {
-                await addDoc(collection(db, "categories"), { ...cat, createdAt: new Date().toISOString() });
-              }
-            } catch (err) {
-              console.warn("Auto-seeding categories encountered a warning:", err);
-            }
-            return;
+        onSnapshot(doc(db, "settings", "store_categories"), (docSnap) => {
+          if (docSnap.exists() && Array.isArray(docSnap.data().list)) {
+            globalCategoriesCache = docSnap.data().list.map((c, idx) => ({
+              ...c,
+              id: c.id || ('cat_' + (c.code || idx))
+            }));
+          } else {
+            globalCategoriesCache = [];
           }
-
-          const cats = [];
-          snapshot.forEach(docSnapshot => {
-            cats.push({ id: docSnapshot.id, ...docSnapshot.data() });
-          });
-          globalCategoriesCache = cats;
 
           renderAdminCategoriesList();
           renderAdminCategorySelector();
         }, (error) => {
-          console.error("Firestore listening categories issue in admin:", error);
-          globalCategoriesCache = defaultCategories.map(c => ({ ...c }));
+          console.warn("Firestore listening categories issue in admin:", error);
           renderAdminCategoriesList();
           renderAdminCategorySelector();
         });
@@ -2596,22 +2592,24 @@
         if (!container) return;
 
         if (globalCategoriesCache.length === 0) {
-          container.innerHTML = `<p style="font-size: 0.8rem; color: gray;">No categories loaded.</p>`;
+          container.innerHTML = `
+            <div style="padding: 14px; text-align: center; color: var(--text-muted); font-size: 0.85rem; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border-color);">
+              No custom category pills created yet. The storefront will dynamically create pills for categories assigned to your products.
+            </div>
+          `;
           return;
         }
 
         container.innerHTML = globalCategoriesCache.map(cat => {
-          const deleteBtn = cat.id 
-            ? `<button class="action-btn btn-danger" style="padding: 2px 8px; font-size: 0.7rem;" onclick="deleteCategory('${cat.id}')">Delete</button>`
-            : `<span style="font-size:0.65rem; color:#64748b; background:#e2e8f0; padding:2px 6px; border-radius:4px;">Default</span>`;
+          const deleteBtn = `<button type="button" class="action-btn btn-danger" style="padding: 4px 10px; font-size: 0.72rem; cursor: pointer;" onclick="deleteCategory('${cat.id}', '${cat.code}')">🗑️ Delete</button>`;
             
           return `
-            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.1rem;">${cat.emoji || '📦'}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.3rem;">${cat.emoji || '📦'}</span>
                 <div>
-                  <strong style="font-size: 0.85rem; color: var(--text-main);">${cat.name}</strong>
-                  <code style="font-size: 0.7rem; color: var(--text-muted); display: block;">tag: ${cat.code}</code>
+                  <strong style="font-size: 0.88rem; color: var(--text-main);">${cat.name}</strong>
+                  <code style="font-size: 0.72rem; color: var(--text-muted); display: block;">tag: ${cat.code}</code>
                 </div>
               </div>
               ${deleteBtn}
@@ -2624,23 +2622,45 @@
         const container = document.getElementById('adminCategoryQuickSelect');
         if (!container) return;
         
-        container.innerHTML = globalCategoriesCache.map(cat => {
-          return `<button type="button" class="action-btn" style="background:#e2e8f0; color:#334155; font-size:0.75rem; padding:4px 8px;" onclick="setCategoryField('${cat.code}')">${cat.emoji || '📦'} ${cat.name}</button>`;
+        // Combine configured categories with any distinct categories from active products
+        const catMap = new Map();
+        globalCategoriesCache.forEach(c => {
+          if (c.code) catMap.set(c.code, { code: c.code, name: c.name, emoji: c.emoji || '📦' });
+        });
+        if (Array.isArray(globalProductsCache)) {
+          globalProductsCache.forEach(p => {
+            if (p.category && p.category !== 'all' && !catMap.has(p.category.toLowerCase().trim())) {
+              const code = p.category.toLowerCase().trim();
+              const name = p.category.split(/[-_\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+              catMap.set(code, { code, name, emoji: '📦' });
+            }
+          });
+        }
+
+        const allAvailable = Array.from(catMap.values());
+        if (allAvailable.length === 0) {
+          container.innerHTML = `<span style="font-size:0.75rem; color:#64748b;">No categories yet. Type a category name below or add one in Category Manager.</span>`;
+          return;
+        }
+
+        container.innerHTML = allAvailable.map(cat => {
+          return `<button type="button" class="action-btn" style="background:#e2e8f0; color:#334155; font-size:0.75rem; padding:5px 10px; border-radius:6px; cursor:pointer;" onclick="setCategoryField('${cat.code}')">${cat.emoji || '📦'} ${cat.name}</button>`;
         }).join('');
       }
 
-      window.deleteCategory = async (docId) => {
-        if (!docId || docId === 'undefined') {
-          alert("This is a default preset category. Please click 'Deploy Default Categories' first to sync all defaults to the database.");
+      window.deleteCategory = async (catId, catCode) => {
+        const target = globalCategoriesCache.find(c => c.id === catId || c.code === catCode || c.code === catId);
+        const name = target ? target.name : (catCode || 'category');
+        if (!confirm(`Are you sure you want to permanently delete the category "${name}" from your store?`)) {
           return;
         }
-        if (confirm("Are you sure you want to delete this category from the store?")) {
-          try {
-            await deleteDoc(doc(db, "categories", docId));
-          } catch (e) {
-            console.error("Error deleting category:", e);
-            alert("Could not delete category: " + (e.message || "Unknown error"));
-          }
+        try {
+          globalCategoriesCache = globalCategoriesCache.filter(c => c.id !== catId && c.code !== catCode && c.code !== catId);
+          await persistCategoriesToFirestore(globalCategoriesCache);
+          alert(`Category "${name}" deleted successfully!`);
+        } catch (e) {
+          console.error("Error deleting category:", e);
+          alert("Could not delete category: " + (e.message || "Unknown error"));
         }
       };
 
@@ -2648,7 +2668,7 @@
       document.getElementById('categoryAddForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('catName').value.trim();
-        const code = document.getElementById('catCode').value.trim().toLowerCase().replace(/\s+/g, '-');
+        const code = document.getElementById('catCode').value.trim().toLowerCase().replace(/[^a-z0-9-_]+/g, '-');
         const emoji = document.getElementById('catEmoji').value.trim() || '📦';
 
         if (!name || !code) return;
@@ -2665,9 +2685,17 @@
         btn.innerText = "⏳ Deploying Category...";
 
         try {
-          await addDoc(collection(db, "categories"), { name, code, emoji, createdAt: new Date().toISOString() });
+          const newCat = {
+            id: 'cat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            name,
+            code,
+            emoji,
+            createdAt: new Date().toISOString()
+          };
+          globalCategoriesCache.push(newCat);
+          await persistCategoriesToFirestore(globalCategoriesCache);
           document.getElementById('categoryAddForm').reset();
-          alert(`Category "${name}" deployed successfully!`);
+          alert(`🎉 Category "${name}" deployed live successfully!`);
         } catch (err) {
           console.error("Error adding category:", err);
           alert("Could not deploy category: " + (err.message || "Unknown error"));
@@ -3520,7 +3548,53 @@
         }).join('');
       }
 
+      let isInventoryListening = false;
+      function listenToInventoryProducts() {
+        if (isInventoryListening) return;
+        isInventoryListening = true;
+
+        onSnapshot(collection(db, "products"), (snapshot) => {
+          const rawProducts = snapshot.docs.map(docSnapshot => ({
+            id: docSnapshot.id,
+            ...docSnapshot.data()
+          }));
+          globalProductsCache = rawProducts;
+
+          // Sort client-side (newest first)
+          rawProducts.sort((a, b) => {
+            const tA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp)) : new Date(0);
+            const tB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp)) : new Date(0);
+            return tB - tA;
+          });
+
+          // Update counts
+          const totalCount = rawProducts.length;
+          const comboCount = rawProducts.filter(p => !!p.isCombo || p.category === 'combo-deals').length;
+          const stdCount = totalCount - comboCount;
+
+          const countAllEl = document.getElementById('invCountAll');
+          const countStdEl = document.getElementById('invCountStd');
+          const countCombosEl = document.getElementById('invCountCombos');
+          const countBadgeEl = document.getElementById('comboDealsCountBadge');
+
+          if (countAllEl) countAllEl.innerText = totalCount;
+          if (countStdEl) countStdEl.innerText = stdCount;
+          if (countCombosEl) countCombosEl.innerText = comboCount;
+          if (countBadgeEl) countBadgeEl.innerText = comboCount;
+
+          renderInventoryFilterBar();
+          renderInventoryProductsGrid();
+          renderAdminSectionsList();
+          populateComboProductSelects();
+          renderComboDealsList();
+          renderAdminCategorySelector();
+        }, (err) => {
+          console.warn("Real-time inventory listener notice:", err);
+        });
+      }
+
       async function fetchInventoryProducts() {
+        listenToInventoryProducts();
         try {
           const snapshot = await getDocs(collection(db, "products"));
           if (snapshot.empty) {

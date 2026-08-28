@@ -2838,30 +2838,44 @@
     });
 
     // --- MOBILE DRAWER NAVIGATION & CATEGORY SYNC ---
-    let globalCategories = [
-      { code: 'mobile-covers', name: 'Mobile Covers', emoji: '📱' },
-      { code: 'headphones', name: 'Headphones', emoji: '🎧' },
-      { code: 'charger', name: 'Chargers', emoji: '🔌' },
-      { code: 'mobile-coolers', name: 'Mobile Coolers', emoji: '❄️' },
-      { code: 'mini-fan', name: 'Mini Fans', emoji: '🌬️' },
-      { code: 'speakers', name: 'Speakers', emoji: '🔊' },
-      { code: 'earbuds', name: 'Earbuds', emoji: '🎵' },
-      { code: 'screen-protector', name: 'Screen Protectors', emoji: '🛡️' },
-      { code: 'powerbanks', name: 'Power Banks', emoji: '🔋' }
-    ];
+    let globalCategories = [];
+    try {
+      const cached = localStorage.getItem("zozo_categories_cache");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          globalCategories = parsed;
+        }
+      }
+    } catch (e) {}
 
     function listenToLiveCategories() {
-      onSnapshot(collection(db, "categories"), (snapshot) => {
-        const cats = [];
-        snapshot.forEach((doc) => {
-          cats.push({ id: doc.id, ...doc.data() });
-        });
-        if (cats.length > 0) {
-          globalCategories = cats;
+      onSnapshot(doc(db, "settings", "store_categories"), (docSnap) => {
+        if (docSnap.exists() && Array.isArray(docSnap.data().list) && docSnap.data().list.length > 0) {
+          globalCategories = docSnap.data().list;
+          renderDrawerCategories();
+        } else {
+          // Fallback: derive categories from products collection
+          onSnapshot(collection(db, "products"), (prodSnap) => {
+            const catMap = new Map();
+            prodSnap.forEach((d) => {
+              const p = d.data();
+              if (p.isCombo || p.category === 'combo-deals') {
+                if (!catMap.has('combo-deals')) catMap.set('combo-deals', { code: 'combo-deals', name: 'Combo Deals', emoji: '🎁' });
+              } else if (p.category && p.category !== 'all' && p.category !== 'hot' && p.category !== 'gaming') {
+                const cleanCode = p.category.toLowerCase().replace(/[^a-z0-9-_]+/g, '-');
+                if (cleanCode && !catMap.has(cleanCode)) {
+                  let displayName = p.category.split(/[-_\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                  catMap.set(cleanCode, { code: cleanCode, name: displayName, emoji: '📦' });
+                }
+              }
+            });
+            globalCategories = Array.from(catMap.values());
+            renderDrawerCategories();
+          });
         }
-        renderDrawerCategories();
       }, (err) => {
-        console.warn("Category sync error:", err);
+        console.warn("Category sync notice in product view:", err);
         renderDrawerCategories();
       });
     }

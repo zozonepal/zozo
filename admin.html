@@ -2680,27 +2680,41 @@
       // --- 1C. DYNAMIC SECTIONS LOGIC (SECTION MAKER) ---
       let globalSectionsCache = [];
       const defaultSections = [
-        { code: 'hot', name: 'Hot Products', emoji: '🔥', badgeColor: '#dc2626', badgeBg: '#fffcfc', subtitle: 'Top trending items in Nepal with fastest sellouts', showOnHome: true, order: 1 },
-        { code: 'gaming', name: 'Gaming Gear', emoji: '🎮', badgeColor: '#3b82f6', badgeBg: '#f8faff', subtitle: 'High-performance mobile coolers & gaming accessories', showOnHome: true, order: 2 },
-        { code: 'flash-deals', name: 'Flash Deals', emoji: '⚡', badgeColor: '#d97706', badgeBg: '#fffbeb', subtitle: 'Limited-time special discounted tech bargains', showOnHome: true, order: 3 },
-        { code: 'best-sellers', name: 'Best Sellers', emoji: '🌟', badgeColor: '#7c3aed', badgeBg: '#faf5ff', subtitle: 'Most popular customer top-rated accessories', showOnHome: true, order: 4 }
+        { id: 'sec_hot', code: 'hot', name: 'Hot Products', emoji: '🔥', badgeColor: '#dc2626', badgeBg: '#fffcfc', subtitle: 'Top trending items in Nepal with fastest sellouts', showOnHome: true, showButton: true, btnText: 'View All &rarr;', btnAction: 'all', order: 1 },
+        { id: 'sec_gaming', code: 'gaming', name: 'Gaming Gear', emoji: '🎮', badgeColor: '#3b82f6', badgeBg: '#f8faff', subtitle: 'High-performance mobile coolers & gaming accessories', showOnHome: true, showButton: true, btnText: 'View All &rarr;', btnAction: 'gaming', order: 2 },
+        { id: 'sec_flash', code: 'flash-deals', name: 'Flash Deals', emoji: '⚡', badgeColor: '#d97706', badgeBg: '#fffbeb', subtitle: 'Limited-time special discounted tech bargains', showOnHome: true, showButton: true, btnText: 'View All &rarr;', btnAction: 'all', order: 3 },
+        { id: 'sec_bestsellers', code: 'best-sellers', name: 'Best Sellers', emoji: '🌟', badgeColor: '#7c3aed', badgeBg: '#faf5ff', subtitle: 'Most popular customer top-rated accessories', showOnHome: true, showButton: true, btnText: 'View All &rarr;', btnAction: 'all', order: 4 }
       ];
+
+      async function persistSectionsToFirestore(list) {
+        try {
+          await setDoc(doc(db, "settings", "store_sections"), {
+            list: list,
+            updatedAt: new Date().toISOString()
+          });
+        } catch (err) {
+          console.error("Failed to save sections to settings:", err);
+          throw err;
+        }
+      }
 
       window.isProductInSection = (product, sectionCode) => {
         if (!product) return false;
-        if (Array.isArray(product.sections) && product.sections.includes(sectionCode)) {
+        const cleanCode = (sectionCode || '').toLowerCase().trim();
+        if (Array.isArray(product.sections) && product.sections.map(s => (s || '').toLowerCase().trim()).includes(cleanCode)) {
           return true;
         }
-        if (sectionCode === 'hot' && !!product.isHot) return true;
-        if (sectionCode === 'gaming' && (!!product.isGaming || (product.category || '').toLowerCase().includes('gaming') || (product.category || '').toLowerCase().includes('cooler'))) return true;
-        if (product[sectionCode] === true) return true;
+        if (cleanCode === 'hot' && !!product.isHot) return true;
+        if (cleanCode === 'gaming' && (!!product.isGaming || (product.category || '').toLowerCase().includes('gaming') || (product.category || '').toLowerCase().includes('cooler'))) return true;
+        if (cleanCode === 'specialoffer' && !!product.isSpecialOffer) return true;
+        if (product[sectionCode] === true || product[cleanCode] === true) return true;
         return false;
       };
 
       window.autoGenerateSectionCode = (name) => {
         const editingId = document.getElementById('editingSectionDocId').value;
         if (!editingId) {
-          const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          const slug = name.toLowerCase().trim().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
           document.getElementById('secCode').value = slug;
         }
       };
@@ -2712,28 +2726,22 @@
           btn.innerText = "⏳ Deploying...";
         }
         try {
+          let updatedList = [...globalSectionsCache];
           let addedCount = 0;
           for (const sec of defaultSections) {
-            const exists = globalSectionsCache.some(s => s.code === sec.code && s.id);
+            const exists = updatedList.some(s => s.code === sec.code);
             if (!exists) {
-              await addDoc(collection(db, "sections"), {
-                name: sec.name,
-                code: sec.code,
-                emoji: sec.emoji,
-                badgeColor: sec.badgeColor,
-                badgeBg: sec.badgeBg || (sec.badgeColor + '12'),
-                subtitle: sec.subtitle || '',
-                showOnHome: sec.showOnHome !== false,
-                order: sec.order || 1,
-                createdAt: new Date().toISOString()
-              });
+              updatedList.push({ ...sec, id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4) });
               addedCount++;
             }
           }
           if (addedCount > 0) {
+            updatedList.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+            globalSectionsCache = updatedList;
+            await persistSectionsToFirestore(globalSectionsCache);
             alert(`Successfully deployed ${addedCount} default sections to live database!`);
           } else {
-            alert("All default sections are already deployed!");
+            alert("All default sections are already active!");
           }
         } catch (err) {
           console.error("Error deploying default sections:", err);
@@ -2751,48 +2759,26 @@
         if (isSectionsListening) return;
         isSectionsListening = true;
 
-        onSnapshot(collection(db, "sections"), async (snapshot) => {
-          if (snapshot.empty) {
-            console.log("Sections collection empty. Showing defaults & auto-seeding...");
+        onSnapshot(doc(db, "settings", "store_sections"), (docSnap) => {
+          if (docSnap.exists() && Array.isArray(docSnap.data().list) && docSnap.data().list.length > 0) {
+            const list = docSnap.data().list.map((s, idx) => ({
+              ...s,
+              id: s.id || ('sec_' + (s.code || idx))
+            }));
+            list.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+            globalSectionsCache = list;
+          } else {
+            console.log("Sections store_sections empty. Initializing defaults...");
             globalSectionsCache = defaultSections.map(s => ({ ...s }));
-            renderAdminSectionsList();
-            renderAdminProductSectionsCheckboxes();
-            renderInventoryFilterBar();
-            renderInventoryProductsGrid();
-
-            try {
-              for (const sec of defaultSections) {
-                await addDoc(collection(db, "sections"), {
-                  name: sec.name,
-                  code: sec.code,
-                  emoji: sec.emoji,
-                  badgeColor: sec.badgeColor,
-                  badgeBg: sec.badgeBg || (sec.badgeColor + '12'),
-                  subtitle: sec.subtitle || '',
-                  showOnHome: sec.showOnHome !== false,
-                  order: sec.order || 1,
-                  createdAt: new Date().toISOString()
-                });
-              }
-            } catch (err) {
-              console.warn("Auto-seeding sections encountered a warning:", err);
-            }
-            return;
+            persistSectionsToFirestore(globalSectionsCache).catch(e => console.warn("Auto-save default sections warning:", e));
           }
-
-          const secs = [];
-          snapshot.forEach(docSnapshot => {
-            secs.push({ id: docSnapshot.id, ...docSnapshot.data() });
-          });
-          secs.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
-          globalSectionsCache = secs;
 
           renderAdminSectionsList();
           renderAdminProductSectionsCheckboxes();
           renderInventoryFilterBar();
           renderInventoryProductsGrid();
         }, (error) => {
-          console.error("Firestore listening sections issue in admin:", error);
+          console.warn("Firestore listening sections fallback warning:", error);
           globalSectionsCache = defaultSections.map(s => ({ ...s }));
           renderAdminSectionsList();
           renderAdminProductSectionsCheckboxes();
@@ -2809,11 +2795,12 @@
         if (countEl) countEl.innerText = globalSectionsCache.length;
 
         if (globalSectionsCache.length === 0) {
-          container.innerHTML = `<p style="font-size: 0.8rem; color: gray;">No sections loaded.</p>`;
+          container.innerHTML = `<p style="font-size: 0.8rem; color: gray;">No sections active. Click "Deploy Default Sections" or use Section Maker above.</p>`;
           return;
         }
 
         container.innerHTML = globalSectionsCache.map((sec, idx) => {
+          const secId = sec.id || ('sec_' + sec.code);
           const taggedCount = (globalProductsCache || []).filter(p => isProductInSection(p, sec.code)).length;
           const isHomeVisible = sec.showOnHome !== false;
           const hasButton = sec.showButton !== false && sec.showViewAllBtn !== false;
@@ -2821,18 +2808,6 @@
           const isFirst = idx === 0;
           const isLast = idx === globalSectionsCache.length - 1;
 
-          const actionBtns = sec.id 
-            ? `<div style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
-                 <button class="action-btn" title="Move Up" style="padding: 3px 6px; font-size: 0.72rem; background: #f1f5f9; color: #334155; ${isFirst ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="moveSectionOrder('${sec.id}', -1)" ${isFirst ? 'disabled' : ''}>▲</button>
-                 <button class="action-btn" title="Move Down" style="padding: 3px 6px; font-size: 0.72rem; background: #f1f5f9; color: #334155; ${isLast ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="moveSectionOrder('${sec.id}', 1)" ${isLast ? 'disabled' : ''}>▼</button>
-                 <button class="action-btn" style="padding: 3px 8px; font-size: 0.72rem; background: #e2e8f0; color: #334155;" onclick="startEditSection('${sec.id}')">✏️ Edit</button>
-                 <button class="action-btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;" onclick="deleteSection('${sec.id}', '${sec.code}')">🗑️ Delete</button>
-               </div>`
-            : `<div style="display: flex; gap: 4px; align-items: center;">
-                 <span style="font-size:0.65rem; color:#64748b; background:#e2e8f0; padding:2px 6px; border-radius:4px;">Default</span>
-                 <button class="action-btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;" onclick="deleteSection('', '${sec.code}')">🗑️ Remove</button>
-               </div>`;
-            
           return `
             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1.5px solid ${sec.badgeColor || '#cbd5e1'}33; transition: all 0.2s ease;">
               <!-- Section Header & Actions -->
@@ -2851,7 +2826,12 @@
                     </div>
                   </div>
                 </div>
-                ${actionBtns}
+                <div style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                  <button class="action-btn" title="Move Up" style="padding: 3px 6px; font-size: 0.72rem; background: #f1f5f9; color: #334155; ${isFirst ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="moveSectionOrder('${secId}', -1)" ${isFirst ? 'disabled' : ''}>▲</button>
+                  <button class="action-btn" title="Move Down" style="padding: 3px 6px; font-size: 0.72rem; background: #f1f5f9; color: #334155; ${isLast ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="moveSectionOrder('${secId}', 1)" ${isLast ? 'disabled' : ''}>▼</button>
+                  <button class="action-btn" style="padding: 3px 8px; font-size: 0.72rem; background: #e2e8f0; color: #334155;" onclick="startEditSection('${secId}')">✏️ Edit</button>
+                  <button class="action-btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;" onclick="deleteSection('${secId}', '${sec.code}')">🗑️ Remove</button>
+                </div>
               </div>
 
               ${sec.subtitle ? `<p style="font-size: 0.75rem; color: var(--text-muted); margin: 0; padding-left: 2px;">${sec.subtitle}</p>` : ''}
@@ -2863,11 +2843,9 @@
                   <span style="font-weight: 700; color: ${hasButton ? 'var(--nepal-blue)' : '#64748b'}; font-size: 0.72rem;">
                     ${hasButton ? `🔘 Button: Active (${btnLabel})` : '🚫 Button: Removed / Hidden'}
                   </span>
-                  ${sec.id ? `
-                    <button class="action-btn" style="padding: 2px 7px; font-size: 0.68rem; background: ${hasButton ? '#fee2e2' : '#dcfce7'}; color: ${hasButton ? '#dc2626' : '#15803d'}; border: 1px solid ${hasButton ? '#fca5a5' : '#86efac'}; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionButtonVisibility('${sec.id}', ${hasButton})">
-                      ${hasButton ? '✕ Remove Button' : '➕ Show Button'}
-                    </button>
-                  ` : ''}
+                  <button class="action-btn" style="padding: 2px 7px; font-size: 0.68rem; background: ${hasButton ? '#fee2e2' : '#dcfce7'}; color: ${hasButton ? '#dc2626' : '#15803d'}; border: 1px solid ${hasButton ? '#fca5a5' : '#86efac'}; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionButtonVisibility('${secId}', ${hasButton})">
+                    ${hasButton ? '✕ Remove Button' : '➕ Show Button'}
+                  </button>
                 </div>
 
                 <!-- Home Visibility & Product Clear Manipulation -->
@@ -2882,11 +2860,9 @@
                     <span>${isHomeVisible ? '🟢' : '⚪'}</span> ${isHomeVisible ? 'Live on Home' : 'Hidden'}
                   </span>
 
-                  ${sec.id ? `
-                    <button class="action-btn" style="padding: 2px 7px; font-size: 0.68rem; background: ${isHomeVisible ? '#f1f5f9' : '#e0e7ff'}; color: ${isHomeVisible ? '#475569' : 'var(--nepal-blue)'}; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionHomeVisibility('${sec.id}', ${isHomeVisible})">
-                      ${isHomeVisible ? 'Hide' : 'Show'}
-                    </button>
-                  ` : ''}
+                  <button class="action-btn" style="padding: 2px 7px; font-size: 0.68rem; background: ${isHomeVisible ? '#f1f5f9' : '#e0e7ff'}; color: ${isHomeVisible ? '#475569' : 'var(--nepal-blue)'}; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionHomeVisibility('${secId}', ${isHomeVisible})">
+                    ${isHomeVisible ? 'Hide' : 'Show'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -2916,11 +2892,11 @@
         }).join('');
       }
 
-      window.startEditSection = (docId) => {
-        const sec = globalSectionsCache.find(s => s.id === docId);
+      window.startEditSection = (secId) => {
+        const sec = globalSectionsCache.find(s => s.id === secId || s.code === secId);
         if (!sec) return;
 
-        document.getElementById('editingSectionDocId').value = sec.id;
+        document.getElementById('editingSectionDocId').value = sec.id || sec.code;
         document.getElementById('secName').value = sec.name || '';
         document.getElementById('secCode').value = sec.code || '';
         document.getElementById('secEmoji').value = sec.emoji || '✨';
@@ -2956,30 +2932,15 @@
         document.getElementById('cancelSecEditBtn').style.display = "none";
       };
 
-      window.deleteSection = async (docId, secCode) => {
+      window.deleteSection = async (secId, secCode) => {
         if (!confirm(`Are you sure you want to remove this section? Products assigned to it will remain in your store catalog.`)) {
           return;
         }
 
         try {
-          if (docId) {
-            await deleteDoc(doc(db, "sections", docId));
-          } else if (secCode) {
-            // Default section without doc: deploy a suppression record or clean it
-            const existingInCache = globalSectionsCache.find(s => s.code === secCode);
-            if (existingInCache && existingInCache.id) {
-              await deleteDoc(doc(db, "sections", existingInCache.id));
-            } else {
-              // Add as hidden suppression record
-              await addDoc(collection(db, "sections"), {
-                name: (existingInCache && existingInCache.name) || secCode,
-                code: secCode,
-                showOnHome: false,
-                isDeleted: true,
-                createdAt: new Date().toISOString()
-              });
-            }
-          }
+          const targetCode = secCode || (globalSectionsCache.find(s => s.id === secId)?.code);
+          globalSectionsCache = globalSectionsCache.filter(s => s.id !== secId && s.code !== targetCode && s.code !== secCode);
+          await persistSectionsToFirestore(globalSectionsCache);
           alert("Section removed successfully!");
         } catch (e) {
           console.error("Error deleting section:", e);
@@ -2987,33 +2948,33 @@
         }
       };
 
-      window.toggleSectionHomeVisibility = async (docId, currentShowOnHome) => {
-        if (!docId) return;
+      window.toggleSectionHomeVisibility = async (secId, currentShowOnHome) => {
         try {
-          await updateDoc(doc(db, "sections", docId), {
-            showOnHome: !currentShowOnHome
-          });
+          const sec = globalSectionsCache.find(s => s.id === secId || s.code === secId);
+          if (!sec) return;
+          sec.showOnHome = !currentShowOnHome;
+          await persistSectionsToFirestore(globalSectionsCache);
         } catch (err) {
           console.error("Error toggling section home visibility:", err);
           alert("Could not update visibility: " + (err.message || "Unknown error"));
         }
       };
 
-      window.toggleSectionButtonVisibility = async (docId, currentHasButton) => {
-        if (!docId) return;
+      window.toggleSectionButtonVisibility = async (secId, currentHasButton) => {
         try {
-          await updateDoc(doc(db, "sections", docId), {
-            showButton: !currentHasButton,
-            showViewAllBtn: !currentHasButton
-          });
+          const sec = globalSectionsCache.find(s => s.id === secId || s.code === secId);
+          if (!sec) return;
+          sec.showButton = !currentHasButton;
+          sec.showViewAllBtn = !currentHasButton;
+          await persistSectionsToFirestore(globalSectionsCache);
         } catch (err) {
           console.error("Error toggling section button visibility:", err);
           alert("Could not update button setting: " + (err.message || "Unknown error"));
         }
       };
 
-      window.moveSectionOrder = async (docId, delta) => {
-        const secIndex = globalSectionsCache.findIndex(s => s.id === docId);
+      window.moveSectionOrder = async (secId, delta) => {
+        const secIndex = globalSectionsCache.findIndex(s => s.id === secId || s.code === secId);
         if (secIndex === -1) return;
         
         const targetIndex = secIndex + delta;
@@ -3022,19 +2983,15 @@
         const currentSec = globalSectionsCache[secIndex];
         const swapSec = globalSectionsCache[targetIndex];
 
-        try {
-          const currentOrder = Number(currentSec.order) || (secIndex + 1);
-          const swapOrder = Number(swapSec.order) || (targetIndex + 1);
+        const currentOrder = Number(currentSec.order) || (secIndex + 1);
+        const swapOrder = Number(swapSec.order) || (targetIndex + 1);
 
-          // Update both
-          await updateDoc(doc(db, "sections", currentSec.id), {
-            order: swapOrder === currentOrder ? currentOrder + delta : swapOrder
-          });
-          if (swapSec.id) {
-            await updateDoc(doc(db, "sections", swapSec.id), {
-              order: currentOrder
-            });
-          }
+        currentSec.order = swapOrder === currentOrder ? currentOrder + delta : swapOrder;
+        swapSec.order = currentOrder;
+
+        globalSectionsCache.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+        try {
+          await persistSectionsToFirestore(globalSectionsCache);
         } catch (err) {
           console.error("Error reordering sections:", err);
         }
@@ -3083,7 +3040,7 @@
         const code = document.getElementById('secCode').value.trim().toLowerCase().replace(/[^a-z0-9-_]+/g, '-');
         const emoji = document.getElementById('secEmoji').value.trim() || '✨';
         const badgeColor = document.getElementById('secBadgeColor').value || '#7c3aed';
-        const order = Number(document.getElementById('secOrder').value) || 1;
+        const order = Number(document.getElementById('secOrder').value) || (globalSectionsCache.length + 1);
         const subtitle = document.getElementById('secSubtitle').value.trim();
         const showButton = document.getElementById('secShowButton').checked;
         const btnText = document.getElementById('secBtnText').value.trim() || 'View All &rarr;';
@@ -3097,39 +3054,81 @@
         btn.innerText = editingId ? "⏳ Saving Changes..." : "⏳ Deploying Section...";
 
         try {
-          const payload = {
-            name,
-            code,
-            emoji,
-            badgeColor,
-            badgeBg: badgeColor + '12',
-            order,
-            subtitle,
-            showButton,
-            showViewAllBtn: showButton,
-            btnText,
-            btnAction,
-            showOnHome,
-            updatedAt: new Date().toISOString()
-          };
+          let updatedList = [...globalSectionsCache];
 
           if (editingId) {
-            await updateDoc(doc(db, "sections", editingId), payload);
+            const idx = updatedList.findIndex(s => s.id === editingId || s.code === editingId || s.code === code);
+            if (idx !== -1) {
+              updatedList[idx] = {
+                ...updatedList[idx],
+                name,
+                code,
+                emoji,
+                badgeColor,
+                badgeBg: badgeColor + '12',
+                order,
+                subtitle,
+                showButton,
+                showViewAllBtn: showButton,
+                btnText,
+                btnAction,
+                showOnHome,
+                updatedAt: new Date().toISOString()
+              };
+            } else {
+              updatedList.push({
+                id: 'sec_' + Date.now(),
+                name,
+                code,
+                emoji,
+                badgeColor,
+                badgeBg: badgeColor + '12',
+                order,
+                subtitle,
+                showButton,
+                showViewAllBtn: showButton,
+                btnText,
+                btnAction,
+                showOnHome,
+                updatedAt: new Date().toISOString()
+              });
+            }
             alert(`Section "${name}" updated successfully!`);
             cancelSectionEdit();
           } else {
-            const exists = globalSectionsCache.some(s => s.code === code);
+            const exists = updatedList.some(s => s.code === code);
             if (exists) {
               alert(`A section with tag/code "${code}" already exists! Please choose another tag.`);
               btn.disabled = false;
               btn.innerText = "➕ Deploy Section";
               return;
             }
-            payload.createdAt = new Date().toISOString();
-            await addDoc(collection(db, "sections"), payload);
+
+            const newSec = {
+              id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+              name,
+              code,
+              emoji,
+              badgeColor,
+              badgeBg: badgeColor + '12',
+              order,
+              subtitle,
+              showButton,
+              showViewAllBtn: showButton,
+              btnText,
+              btnAction,
+              showOnHome,
+              createdAt: new Date().toISOString()
+            };
+
+            updatedList.push(newSec);
+            document.getElementById('sectionAddForm').reset();
             alert(`🎉 Section "${name}" deployed live successfully!`);
-            cancelSectionEdit();
           }
+
+          updatedList.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+          globalSectionsCache = updatedList;
+          await persistSectionsToFirestore(globalSectionsCache);
         } catch (err) {
           console.error("Error saving section:", err);
           alert("Could not save section: " + (err.message || "Unknown error"));

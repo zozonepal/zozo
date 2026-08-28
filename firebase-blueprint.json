@@ -123,9 +123,29 @@
         "emoji": { "type": "string" }
       },
       "required": ["code", "name"]
+    },
+    "Section": {
+      "title": "Section",
+      "description": "Storefront product sections and feature badges",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "emoji": { "type": "string" },
+        "badgeColor": { "type": "string" },
+        "badgeBg": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "showOnHome": { "type": "boolean" },
+        "order": { "type": "number" }
+      },
+      "required": ["code", "name"]
     }
   },
   "firestore": {
+    "/sections/{sectionId}": {
+      "schema": "Section",
+      "description": "Product sections and featured home slots"
+    },
     "/categories/{categoryId}": {
       "schema": "Category",
       "description": "Product categories collection"

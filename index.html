@@ -3114,6 +3114,9 @@
             isHot: !!p.isHot,
             isGaming: !!p.isGaming,
             isSpecialOffer: !!p.isSpecialOffer,
+            isCombo: !!p.isCombo || p.category === 'combo-deals',
+            comboProducts: p.comboProducts || [],
+            sections: Array.isArray(p.sections) ? p.sections : (p.sections ? [p.sections] : []),
             timestamp: p.timestamp ? (typeof p.timestamp.toDate === 'function' ? p.timestamp.toDate().getTime() : new Date(p.timestamp).getTime()) : (p.createdAt ? new Date(p.createdAt).getTime() : Date.now())
           };
         });
@@ -3128,7 +3131,8 @@
             category: p.category,
             image: (p.image && p.image.length > 500 && p.image.startsWith('data:')) ? 'zozonepal.png' : p.image,
             isHot: p.isHot,
-            isGaming: p.isGaming
+            isGaming: p.isGaming,
+            sections: p.sections
           }));
           safeSetItem("zozo_products_cache", JSON.stringify(cacheableProducts));
         } catch (e) {
@@ -3216,6 +3220,52 @@
           { code: 'power-sockets', name: 'Power Sockets', emoji: '⚡' }
         ];
         renderCategoryFilterBar();
+      });
+    }
+
+    // --- 1C. CONNECT & LIVE STREAM REAL DYNAMIC SECTIONS FROM FIRESTORE ---
+    let globalSections = [];
+    const defaultStorefrontSections = [
+      { code: 'hot', name: 'Hot Products', emoji: '🔥', badgeColor: '#dc2626', badgeBg: '#fffcfc', subtitle: 'Trending & fast-selling products across Nepal', showOnHome: true, order: 1 },
+      { code: 'gaming', name: 'Gaming Gear', emoji: '🎮', badgeColor: '#3b82f6', badgeBg: '#f8faff', subtitle: 'High-performance mobile coolers & gaming accessories', showOnHome: true, order: 2 }
+    ];
+
+    function isProductInSection(product, sectionCode) {
+      if (!product) return false;
+      const cleanCode = (sectionCode || '').toLowerCase().trim();
+      
+      // 1. Direct match in product.sections array
+      if (Array.isArray(product.sections) && product.sections.map(s => (s || '').toLowerCase().trim()).includes(cleanCode)) {
+        return true;
+      }
+      // 2. Legacy boolean flag backwards compatibility
+      if (cleanCode === 'hot' && !!product.isHot) return true;
+      if (cleanCode === 'gaming' && (!!product.isGaming || (product.category || '').toLowerCase().includes('gaming') || (product.category || '').toLowerCase().includes('cooler'))) return true;
+      if (cleanCode === 'specialoffer' && !!product.isSpecialOffer) return true;
+      // 3. Dynamic boolean attribute match
+      if (product[sectionCode] === true || product[cleanCode] === true) return true;
+      return false;
+    }
+
+    function listenToLiveSections() {
+      onSnapshot(collection(db, "sections"), (snapshot) => {
+        const secs = [];
+        snapshot.forEach((docSnap) => {
+          secs.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        if (secs.length === 0) {
+          globalSections = defaultStorefrontSections;
+        } else {
+          secs.sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
+          globalSections = secs;
+        }
+
+        renderSpecialSections();
+      }, (error) => {
+        console.warn("Firestore sections listener fallback warning:", error);
+        globalSections = defaultStorefrontSections;
+        renderSpecialSections();
       });
     }
 
@@ -3464,15 +3514,9 @@
       `;
     };
 
-    // --- RENDER FEATURED SPECIAL SECTIONS ---
+    // --- RENDER DYNAMIC FEATURED SPECIAL SECTIONS ---
     window.renderSpecialSections = function() {
       const specialContainer = document.getElementById('specialFeaturedSectionsContainer');
-      const hotGrid = document.getElementById('hotProductsGrid');
-      const gamingGrid = document.getElementById('gamingProductsGrid');
-
-      const hotSec = document.getElementById('section-hotProducts');
-      const gamingSec = document.getElementById('section-gamingProducts');
-
       if (!specialContainer) return;
 
       // Hide special sections if a category filter is active (e.g. 'all' or any specific category)
@@ -3481,32 +3525,58 @@
         return;
       }
 
-      specialContainer.style.display = 'flex';
+      const sectionsToRender = (globalSections && globalSections.length > 0)
+        ? globalSections.filter(s => s.showOnHome !== false)
+        : defaultStorefrontSections;
 
-      // 1. Hot Products Section
-      let hotItems = globalProductsCatalog.filter(p => p.isHot);
-      if (hotItems.length === 0 && globalProductsCatalog.length > 0) {
-        hotItems = globalProductsCatalog.slice(0, 4); // Fallback to top items
-      }
+      let anyRendered = false;
+      let html = '';
 
-      if (hotItems.length > 0 && hotGrid && hotSec) {
-        hotGrid.innerHTML = hotItems.map(p => createProductCardHtml(p)).join('');
-        hotSec.style.display = 'block';
-      } else if (hotSec) {
-        hotSec.style.display = 'none';
-      }
+      sectionsToRender.forEach(sec => {
+        let matchingItems = globalProductsCatalog.filter(p => isProductInSection(p, sec.code));
 
-      // 2. Gaming Products Section
-      let gamingItems = globalProductsCatalog.filter(p => p.isGaming || (p.category || '').toLowerCase().includes('gaming') || (p.category || '').toLowerCase().includes('cooler'));
-      if (gamingItems.length === 0 && globalProductsCatalog.length > 0) {
-        gamingItems = globalProductsCatalog.slice(Math.min(2, globalProductsCatalog.length - 1)); // Fallback items
-      }
+        // Fallback for default sections if explicitly empty but catalog exists
+        if (matchingItems.length === 0 && globalProductsCatalog.length > 0) {
+          if (sec.code === 'hot') {
+            matchingItems = globalProductsCatalog.slice(0, 4);
+          } else if (sec.code === 'gaming') {
+            matchingItems = globalProductsCatalog.filter(p => (p.category || '').toLowerCase().includes('gaming') || (p.category || '').toLowerCase().includes('cooler')).slice(0, 4);
+          }
+        }
 
-      if (gamingItems.length > 0 && gamingGrid && gamingSec) {
-        gamingGrid.innerHTML = gamingItems.map(p => createProductCardHtml(p)).join('');
-        gamingSec.style.display = 'block';
-      } else if (gamingSec) {
-        gamingSec.style.display = 'none';
+        if (matchingItems.length > 0) {
+          anyRendered = true;
+          const badgeColor = sec.badgeColor || '#dc2626';
+          const badgeBg = sec.badgeBg || '#fffcfc';
+
+          html += `
+            <section id="section-${sec.code}" style="display: block; background: ${badgeBg}; border: 1.5px solid ${badgeColor}33; padding: 20px; border-radius: 12px; box-shadow: 0 4px 14px ${badgeColor}0d; transition: transform 0.2s ease;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 2px solid ${badgeColor}22; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <h2 style="font-size: 1.3rem; font-weight: 800; color: ${badgeColor}; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>${sec.emoji || '📌'}</span>
+                    <span>${sec.name}</span>
+                    <span style="font-size: 0.72rem; background: ${badgeColor}18; color: ${badgeColor}; border: 1px solid ${badgeColor}40; padding: 2px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase;">Featured</span>
+                  </h2>
+                  ${sec.subtitle ? `<p style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0;">${sec.subtitle}</p>` : ''}
+                </div>
+                <button class="btn" style="font-size: 0.75rem; padding: 5px 12px; background: #ffffff; color: ${badgeColor}; border: 1.5px solid ${badgeColor}55; border-radius: 6px; font-weight: 800; cursor: pointer;" onclick="switchCategoryFilter('all')">
+                  View All &rarr;
+                </button>
+              </div>
+              <div class="catalog-grid" style="gap: 16px;">
+                ${matchingItems.map(p => createProductCardHtml(p)).join('')}
+              </div>
+            </section>
+          `;
+        }
+      });
+
+      if (anyRendered) {
+        specialContainer.innerHTML = html;
+        specialContainer.style.display = 'flex';
+      } else {
+        specialContainer.style.display = 'none';
       }
     };
 
@@ -6232,6 +6302,7 @@
     loadInitialShoppingBag();
     listenToLiveInventory();
     listenToLiveCategories();
+    listenToLiveSections();
     listenToLiveBanners();
     initSliderGestures();
 

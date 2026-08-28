@@ -1020,15 +1020,15 @@
                 <div id="colorImagesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
               </div>
 
-              <div class="form-group" style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 14px;">
-                <label style="font-weight: 700; color: var(--text-main); display: block; margin-bottom: 8px;">📌 Feature Sections Affiliation</label>
-                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
-                    <input type="checkbox" id="pIsHot"> 🔥 Hot Product
+              <div class="form-group" style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 14px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <label style="font-weight: 700; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 6px;">
+                    <span>📌</span> Feature Sections Affiliation
                   </label>
-                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">
-                    <input type="checkbox" id="pIsGaming"> 🎮 Gaming Product
-                  </label>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">Assign product to storefront sections</span>
+                </div>
+                <div id="adminProductSectionsCheckboxes" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <!-- Dynamically populated from active sections -->
                 </div>
               </div>
 
@@ -1049,35 +1049,128 @@
             </form>
           </div>
 
-          <!-- Manage Categories -->
-          <div class="panel-card" style="margin-top: 0px;">
-            <h2>📁 Manage Categories</h2>
-            <p class="sub-label">Add new product categories or deploy default ones to the live store.</p>
-            <form id="categoryAddForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
-              <div class="form-group">
-                <label>Category Name *</label>
-                <input type="text" id="catName" class="form-control" placeholder="e.g. Power Banks" required>
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <!-- Manage Categories & Section Maker Container -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Manage Categories -->
+            <div class="panel-card" style="margin-top: 0px;">
+              <h2>📁 Manage Categories</h2>
+              <p class="sub-label">Add new product categories or deploy default ones to the live store.</p>
+              <form id="categoryAddForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
                 <div class="form-group">
-                  <label>Category Code/Tag *</label>
-                  <input type="text" id="catCode" class="form-control" placeholder="e.g. power-banks" required>
+                  <label>Category Name *</label>
+                  <input type="text" id="catName" class="form-control" placeholder="e.g. Power Banks" required>
                 </div>
-                <div class="form-group">
-                  <label>Emoji Icon *</label>
-                  <input type="text" id="catEmoji" class="form-control" placeholder="e.g. 🔋" required>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="form-group">
+                    <label>Category Code/Tag *</label>
+                    <input type="text" id="catCode" class="form-control" placeholder="e.g. power-banks" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Emoji Icon *</label>
+                    <input type="text" id="catEmoji" class="form-control" placeholder="e.g. 🔋" required>
+                  </div>
                 </div>
-              </div>
-              <button type="submit" id="addCatBtn" class="submit-btn" style="background: var(--nepal-blue);">➕ Add / Deploy Category</button>
-            </form>
+                <button type="submit" id="addCatBtn" class="submit-btn" style="background: var(--nepal-blue);">➕ Add / Deploy Category</button>
+              </form>
 
-            <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-                <h3 style="font-size: 0.9rem; font-weight: 700; margin: 0; color: var(--text-main);">Active Store Categories</h3>
-                <button type="button" id="deployDefaultCatsBtn" onclick="deployDefaultCategories()" class="action-btn" style="font-size: 0.75rem; padding: 5px 12px; background: #10b981; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; font-weight: 700;">🚀 Deploy Default Categories</button>
+              <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                  <h3 style="font-size: 0.9rem; font-weight: 700; margin: 0; color: var(--text-main);">Active Store Categories</h3>
+                  <button type="button" id="deployDefaultCatsBtn" onclick="deployDefaultCategories()" class="action-btn" style="font-size: 0.75rem; padding: 5px 12px; background: #10b981; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; font-weight: 700;">🚀 Deploy Default Categories</button>
+                </div>
+                <div id="adminCategoriesList" style="display: flex; flex-direction: column; gap: 8px;">
+                  <p style="font-size: 0.8rem; color: gray;">Loading categories...</p>
+                </div>
               </div>
-              <div id="adminCategoriesList" style="display: flex; flex-direction: column; gap: 8px;">
-                <p style="font-size: 0.8rem; color: gray;">Loading categories...</p>
+            </div>
+
+            <!-- Section Maker & Feature Slots -->
+            <div class="panel-card" style="margin-top: 0px;" id="adminSectionMakerPanel">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                <h2 id="sectionFormTitle" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                  <span>✨ Section Maker</span>
+                </h2>
+                <span style="background: #f5f3ff; color: #7c3aed; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; border: 1px solid #ddd6fe;">Feature Slots</span>
+              </div>
+              <p class="sub-label">Create custom storefront product sections (e.g. Hot, Gaming, Flash Deals, Best Sellers) to feature products dynamically.</p>
+              
+              <form id="sectionAddForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                <input type="hidden" id="editingSectionDocId" value="">
+                
+                <div class="form-group">
+                  <label>Section Display Title *</label>
+                  <input type="text" id="secName" class="form-control" placeholder="e.g. Flash Deals, Best Sellers, Top Picks" required oninput="window.autoGenerateSectionCode(this.value)">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="form-group">
+                    <label>Section Code / Tag *</label>
+                    <input type="text" id="secCode" class="form-control" placeholder="e.g. flash-deals" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Emoji Icon *</label>
+                    <input type="text" id="secEmoji" class="form-control" placeholder="e.g. ⚡, 🔥, 🎮, 🌟" required>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="form-group">
+                    <label>Theme Badge Color *</label>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                      <input type="color" id="secBadgeColor" value="#dc2626" style="width: 44px; height: 38px; padding: 2px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;">
+                      <select id="secColorPreset" class="form-control" style="flex: 1;" onchange="document.getElementById('secBadgeColor').value = this.value">
+                        <option value="#dc2626">🔴 Red (Hot Deals)</option>
+                        <option value="#3b82f6">🔵 Blue (Gaming Gear)</option>
+                        <option value="#d97706">🟠 Amber (Flash Deals)</option>
+                        <option value="#7c3aed">🟣 Purple (Best Sellers)</option>
+                        <option value="#10b981">🟢 Emerald (New Arrivals)</option>
+                        <option value="#ec4899">💖 Pink (Trending)</option>
+                        <option value="#06b6d4">❄️ Cyan (Coolers/Tech)</option>
+                        <option value="#0f172a">⚫ Slate (Premium)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Priority Sort Order</label>
+                    <input type="number" id="secOrder" class="form-control" placeholder="1, 2, 3..." value="1" min="1">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Storefront Tagline / Subtitle (Optional)</label>
+                  <input type="text" id="secSubtitle" class="form-control" placeholder="e.g. Limited time markdowns on selected gadgets">
+                </div>
+
+                <div class="form-group" style="background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <label style="margin: 0; font-weight: 700; font-size: 0.82rem; color: var(--text-main); display: block;">Show on Storefront Home Page</label>
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">Displays dedicated featured row for tagged items</span>
+                  </div>
+                  <input type="checkbox" id="secShowOnHome" checked style="width: 18px; height: 18px; cursor: pointer;">
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" id="addSecBtn" class="submit-btn" style="background: linear-gradient(135deg, #7c3aed, #9333ea); flex: 1;">
+                    ➕ Deploy Section
+                  </button>
+                  <button type="button" id="cancelSecEditBtn" class="submit-btn" style="background: #ef4444; display: none; padding: 0 14px;" onclick="cancelSectionEdit()">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+
+              <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                  <h3 style="font-size: 0.9rem; font-weight: 700; margin: 0; color: var(--text-main);">
+                    Active Store Sections (<span id="adminSectionsCount">0</span>)
+                  </h3>
+                  <button type="button" id="deployDefaultSecsBtn" onclick="deployDefaultSections()" class="action-btn" style="font-size: 0.75rem; padding: 5px 12px; background: #7c3aed; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; font-weight: 700;">
+                    🚀 Deploy Default Sections
+                  </button>
+                </div>
+                <div id="adminSectionsList" style="display: flex; flex-direction: column; gap: 8px;">
+                  <p style="font-size: 0.8rem; color: gray;">Loading sections...</p>
+                </div>
               </div>
             </div>
           </div>
@@ -1086,7 +1179,7 @@
           <div class="panel-card" style="grid-column: 1 / -1;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
               <h2 style="margin: 0;">📦 Active Inventory Items</h2>
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="invFilterPillsContainer">
                 <button type="button" id="invFilterBtn-all" class="action-btn" style="background: var(--nepal-blue); color: white; padding: 5px 12px; font-size: 0.78rem;" onclick="setInventoryFilter('all')">All Items (<span id="invCountAll">0</span>)</button>
                 <button type="button" id="invFilterBtn-standard" class="action-btn" style="background: #e2e8f0; color: #475569; padding: 5px 12px; font-size: 0.78rem;" onclick="setInventoryFilter('standard')">Standard (<span id="invCountStd">0</span>)</button>
                 <button type="button" id="invFilterBtn-combos" class="action-btn" style="background: #f5f3ff; color: #7c3aed; border: 1px solid #c4b5fd; padding: 5px 12px; font-size: 0.78rem;" onclick="setInventoryFilter('combos')">🎁 Combo Deals (<span id="invCountCombos">0</span>)</button>
@@ -2116,6 +2209,7 @@
         initRealtimeOrdersDeliveryNotificationStream();
         await fetchInventoryProducts();
         listenToCategories();
+        listenToSections();
         fetchStoreQrsAdmin();
         fetchPromosAdmin();
         fetchDeliveryRatesAdmin();
@@ -2551,6 +2645,323 @@
         }
       });
 
+      // --- 1C. DYNAMIC SECTIONS LOGIC (SECTION MAKER) ---
+      let globalSectionsCache = [];
+      const defaultSections = [
+        { code: 'hot', name: 'Hot Products', emoji: '🔥', badgeColor: '#dc2626', badgeBg: '#fffcfc', subtitle: 'Top trending items in Nepal with fastest sellouts', showOnHome: true, order: 1 },
+        { code: 'gaming', name: 'Gaming Gear', emoji: '🎮', badgeColor: '#3b82f6', badgeBg: '#f8faff', subtitle: 'High-performance mobile coolers & gaming accessories', showOnHome: true, order: 2 },
+        { code: 'flash-deals', name: 'Flash Deals', emoji: '⚡', badgeColor: '#d97706', badgeBg: '#fffbeb', subtitle: 'Limited-time special discounted tech bargains', showOnHome: true, order: 3 },
+        { code: 'best-sellers', name: 'Best Sellers', emoji: '🌟', badgeColor: '#7c3aed', badgeBg: '#faf5ff', subtitle: 'Most popular customer top-rated accessories', showOnHome: true, order: 4 }
+      ];
+
+      window.isProductInSection = (product, sectionCode) => {
+        if (!product) return false;
+        if (Array.isArray(product.sections) && product.sections.includes(sectionCode)) {
+          return true;
+        }
+        if (sectionCode === 'hot' && !!product.isHot) return true;
+        if (sectionCode === 'gaming' && (!!product.isGaming || (product.category || '').toLowerCase().includes('gaming') || (product.category || '').toLowerCase().includes('cooler'))) return true;
+        if (product[sectionCode] === true) return true;
+        return false;
+      };
+
+      window.autoGenerateSectionCode = (name) => {
+        const editingId = document.getElementById('editingSectionDocId').value;
+        if (!editingId) {
+          const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          document.getElementById('secCode').value = slug;
+        }
+      };
+
+      window.deployDefaultSections = async () => {
+        const btn = document.getElementById('deployDefaultSecsBtn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = "⏳ Deploying...";
+        }
+        try {
+          let addedCount = 0;
+          for (const sec of defaultSections) {
+            const exists = globalSectionsCache.some(s => s.code === sec.code && s.id);
+            if (!exists) {
+              await addDoc(collection(db, "sections"), {
+                name: sec.name,
+                code: sec.code,
+                emoji: sec.emoji,
+                badgeColor: sec.badgeColor,
+                badgeBg: sec.badgeBg || (sec.badgeColor + '12'),
+                subtitle: sec.subtitle || '',
+                showOnHome: sec.showOnHome !== false,
+                order: sec.order || 1,
+                createdAt: new Date().toISOString()
+              });
+              addedCount++;
+            }
+          }
+          if (addedCount > 0) {
+            alert(`Successfully deployed ${addedCount} default sections to live database!`);
+          } else {
+            alert("All default sections are already deployed!");
+          }
+        } catch (err) {
+          console.error("Error deploying default sections:", err);
+          alert("Could not deploy default sections: " + (err.message || "Permissions issue or network fault."));
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "🚀 Deploy Default Sections";
+          }
+        }
+      };
+
+      let isSectionsListening = false;
+      function listenToSections() {
+        if (isSectionsListening) return;
+        isSectionsListening = true;
+
+        onSnapshot(collection(db, "sections"), async (snapshot) => {
+          if (snapshot.empty) {
+            console.log("Sections collection empty. Showing defaults & auto-seeding...");
+            globalSectionsCache = defaultSections.map(s => ({ ...s }));
+            renderAdminSectionsList();
+            renderAdminProductSectionsCheckboxes();
+            renderInventoryFilterBar();
+            renderInventoryProductsGrid();
+
+            try {
+              for (const sec of defaultSections) {
+                await addDoc(collection(db, "sections"), {
+                  name: sec.name,
+                  code: sec.code,
+                  emoji: sec.emoji,
+                  badgeColor: sec.badgeColor,
+                  badgeBg: sec.badgeBg || (sec.badgeColor + '12'),
+                  subtitle: sec.subtitle || '',
+                  showOnHome: sec.showOnHome !== false,
+                  order: sec.order || 1,
+                  createdAt: new Date().toISOString()
+                });
+              }
+            } catch (err) {
+              console.warn("Auto-seeding sections encountered a warning:", err);
+            }
+            return;
+          }
+
+          const secs = [];
+          snapshot.forEach(docSnapshot => {
+            secs.push({ id: docSnapshot.id, ...docSnapshot.data() });
+          });
+          secs.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+          globalSectionsCache = secs;
+
+          renderAdminSectionsList();
+          renderAdminProductSectionsCheckboxes();
+          renderInventoryFilterBar();
+          renderInventoryProductsGrid();
+        }, (error) => {
+          console.error("Firestore listening sections issue in admin:", error);
+          globalSectionsCache = defaultSections.map(s => ({ ...s }));
+          renderAdminSectionsList();
+          renderAdminProductSectionsCheckboxes();
+          renderInventoryFilterBar();
+          renderInventoryProductsGrid();
+        });
+      }
+
+      function renderAdminSectionsList() {
+        const container = document.getElementById('adminSectionsList');
+        const countEl = document.getElementById('adminSectionsCount');
+        if (!container) return;
+
+        if (countEl) countEl.innerText = globalSectionsCache.length;
+
+        if (globalSectionsCache.length === 0) {
+          container.innerHTML = `<p style="font-size: 0.8rem; color: gray;">No sections loaded.</p>`;
+          return;
+        }
+
+        container.innerHTML = globalSectionsCache.map(sec => {
+          const taggedCount = (globalProductsCache || []).filter(p => isProductInSection(p, sec.code)).length;
+          const isHomeVisible = sec.showOnHome !== false;
+
+          const actionBtns = sec.id 
+            ? `<div style="display: flex; gap: 6px; align-items: center;">
+                 <button class="action-btn" style="padding: 3px 8px; font-size: 0.72rem; background: #e2e8f0; color: #334155;" onclick="startEditSection('${sec.id}')">Edit</button>
+                 <button class="action-btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem;" onclick="deleteSection('${sec.id}')">Delete</button>
+               </div>`
+            : `<span style="font-size:0.65rem; color:#64748b; background:#e2e8f0; padding:2px 6px; border-radius:4px;">Default</span>`;
+            
+          return `
+            <div style="display: flex; flex-direction: column; gap: 6px; background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1.5px solid ${sec.badgeColor || '#cbd5e1'}33;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 1.2rem; background: ${sec.badgeColor || '#7c3aed'}15; padding: 4px 8px; border-radius: 6px;">${sec.emoji || '📌'}</span>
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <strong style="font-size: 0.88rem; color: var(--text-main);">${sec.name}</strong>
+                      <span style="font-size: 0.65rem; font-weight: 800; background: ${sec.badgeColor || '#7c3aed'}; color: #ffffff; padding: 1px 6px; border-radius: 4px;">#${sec.order || 1}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                      <code>tag: ${sec.code}</code>
+                      <span>&bull;</span>
+                      <span style="color: ${taggedCount > 0 ? 'var(--nepal-blue)' : 'gray'}; font-weight: 700;">${taggedCount} ${taggedCount === 1 ? 'product' : 'products'} assigned</span>
+                    </div>
+                  </div>
+                </div>
+                ${actionBtns}
+              </div>
+              ${sec.subtitle ? `<p style="font-size: 0.75rem; color: var(--text-muted); margin: 0; padding-left: 2px;">${sec.subtitle}</p>` : ''}
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px dashed #e2e8f0; font-size: 0.72rem;">
+                <span style="display: flex; align-items: center; gap: 4px; color: ${isHomeVisible ? '#15803d' : '#64748b'}; font-weight: 700;">
+                  <span>${isHomeVisible ? '🟢' : '⚪'}</span> ${isHomeVisible ? 'Visible on Home Page' : 'Hidden from Home Page'}
+                </span>
+                ${sec.id ? `
+                  <button class="action-btn" style="padding: 2px 6px; font-size: 0.68rem; background: ${isHomeVisible ? '#fee2e2' : '#dcfce7'}; color: ${isHomeVisible ? '#dc2626' : '#15803d'}; border: none; border-radius: 4px; cursor: pointer; font-weight: 700;" onclick="toggleSectionHomeVisibility('${sec.id}', ${isHomeVisible})">
+                    ${isHomeVisible ? 'Hide from Home' : 'Show on Home'}
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderAdminProductSectionsCheckboxes(selectedCodes = []) {
+        const container = document.getElementById('adminProductSectionsCheckboxes');
+        if (!container) return;
+
+        if (!globalSectionsCache || globalSectionsCache.length === 0) {
+          container.innerHTML = `<span style="font-size:0.75rem; color:gray;">No sections created yet. Use Section Maker to define sections.</span>`;
+          return;
+        }
+
+        container.innerHTML = globalSectionsCache.map(sec => {
+          const isChecked = selectedCodes.includes(sec.code) || (sec.code === 'hot' && selectedCodes.includes('isHot')) || (sec.code === 'gaming' && selectedCodes.includes('isGaming'));
+          const color = sec.badgeColor || '#7c3aed';
+          return `
+            <label style="display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1.5px solid ${isChecked ? color : '#cbd5e1'}; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 700; color: ${isChecked ? color : 'var(--text-main)'}; transition: all 0.15s ease;">
+              <input type="checkbox" name="productSectionOption" value="${sec.code}" ${isChecked ? 'checked' : ''} onchange="this.parentElement.style.borderColor = this.checked ? '${color}' : '#cbd5e1'; this.parentElement.style.color = this.checked ? '${color}' : 'var(--text-main)';" style="cursor: pointer;">
+              <span>${sec.emoji || '📌'}</span>
+              <span>${sec.name}</span>
+            </label>
+          `;
+        }).join('');
+      }
+
+      window.startEditSection = (docId) => {
+        const sec = globalSectionsCache.find(s => s.id === docId);
+        if (!sec) return;
+
+        document.getElementById('editingSectionDocId').value = sec.id;
+        document.getElementById('secName').value = sec.name || '';
+        document.getElementById('secCode').value = sec.code || '';
+        document.getElementById('secEmoji').value = sec.emoji || '✨';
+        document.getElementById('secBadgeColor').value = sec.badgeColor || '#7c3aed';
+        document.getElementById('secOrder').value = sec.order || 1;
+        document.getElementById('secSubtitle').value = sec.subtitle || '';
+        document.getElementById('secShowOnHome').checked = sec.showOnHome !== false;
+
+        document.getElementById('sectionFormTitle').innerHTML = `<span>📝 Edit Section</span>`;
+        document.getElementById('addSecBtn').innerText = "💾 Save Section Changes";
+        document.getElementById('cancelSecEditBtn').style.display = "block";
+        document.getElementById('adminSectionMakerPanel').scrollIntoView({ behavior: 'smooth' });
+      };
+
+      window.cancelSectionEdit = () => {
+        document.getElementById('editingSectionDocId').value = '';
+        document.getElementById('sectionAddForm').reset();
+        document.getElementById('secBadgeColor').value = '#dc2626';
+        document.getElementById('secShowOnHome').checked = true;
+        document.getElementById('sectionFormTitle').innerHTML = `<span>✨ Section Maker</span>`;
+        document.getElementById('addSecBtn').innerText = "➕ Deploy Section";
+        document.getElementById('cancelSecEditBtn').style.display = "none";
+      };
+
+      window.deleteSection = async (docId) => {
+        if (!docId || docId === 'undefined') {
+          alert("This is a default preset section. Please click 'Deploy Default Sections' first to sync all defaults to the database.");
+          return;
+        }
+        if (confirm("Are you sure you want to delete this product section? Products previously assigned to this section will remain in your catalog.")) {
+          try {
+            await deleteDoc(doc(db, "sections", docId));
+          } catch (e) {
+            console.error("Error deleting section:", e);
+            alert("Could not delete section: " + (e.message || "Unknown error"));
+          }
+        }
+      };
+
+      window.toggleSectionHomeVisibility = async (docId, currentShowOnHome) => {
+        if (!docId) return;
+        try {
+          await updateDoc(doc(db, "sections", docId), {
+            showOnHome: !currentShowOnHome
+          });
+        } catch (err) {
+          console.error("Error toggling section home visibility:", err);
+          alert("Could not update visibility: " + (err.message || "Unknown error"));
+        }
+      };
+
+      // Form submission for new or edited section
+      document.getElementById('sectionAddForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editingId = document.getElementById('editingSectionDocId').value;
+        const name = document.getElementById('secName').value.trim();
+        const code = document.getElementById('secCode').value.trim().toLowerCase().replace(/[^a-z0-9-_]+/g, '-');
+        const emoji = document.getElementById('secEmoji').value.trim() || '✨';
+        const badgeColor = document.getElementById('secBadgeColor').value || '#7c3aed';
+        const order = Number(document.getElementById('secOrder').value) || 1;
+        const subtitle = document.getElementById('secSubtitle').value.trim();
+        const showOnHome = document.getElementById('secShowOnHome').checked;
+
+        if (!name || !code) return;
+
+        const btn = document.getElementById('addSecBtn');
+        btn.disabled = true;
+        btn.innerText = editingId ? "⏳ Saving Changes..." : "⏳ Deploying Section...";
+
+        try {
+          const payload = {
+            name,
+            code,
+            emoji,
+            badgeColor,
+            badgeBg: badgeColor + '12',
+            order,
+            subtitle,
+            showOnHome,
+            updatedAt: new Date().toISOString()
+          };
+
+          if (editingId) {
+            await updateDoc(doc(db, "sections", editingId), payload);
+            alert(`Section "${name}" updated successfully!`);
+            cancelSectionEdit();
+          } else {
+            const exists = globalSectionsCache.some(s => s.code === code);
+            if (exists) {
+              alert(`A section with tag/code "${code}" already exists! Please choose another tag.`);
+              btn.disabled = false;
+              btn.innerText = "➕ Deploy Section";
+              return;
+            }
+            payload.createdAt = new Date().toISOString();
+            await addDoc(collection(db, "sections"), payload);
+            alert(`🎉 Section "${name}" deployed live successfully!`);
+            cancelSectionEdit();
+          }
+        } catch (err) {
+          console.error("Error saving section:", err);
+          alert("Could not save section: " + (err.message || "Unknown error"));
+        } finally {
+          btn.disabled = false;
+          btn.innerText = editingId ? "💾 Save Section Changes" : "➕ Deploy Section";
+        }
+      });
+
       // --- 2. CATALOG PRODUCTS LOGIC ---
       let editingProductId = null;
       let editingProductImageUrl = "";
@@ -2583,8 +2994,11 @@
         const colorsStr = item.colors ? (Array.isArray(item.colors) ? item.colors.map(c => c.name).join(', ') : item.colors) : "";
         document.getElementById('pColors').value = colorsStr;
 
-        document.getElementById('pIsHot').checked = !!item.isHot;
-        document.getElementById('pIsGaming').checked = !!item.isGaming;
+        // Populate dynamic section checkboxes
+        let productSections = Array.isArray(item.sections) ? [...item.sections] : [];
+        if (item.isHot && !productSections.includes('hot')) productSections.push('hot');
+        if (item.isGaming && !productSections.includes('gaming')) productSections.push('gaming');
+        renderAdminProductSectionsCheckboxes(productSections);
 
         // Restore colorImagesMap
         colorImagesMap = {};
@@ -2611,8 +3025,7 @@
         document.getElementById('pImgFile').required = true;
 
         document.getElementById('productUploadForm').reset();
-        document.getElementById('pIsHot').checked = false;
-        document.getElementById('pIsGaming').checked = false;
+        renderAdminProductSectionsCheckboxes([]);
         colorImagesMap = {};
         updateColorImagesUploader();
       };
@@ -2669,6 +3082,9 @@
               }))
             : [{ name: "Standard", hex: "#9333ea", imageUrl: "" }];
 
+          const selectedSectionNodes = document.querySelectorAll('input[name="productSectionOption"]:checked');
+          const selectedSections = Array.from(selectedSectionNodes).map(node => node.value);
+
           const payload = {
             name: String(document.getElementById('pName').value).trim(),
             price: Number(document.getElementById('pPrice').value),
@@ -2678,8 +3094,9 @@
             description: String(document.getElementById('pDescription').value).trim(),
             specifications: cleanSpecs,
             colors: cleanColors,
-            isHot: document.getElementById('pIsHot').checked,
-            isGaming: document.getElementById('pIsGaming').checked,
+            sections: selectedSections,
+            isHot: selectedSections.includes('hot'),
+            isGaming: selectedSections.includes('gaming'),
             timestamp: new Date()
           };
 
@@ -2696,8 +3113,7 @@
             await addDoc(collection(db, "products"), payload);
             alert("Catalog item deployed successfully!");
             document.getElementById('productUploadForm').reset();
-            document.getElementById('pIsHot').checked = false;
-            document.getElementById('pIsGaming').checked = false;
+            renderAdminProductSectionsCheckboxes([]);
             colorImagesMap = {};
             updateColorImagesUploader();
           }
@@ -2712,7 +3128,54 @@
         }
       });
 
+      window.toggleProductSection = async (productId, sectionCode) => {
+        const item = globalProductsCache.find(p => p.id === productId);
+        if (!item) return;
+
+        const isCurrentlyIn = isProductInSection(item, sectionCode);
+        
+        let currentSections = Array.isArray(item.sections) ? [...item.sections] : [];
+        if (item.isHot && !currentSections.includes('hot')) currentSections.push('hot');
+        if (item.isGaming && !currentSections.includes('gaming')) currentSections.push('gaming');
+
+        let newSections = [];
+        if (isCurrentlyIn) {
+          newSections = currentSections.filter(s => s !== sectionCode);
+        } else {
+          newSections = [...new Set([...currentSections, sectionCode])];
+        }
+
+        // Update item locally for instant feedback
+        item.sections = newSections;
+        if (sectionCode === 'hot') item.isHot = !isCurrentlyIn;
+        if (sectionCode === 'gaming') item.isGaming = !isCurrentlyIn;
+
+        renderInventoryProductsGrid();
+        renderAdminSectionsList();
+        renderInventoryFilterBar();
+
+        try {
+          const updatePayload = {
+            sections: newSections
+          };
+          if (sectionCode === 'hot') updatePayload.isHot = !isCurrentlyIn;
+          if (sectionCode === 'gaming') updatePayload.isGaming = !isCurrentlyIn;
+          
+          await updateDoc(doc(db, "products", productId), updatePayload);
+        } catch (err) {
+          console.error("Error toggling product section in Firestore:", err);
+          alert("Could not update section affiliation: " + (err.message || "Unknown error"));
+          fetchInventoryProducts();
+        }
+      };
+
       window.toggleProductSectionFlag = async (docId, flagName, currentValue) => {
+        if (flagName === 'isHot') {
+          return window.toggleProductSection(docId, 'hot');
+        }
+        if (flagName === 'isGaming') {
+          return window.toggleProductSection(docId, 'gaming');
+        }
         try {
           const productRef = doc(db, "products", docId);
           await updateDoc(productRef, {
@@ -2734,24 +3197,62 @@
       let comboSelectedP1 = null;
       let comboSelectedP2 = null;
 
+      function renderInventoryFilterBar() {
+        const container = document.getElementById('invFilterPillsContainer');
+        if (!container) return;
+
+        const totalAll = (globalProductsCache || []).length;
+        const totalStd = (globalProductsCache || []).filter(p => !p.isCombo && p.category !== 'combo-deals').length;
+        const totalCombos = (globalProductsCache || []).filter(p => !!p.isCombo || p.category === 'combo-deals').length;
+
+        let baseHtml = `
+          <button type="button" id="invFilterBtn-all" class="action-btn" style="background: ${activeInventoryFilter === 'all' ? 'var(--nepal-blue)' : '#e2e8f0'}; color: ${activeInventoryFilter === 'all' ? 'white' : '#475569'}; padding: 5px 12px; font-size: 0.78rem; font-weight: 700;" onclick="setInventoryFilter('all')">All Items (${totalAll})</button>
+          <button type="button" id="invFilterBtn-standard" class="action-btn" style="background: ${activeInventoryFilter === 'standard' ? 'var(--nepal-blue)' : '#e2e8f0'}; color: ${activeInventoryFilter === 'standard' ? 'white' : '#475569'}; padding: 5px 12px; font-size: 0.78rem; font-weight: 700;" onclick="setInventoryFilter('standard')">Standard (${totalStd})</button>
+          <button type="button" id="invFilterBtn-combos" class="action-btn" style="background: ${activeInventoryFilter === 'combos' ? '#7c3aed' : '#f5f3ff'}; color: ${activeInventoryFilter === 'combos' ? '#ffffff' : '#7c3aed'}; border: 1px solid #c4b5fd; padding: 5px 12px; font-size: 0.78rem; font-weight: 700;" onclick="setInventoryFilter('combos')">🎁 Combo Deals (${totalCombos})</button>
+        `;
+
+        if (globalSectionsCache && globalSectionsCache.length > 0) {
+          globalSectionsCache.forEach(sec => {
+            const secCount = (globalProductsCache || []).filter(p => isProductInSection(p, sec.code)).length;
+            const isSecActive = activeInventoryFilter === `sec:${sec.code}`;
+            const color = sec.badgeColor || '#7c3aed';
+            baseHtml += `
+              <button type="button" id="invFilterBtn-sec-${sec.code}" class="action-btn" style="background: ${isSecActive ? color : '#ffffff'}; color: ${isSecActive ? '#ffffff' : color}; border: 1.5px solid ${color}; padding: 5px 12px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" onclick="setInventoryFilter('sec:${sec.code}')">
+                <span>${sec.emoji || '📌'}</span> <span>${sec.name} (${secCount})</span>
+              </button>
+            `;
+          });
+        }
+
+        container.innerHTML = baseHtml;
+      }
+
       window.setInventoryFilter = (filterType) => {
         activeInventoryFilter = filterType;
-        ['all', 'standard', 'combos'].forEach(t => {
-          const btn = document.getElementById(`invFilterBtn-${t}`);
-          if (btn) {
-            if (t === filterType) {
-              btn.style.background = t === 'combos' ? '#7c3aed' : 'var(--nepal-blue)';
-              btn.style.color = '#ffffff';
-              btn.style.borderColor = 'transparent';
-            } else {
-              btn.style.background = '#e2e8f0';
-              btn.style.color = '#475569';
-              btn.style.borderColor = t === 'combos' ? '#c4b5fd' : 'transparent';
-            }
-          }
-        });
+        renderInventoryFilterBar();
         renderInventoryProductsGrid();
       };
+
+      function renderProductSectionButtons(item) {
+        if (!globalSectionsCache || globalSectionsCache.length === 0) {
+          return `<span style="font-size:0.7rem; color:gray;">No sections available</span>`;
+        }
+        return globalSectionsCache.map(sec => {
+          const isAssigned = isProductInSection(item, sec.code);
+          const badgeColor = sec.badgeColor || '#7c3aed';
+          return `
+            <button type="button" 
+              class="action-btn section-toggle-btn ${isAssigned ? 'is-assigned' : ''}" 
+              style="padding: 3px 8px; min-height: 26px; font-size: 0.72rem; font-weight: 700; background: ${isAssigned ? badgeColor : '#f1f5f9'}; color: ${isAssigned ? '#ffffff' : '#475569'}; border: 1px solid ${isAssigned ? badgeColor : '#cbd5e1'}; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s ease; white-space: nowrap;" 
+              onclick="toggleProductSection('${item.id}', '${sec.code}')"
+              title="${isAssigned ? 'Active in ' + sec.name + ' (Click to remove)' : 'Click to assign to ' + sec.name}">
+              <span>${sec.emoji || '📌'}</span>
+              <span>${sec.name}</span>
+              ${isAssigned ? '<span style="font-size:0.65rem; font-weight:900; background:rgba(255,255,255,0.3); padding:0 3px; border-radius:3px;">✓</span>' : ''}
+            </button>
+          `;
+        }).join('');
+      }
 
       function renderInventoryProductsGrid() {
         const container = document.getElementById('productsListContainer');
@@ -2767,6 +3268,9 @@
           filtered = globalProductsCache.filter(p => !p.isCombo && p.category !== 'combo-deals');
         } else if (activeInventoryFilter === 'combos') {
           filtered = globalProductsCache.filter(p => !!p.isCombo || p.category === 'combo-deals');
+        } else if (activeInventoryFilter.startsWith('sec:')) {
+          const targetSecCode = activeInventoryFilter.replace('sec:', '');
+          filtered = globalProductsCache.filter(p => isProductInSection(p, targetSecCode));
         }
 
         if (filtered.length === 0) {
@@ -2779,8 +3283,6 @@
 
         container.innerHTML = filtered.map(item => {
           const colorsStr = item.colors ? (Array.isArray(item.colors) ? item.colors.map(c => c.name || 'Standard').join(', ') : item.colors) : 'Standard';
-          const isHot = !!item.isHot;
-          const isGaming = !!item.isGaming;
           const isCombo = !!item.isCombo || item.category === 'combo-deals';
           const savings = (item.oldPrice && item.oldPrice > item.price) ? (item.oldPrice - item.price) : 0;
           const savingsPercent = (item.oldPrice && item.oldPrice > item.price) ? Math.round(((item.oldPrice - item.price) / item.oldPrice) * 100) : 0;
@@ -2831,14 +3333,11 @@
               
               ${comboComponentsHtml}
 
-              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; align-items: center;">
-                <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Sections:</span>
-                <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isHot ? '#ef4444' : '#e2e8f0'}; color: ${isHot ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isHot', ${isHot})">
-                  🔥 Hot
-                </button>
-                <button class="action-btn" style="padding: 3px 8px; min-height: 28px; font-size: 0.7rem; background: ${isGaming ? '#3b82f6' : '#e2e8f0'}; color: ${isGaming ? '#ffffff' : '#475569'}; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" onclick="toggleProductSectionFlag('${item.id}', 'isGaming', ${isGaming})">
-                  🎮 Gaming
-                </button>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; align-items: center;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                  <span>📌</span> Sections:
+                </span>
+                ${renderProductSectionButtons(item)}
               </div>
             </div>
           `;
@@ -2884,7 +3383,9 @@
           if (countCombosEl) countCombosEl.innerText = comboCount;
           if (countBadgeEl) countBadgeEl.innerText = comboCount;
 
+          renderInventoryFilterBar();
           renderInventoryProductsGrid();
+          renderAdminSectionsList();
           populateComboProductSelects();
           renderComboDealsList();
         } catch (e) { 

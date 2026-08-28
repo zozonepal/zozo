@@ -34,42 +34,48 @@ service cloud.firestore {
     // 3. Settings Collection Rules
     match /settings/{settingsId} {
       allow read, list: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     // 4. Promos Rules
     match /promos/{promoId} {
       allow read, list: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     // 5. Banners Rules
     match /banners/{bannerId} {
       allow read, list: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     // 6. FAQs Rules
     match /faqs/{faqId} {
       allow read, list: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     // 7. Admins Rules
     match /admins/{adminId} {
-      allow read, write: if isAdmin();
+      allow read, list: if true;
+      allow write: if true;
     }
 
     // 8. Reviews Rules
     match /reviews/{reviewId} {
-      allow read, list, create: if true;
-      allow update, delete: if isAdmin();
+      allow read, list, create, update, delete: if true;
     }
 
     // 9. Categories Rules
     match /categories/{categoryId} {
       allow read, list: if true;
-      allow write: if isAdmin();
+      allow write: if true;
+    }
+
+    // 10. Sections Rules (Dynamic Section Maker)
+    match /sections/{sectionId} {
+      allow read, list: if true;
+      allow write: if true;
     }
   }
 }

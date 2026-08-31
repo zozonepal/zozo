@@ -77,5 +77,20 @@ service cloud.firestore {
       allow read, list: if true;
       allow write: if true;
     }
+
+    // 11. Combos Rules
+    match /combos/{comboId} {
+      allow read, list, write: if true;
+    }
+
+    // 12. Delivery Rates Rules
+    match /delivery_rates/{rateId} {
+      allow read, list, write: if true;
+    }
+
+    // 13. Broadcasts Rules
+    match /broadcasts/{broadcastId} {
+      allow read, list, write: if true;
+    }
   }
 }

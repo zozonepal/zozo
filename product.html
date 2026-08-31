@@ -14,6 +14,9 @@
   <link rel="dns-prefetch" href="https://images.unsplash.com">
   <link rel="dns-prefetch" href="https://wa.me">
   
+  <!-- GSAP Animation Library for Ultra-Smooth UI Transitions -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  
   <style>
     /* --- 1. DESIGN SYSTEM & CORE CSS VARIABLES --- */
     :root {
@@ -816,9 +819,47 @@
     .details-form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
     .details-form-input { width: 100%; padding: 8px 12px; font-size: 0.85rem; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; outline: none; background: var(--input-bg); }
 
-    /* --- 6. SIDEBAR CART PANEL --- */
-    .cart-sidebar { position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%; background: var(--bg-card); box-shadow: -4px 0 20px rgba(0,0,0,0.1); z-index: 1011; transition: right 0.3s ease-in-out; display: flex; flex-direction: column; border-left: 1px solid var(--border-color);}
-    .cart-sidebar.open { right: 0; }
+    /* --- 6. SIDEBAR CART PANEL & BACKDROP --- */
+    .cart-sidebar-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 1010;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .cart-sidebar-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .cart-sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      max-width: 400px;
+      height: 100%;
+      background: var(--bg-card);
+      box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
+      z-index: 1011;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border-color);
+      transform: translateX(100%);
+      visibility: hidden;
+      transition: visibility 0.35s ease;
+      will-change: transform;
+    }
+    .cart-sidebar.open {
+      visibility: visible;
+      transform: translateX(0);
+    }
     .cart-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
     .cart-items-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
     
@@ -1558,7 +1599,8 @@
     </div>
   </a>
 
-  <!-- SIDEBAR CART DRAWER -->
+  <!-- SIDEBAR CART BACKDROP & DRAWER -->
+  <div id="cartSidebarBackdrop" class="cart-sidebar-backdrop" onclick="toggleCartSidebar(false)"></div>
   <div id="cartSidebarLayer" class="cart-sidebar">
     <div class="cart-header">
       <h3 style="font-weight:800; font-size:1.15rem;">Shopping Cart Bag</h3>
@@ -2053,9 +2095,16 @@
       if (skeletonEl) skeletonEl.style.display = 'none';
       if (detailCardEl) {
         detailCardEl.style.display = 'grid';
-        requestAnimationFrame(() => {
-          detailCardEl.style.opacity = '1';
-        });
+        if (window.gsap) {
+          gsap.fromTo(detailCardEl, 
+            { opacity: 0, y: 15 }, 
+            { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }
+          );
+        } else {
+          requestAnimationFrame(() => {
+            detailCardEl.style.opacity = '1';
+          });
+        }
       }
 
       updateDetailPageDeliveryQuote();
@@ -2065,22 +2114,41 @@
       }
     }
 
-    // Thumbnails control
+    // Thumbnails control with smooth GSAP transition
     window.changeDetailPageImage = function(elm, src) {
       document.querySelectorAll('.detail-thumbnail-item').forEach(t => t.classList.remove('active-thumb'));
       elm.classList.add('active-thumb');
-      document.getElementById('detailMainLargePreview').src = src;
+      const previewEl = document.getElementById('detailMainLargePreview');
+      if (previewEl) {
+        if (window.gsap) {
+          gsap.timeline()
+            .to(previewEl, { opacity: 0.35, scale: 0.96, duration: 0.12, ease: "power1.in", onComplete: () => {
+              previewEl.src = src;
+            }})
+            .to(previewEl, { opacity: 1, scale: 1, duration: 0.22, ease: "power2.out" });
+        } else {
+          previewEl.src = src;
+        }
+      }
     };
 
-    // Color Swatch controls
+    // Color Swatch controls with smooth GSAP transition
     window.changeDetailPageColor = function(elm, name, colorImageUrl) {
       document.querySelectorAll('#detailColorsContainer .color-pill-selector').forEach(s => s.classList.remove('active-color'));
       elm.classList.add('active-color');
       currentSelectedColor = name;
-      if (colorImageUrl) {
-        document.getElementById('detailMainLargePreview').src = colorImageUrl;
-      } else if (currentSelectedProduct) {
-        document.getElementById('detailMainLargePreview').src = currentSelectedProduct.image;
+      const previewEl = document.getElementById('detailMainLargePreview');
+      const targetSrc = colorImageUrl ? colorImageUrl : (currentSelectedProduct ? currentSelectedProduct.image : '');
+      if (previewEl && targetSrc) {
+        if (window.gsap) {
+          gsap.timeline()
+            .to(previewEl, { opacity: 0.35, scale: 0.96, duration: 0.12, ease: "power1.in", onComplete: () => {
+              previewEl.src = targetSrc;
+            }})
+            .to(previewEl, { opacity: 1, scale: 1, duration: 0.22, ease: "power2.out" });
+        } else {
+          previewEl.src = targetSrc;
+        }
       }
     };
 
@@ -2166,6 +2234,15 @@
         }).join('');
         if (window.ZozoWishlist) {
           window.ZozoWishlist.syncAllHeartButtons();
+        }
+        if (window.gsap) {
+          const cards = container.querySelectorAll('.product-card');
+          if (cards.length > 0) {
+            gsap.fromTo(cards, 
+              { opacity: 0, y: 15, scale: 0.98 }, 
+              { opacity: 1, y: 0, scale: 1, duration: 0.35, stagger: 0.06, ease: "power2.out" }
+            );
+          }
         }
       }
     };
@@ -2314,17 +2391,50 @@
       const drawerCartBadge = document.getElementById('drawerCartCountBadge');
       const cartNavBtns = document.querySelectorAll('.cart-nav-btn');
 
-      const elementsToAnimate = [badge, drawerCartBadge, ...cartNavBtns];
+      const elementsToAnimate = [badge, drawerCartBadge].filter(Boolean);
 
-      elementsToAnimate.forEach(el => {
-        if (!el) return;
-        el.classList.remove('badge-pop-shake');
-        void el.offsetWidth; // Force layout recalculation
-        el.classList.add('badge-pop-shake');
-        setTimeout(() => {
+      if (window.gsap) {
+        elementsToAnimate.forEach(el => {
+          gsap.killTweensOf(el);
+          gsap.timeline()
+            .to(el, {
+              scale: 1.35,
+              boxShadow: "0 0 16px rgba(147, 51, 234, 0.65), 0 2px 6px rgba(0,0,0,0.2)",
+              backgroundColor: "#9333ea",
+              duration: 0.2,
+              ease: "power2.out"
+            })
+            .to(el, {
+              scale: 0.94,
+              duration: 0.14,
+              ease: "power1.inOut"
+            })
+            .to(el, {
+              scale: 1,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+              duration: 0.22,
+              ease: "elastic.out(1, 0.5)"
+            });
+        });
+
+        cartNavBtns.forEach(btn => {
+          if (!btn) return;
+          gsap.killTweensOf(btn);
+          gsap.timeline()
+            .to(btn, { scale: 1.06, duration: 0.16, ease: "power2.out" })
+            .to(btn, { scale: 1, duration: 0.24, ease: "power1.out" });
+        });
+      } else {
+        elementsToAnimate.forEach(el => {
+          if (!el) return;
           el.classList.remove('badge-pop-shake');
-        }, 650);
-      });
+          void el.offsetWidth; // Force layout recalculation
+          el.classList.add('badge-pop-shake');
+          setTimeout(() => {
+            el.classList.remove('badge-pop-shake');
+          }, 650);
+        });
+      }
     };
 
     let previousCartTotalCount = -1;
@@ -2391,8 +2501,70 @@
 
     window.toggleCartSidebar = function(openStatus) {
       const sidebar = document.getElementById('cartSidebarLayer');
-      if (openStatus) sidebar.classList.add('open');
-      else sidebar.classList.remove('open');
+      const backdrop = document.getElementById('cartSidebarBackdrop');
+      if (!sidebar) return;
+
+      if (openStatus) {
+        sidebar.classList.add('open');
+        if (backdrop) backdrop.classList.add('open');
+
+        if (window.gsap) {
+          gsap.killTweensOf([sidebar, backdrop]);
+
+          if (backdrop) {
+            gsap.fromTo(backdrop, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" });
+          }
+
+          gsap.fromTo(sidebar, 
+            { x: "100%", opacity: 0.9 }, 
+            { x: "0%", opacity: 1, duration: 0.45, ease: "power3.out" }
+          );
+
+          const cartItems = sidebar.querySelectorAll('.cart-item');
+          if (cartItems.length > 0) {
+            gsap.fromTo(cartItems, 
+              { opacity: 0, x: 25, scale: 0.97 }, 
+              { opacity: 1, x: 0, scale: 1, duration: 0.35, stagger: 0.05, delay: 0.08, ease: "power2.out" }
+            );
+          }
+
+          const footer = document.getElementById('cartDrawerFooterZone');
+          if (footer && footer.style.display !== 'none') {
+            gsap.fromTo(footer, 
+              { opacity: 0, y: 16 }, 
+              { opacity: 1, y: 0, duration: 0.3, delay: 0.15, ease: "power2.out" }
+            );
+          }
+        }
+      } else {
+        if (window.gsap) {
+          gsap.killTweensOf([sidebar, backdrop]);
+
+          if (backdrop) {
+            gsap.to(backdrop, {
+              opacity: 0,
+              duration: 0.3,
+              ease: "power2.inOut",
+              onComplete: () => {
+                backdrop.classList.remove('open');
+              }
+            });
+          }
+
+          gsap.to(sidebar, {
+            x: "100%",
+            duration: 0.35,
+            ease: "power3.in",
+            onComplete: () => {
+              sidebar.classList.remove('open');
+              gsap.set(sidebar, { clearProps: "transform,opacity" });
+            }
+          });
+        } else {
+          sidebar.classList.remove('open');
+          if (backdrop) backdrop.classList.remove('open');
+        }
+      }
     };
 
     window.openCustomerDetailsModal = function() {

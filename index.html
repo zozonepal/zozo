@@ -4532,15 +4532,18 @@
       window.location.href = `product.html?id=${encodeURIComponent(productId)}`;
     };
 
-    // Toast Notification Banner Helper
-    window.showToastNotification = function(msg) {
+    // Toast Notification Delegate Helper (Powered by ZozoToast with 3s auto-dismiss)
+    window.showToastNotification = function(msg, typeOrOptions) {
+      if (window.ZozoToast) {
+        return window.ZozoToast.show(msg, typeOrOptions);
+      }
       let toast = document.getElementById('appToastNotice');
       if (!toast) {
         toast = document.createElement('div');
         toast.id = 'appToastNotice';
         toast.style.cssText = `
           position: fixed; bottom: 24px; right: 24px; z-index: 99999;
-          background: #1e293b; color: #ffffff; padding: 12px 20px;
+          background: #0f172a; color: #ffffff; padding: 12px 20px;
           border-radius: 10px; font-weight: 700; font-size: 0.9rem;
           box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border-left: 4px solid var(--nepal-blue);
           transition: all 0.3s ease; opacity: 0; transform: translateY(20px); pointer-events: none;
@@ -4656,7 +4659,15 @@
         addBtnText.innerText = `✓ Added (${qtyToAdd})!`;
       }
 
-      showToastNotification(`🛍️ Added ${qtyToAdd}x ${currentSelectedProduct.name} to cart!`);
+      if (window.ZozoToast) {
+        window.ZozoToast.cart(currentSelectedProduct.name || "Product", {
+          qty: qtyToAdd,
+          color: currentSelectedColor !== 'Standard' ? currentSelectedColor : '',
+          image: cartImage
+        });
+      } else {
+        showToastNotification(`🛍️ Added ${qtyToAdd}x ${currentSelectedProduct.name} to cart!`);
+      }
 
       if (buyNow) {
         closeQuickViewModal();
@@ -6542,6 +6553,7 @@
       setTimeout(runDeferredInits, 800);
     }
   </script>
+  <script src="/toast-component.js"></script>
   <script src="/sw-push-manager.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="/order-history-component.js"></script>

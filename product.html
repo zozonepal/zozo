@@ -2288,7 +2288,16 @@
 
       saveCartToLocalStorage();
       synchronizeShoppingBagUIState(true);
-      showToastNotification(`🛍️ Added ${finalQty}x "${currentSelectedProduct.name}" (${selectedColorName}) to Cart!`);
+
+      if (window.ZozoToast) {
+        window.ZozoToast.cart(currentSelectedProduct.name || "Product", {
+          qty: finalQty,
+          color: selectedColorName !== "Standard" ? selectedColorName : "",
+          image: cartImage
+        });
+      } else {
+        showToastNotification(`🛍️ Added ${finalQty}x "${currentSelectedProduct.name}" (${selectedColorName}) to Cart!`);
+      }
       toggleCartSidebar(true);
     };
 
@@ -3703,6 +3712,7 @@
     }
 
   </script>
+  <script src="/toast-component.js"></script>
   <script src="/sw-push-manager.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="/order-history-component.js"></script>

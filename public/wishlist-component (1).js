@@ -1,4 +1,4 @@
-// Zozo Nepal - Complete Wishlist & Saved Items Component
+// Zozo Nepal - Unified Wishlist & Saved Items Manager
 (function () {
   'use strict';
 
@@ -9,7 +9,7 @@
       position: absolute !important;
       top: 10px !important;
       right: 10px !important;
-      z-index: 20 !important;
+      z-index: 25 !important;
       width: 34px !important;
       height: 34px !important;
       min-width: 34px !important;
@@ -17,7 +17,7 @@
       max-width: 34px !important;
       max-height: 34px !important;
       border-radius: 50% !important;
-      background: rgba(255, 255, 255, 0.94) !important;
+      background: rgba(255, 255, 255, 0.95) !important;
       backdrop-filter: blur(8px) !important;
       -webkit-backdrop-filter: blur(8px) !important;
       border: 1px solid rgba(0, 0, 0, 0.08) !important;
@@ -29,7 +29,7 @@
       padding: 0 !important;
       margin: 0 !important;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
       outline: none !important;
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
@@ -48,8 +48,8 @@
     .card-wishlist-heart-btn.is-saved {
       background: #ffffff !important;
       color: #f43f5e !important;
-      border-color: rgba(244, 63, 94, 0.4) !important;
-      box-shadow: 0 2px 10px rgba(244, 63, 94, 0.28) !important;
+      border-color: rgba(244, 63, 94, 0.35) !important;
+      box-shadow: 0 2px 10px rgba(244, 63, 94, 0.25) !important;
     }
     .card-wishlist-heart-btn svg {
       width: 18px !important;
@@ -63,50 +63,56 @@
       stroke: #f43f5e !important;
     }
 
-    /* Wishlist Slideout Drawer */
-    #zozoWishlistDrawerOverlay {
+    /* Wishlist Backdrop & Slideout Drawer */
+    .wishlist-sidebar-backdrop {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 100000;
-      display: none;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 100100;
       opacity: 0;
-      transition: opacity 0.25s ease;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      display: block;
     }
-    #zozoWishlistDrawer {
+    .wishlist-sidebar-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .wishlist-sidebar-layer {
       position: fixed;
       top: 0;
       right: 0;
       width: 100%;
       max-width: 440px;
-      height: 100vh;
+      height: 100%;
       background: var(--bg-card, #ffffff);
       color: var(--text-main, #111827);
-      box-shadow: -6px 0 30px rgba(0, 0, 0, 0.25);
-      z-index: 100001;
+      box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+      z-index: 100101;
       display: flex;
       flex-direction: column;
       transform: translateX(100%);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-sizing: border-box;
     }
-    #zozoWishlistDrawer.is-open {
+    .wishlist-sidebar-layer.open {
       transform: translateX(0);
     }
-    .wishlist-drawer-header {
+    .wishlist-header {
       padding: 16px 20px;
       border-bottom: 1px solid var(--border-color, #e5e7eb);
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: var(--bg-card, #ffffff);
+      flex-shrink: 0;
     }
-    .wishlist-drawer-title {
+    .wishlist-title {
       font-size: 1.15rem;
       font-weight: 800;
       color: var(--text-main, #111827);
@@ -115,7 +121,7 @@
       gap: 8px;
       margin: 0;
     }
-    .wishlist-drawer-badge {
+    .wishlist-header-badge {
       background: #fff1f2;
       color: #f43f5e;
       border: 1px solid #fda4af;
@@ -124,24 +130,24 @@
       padding: 2px 8px;
       border-radius: 999px;
     }
-    .wishlist-drawer-close {
+    .wishlist-close-btn {
       background: none;
       border: none;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       color: var(--text-muted, #64748b);
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: background 0.15s ease, color 0.15s ease;
     }
-    .wishlist-drawer-close:hover {
+    .wishlist-close-btn:hover {
       background: #f1f5f9;
       color: #0f172a;
     }
-    .wishlist-drawer-body {
+    .wishlist-items-container {
       flex: 1;
       overflow-y: auto;
       padding: 16px;
@@ -149,7 +155,7 @@
       flex-direction: column;
       gap: 12px;
     }
-    .wishlist-item-card {
+    .wishlist-item-row {
       display: flex;
       gap: 12px;
       padding: 12px;
@@ -160,11 +166,11 @@
       align-items: center;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
-    .wishlist-item-card:hover {
+    .wishlist-item-row:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       border-color: #cbd5e1;
     }
-    .wishlist-item-img {
+    .wishlist-item-thumb {
       width: 72px;
       height: 72px;
       object-fit: contain;
@@ -174,11 +180,11 @@
       flex-shrink: 0;
       cursor: pointer;
     }
-    .wishlist-item-info {
+    .wishlist-item-details {
       flex: 1;
       min-width: 0;
     }
-    .wishlist-item-name {
+    .wishlist-item-title {
       font-size: 0.9rem;
       font-weight: 700;
       color: var(--text-main, #111827);
@@ -188,31 +194,31 @@
       text-overflow: ellipsis;
       cursor: pointer;
     }
-    .wishlist-item-name:hover {
+    .wishlist-item-title:hover {
       color: var(--nepal-blue, #9333ea);
     }
-    .wishlist-item-price-row {
+    .wishlist-item-price-wrap {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 8px;
     }
-    .wishlist-item-price {
+    .wishlist-price-tag {
       font-size: 0.92rem;
       font-weight: 800;
       color: var(--nepal-blue, #9333ea);
     }
-    .wishlist-item-oldprice {
+    .wishlist-oldprice-tag {
       font-size: 0.78rem;
       color: #94a3b8;
       text-decoration: line-through;
     }
-    .wishlist-item-actions {
+    .wishlist-btn-row {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .wishlist-add-cart-btn {
+    .wishlist-move-cart-btn {
       background: var(--nepal-blue, #9333ea);
       color: #ffffff;
       border: none;
@@ -226,10 +232,10 @@
       gap: 4px;
       transition: background 0.15s ease;
     }
-    .wishlist-add-cart-btn:hover {
+    .wishlist-move-cart-btn:hover {
       background: #7e22ce;
     }
-    .wishlist-item-remove-btn {
+    .wishlist-remove-btn {
       background: none;
       border: 1px solid #e2e8f0;
       color: #ef4444;
@@ -243,11 +249,11 @@
       gap: 3px;
       transition: background 0.15s ease;
     }
-    .wishlist-item-remove-btn:hover {
+    .wishlist-remove-btn:hover {
       background: #fee2e2;
       border-color: #fca5a5;
     }
-    .wishlist-empty-state {
+    .wishlist-empty-box {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -255,21 +261,22 @@
       padding: 60px 20px;
       text-align: center;
     }
-    .wishlist-empty-icon {
+    .wishlist-empty-symbol {
       font-size: 3.5rem;
       margin-bottom: 12px;
       opacity: 0.85;
     }
-    .wishlist-drawer-footer {
+    .wishlist-footer {
       padding: 16px 20px;
       border-top: 1px solid var(--border-color, #e5e7eb);
       background: var(--bg-card, #ffffff);
       display: flex;
       gap: 10px;
+      flex-shrink: 0;
     }
   `;
 
-  function injectStyles() {
+  function injectWishlistStyles() {
     if (document.getElementById('zozo-wishlist-injected-styles')) return;
     const styleEl = document.createElement('style');
     styleEl.id = 'zozo-wishlist-injected-styles';
@@ -277,36 +284,43 @@
     if (document.head) {
       document.head.appendChild(styleEl);
     } else {
-      document.addEventListener('DOMContentLoaded', () => document.head.appendChild(styleEl));
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!document.getElementById('zozo-wishlist-injected-styles')) {
+          document.head.appendChild(styleEl);
+        }
+      });
     }
   }
-  injectStyles();
+  injectWishlistStyles();
 
   // Create & Inject Wishlist Drawer DOM
-  function createWishlistDrawer() {
-    if (document.getElementById('zozoWishlistDrawerOverlay')) return;
+  function ensureWishlistDOM() {
+    if (document.getElementById('wishlistSidebarLayer')) return;
+    if (!document.body) return;
 
-    const overlay = document.createElement('div');
-    overlay.id = 'zozoWishlistDrawerOverlay';
-    overlay.onclick = function (e) {
-      if (e.target === overlay) window.closeWishlistModal();
+    const backdrop = document.createElement('div');
+    backdrop.id = 'wishlistSidebarBackdrop';
+    backdrop.className = 'wishlist-sidebar-backdrop';
+    backdrop.onclick = function () {
+      window.closeWishlistModal();
     };
 
     const drawer = document.createElement('div');
-    drawer.id = 'zozoWishlistDrawer';
+    drawer.id = 'wishlistSidebarLayer';
+    drawer.className = 'wishlist-sidebar-layer';
     drawer.innerHTML = `
-      <div class="wishlist-drawer-header">
-        <h3 class="wishlist-drawer-title">
+      <div class="wishlist-header">
+        <h3 class="wishlist-title">
           <span>❤️</span>
           <span>Saved for Later</span>
-          <span class="wishlist-drawer-badge" id="wishlistDrawerCountBadge">0 items</span>
+          <span class="wishlist-header-badge" id="wishlistDrawerCountBadge">0 items</span>
         </h3>
-        <button class="wishlist-drawer-close" onclick="window.closeWishlistModal()" title="Close Wishlist" aria-label="Close Wishlist">✕</button>
+        <button class="wishlist-close-btn" onclick="window.closeWishlistModal()" title="Close Wishlist" aria-label="Close Wishlist">✕</button>
       </div>
-      <div class="wishlist-drawer-body" id="wishlistDrawerItemsList">
+      <div class="wishlist-items-container" id="wishlistDrawerItemsList">
         <!-- Dynamically rendered -->
       </div>
-      <div class="wishlist-drawer-footer" id="wishlistDrawerFooter" style="display:none;">
+      <div class="wishlist-footer" id="wishlistDrawerFooter" style="display:none;">
         <button class="btn" style="flex:1; background:#f1f5f9; color:#475569; font-weight:700; border:1px solid #cbd5e1; font-size:0.85rem;" onclick="window.ZozoWishlist.clearAll()">
           🗑️ Clear All
         </button>
@@ -316,7 +330,7 @@
       </div>
     `;
 
-    document.body.appendChild(overlay);
+    document.body.appendChild(backdrop);
     document.body.appendChild(drawer);
   }
 
@@ -354,7 +368,7 @@
       try {
         localStorage.setItem("zozo_saved_items", JSON.stringify(list));
       } catch (e) {
-        console.warn("Storage quota exceeded or unavailable:", e);
+        console.warn("Storage quota warning:", e);
       }
 
       // Sync all heart buttons on screen
@@ -362,19 +376,32 @@
       this.updateDetailPageButton(cleanId);
       this.updateBadges();
 
-      // Dispatch global event for listeners (like toast notification)
+      // Show Toast Notification
+      const itemName = customDetails.name || customDetails.productName || 'Item';
+      if (window.ZozoToast) {
+        if (isNowSaved) {
+          ZozoToast.show(`❤️ Saved "${itemName}" for Later!`, { image: customDetails.image || null });
+        } else {
+          ZozoToast.info(`Removed "${itemName}" from Saved Items`);
+        }
+      } else if (typeof window.showToastNotification === 'function') {
+        window.showToastNotification(isNowSaved ? `❤️ Saved "${itemName}" for Later!` : `Removed "${itemName}" from Saved`);
+      }
+
+      // Dispatch global event
       window.dispatchEvent(new CustomEvent("zozo_wishlist_updated", {
         detail: {
           list,
           productId: cleanId,
           isNowSaved,
-          productName: customDetails.name || customDetails.productName,
+          productName: itemName,
           image: customDetails.image
         }
       }));
 
       // If wishlist drawer is currently open, refresh its contents
-      if (document.getElementById('zozoWishlistDrawer')?.classList.contains('is-open')) {
+      const layer = document.getElementById('wishlistSidebarLayer');
+      if (layer && layer.classList.contains('open')) {
         this.renderDrawerContents();
       }
 
@@ -400,13 +427,12 @@
       // Look up product details if available
       let productDetails = { ...customDetails };
       if (!productDetails.productName && !productDetails.name) {
-        if (window.globalProductsCatalog && Array.isArray(window.globalProductsCatalog)) {
-          const found = window.globalProductsCatalog.find(p => String(p.id) === cleanId);
-          if (found) {
-            productDetails = { productName: found.name, name: found.name, image: found.image };
-          }
+        const catalog = window.globalProductsCatalog || [];
+        const found = catalog.find(p => String(p.id) === cleanId);
+        if (found) {
+          productDetails = { productName: found.name, name: found.name, image: found.image, price: found.price };
         } else if (window.currentSelectedProduct && String(window.currentSelectedProduct.id) === cleanId) {
-          productDetails = { productName: window.currentSelectedProduct.name, name: window.currentSelectedProduct.name, image: window.currentSelectedProduct.image };
+          productDetails = { productName: window.currentSelectedProduct.name, name: window.currentSelectedProduct.name, image: window.currentSelectedProduct.image, price: window.currentSelectedProduct.price };
         }
       }
 
@@ -450,7 +476,6 @@
           }
         });
       } else {
-        // Full scan across all heart buttons on page
         const savedIds = this.getSavedIds();
         const buttons = document.querySelectorAll('.card-wishlist-heart-btn');
         buttons.forEach(btn => {
@@ -521,7 +546,6 @@
       });
     },
 
-    // Lookup full product items from catalogs
     getSavedProducts() {
       const savedIds = this.getSavedIds();
       const allProducts = window.globalProductsCatalog || [];
@@ -533,7 +557,6 @@
         if (product) {
           result.push(product);
         } else {
-          // Fallback placeholder item if product catalog is loading or missing
           result.push({
             id: cleanId,
             name: `Product #${cleanId}`,
@@ -548,7 +571,7 @@
     },
 
     renderDrawerContents() {
-      createWishlistDrawer();
+      ensureWishlistDOM();
       const listEl = document.getElementById('wishlistDrawerItemsList');
       const footerEl = document.getElementById('wishlistDrawerFooter');
       const countBadge = document.getElementById('wishlistDrawerCountBadge');
@@ -564,8 +587,8 @@
       if (count === 0) {
         if (footerEl) footerEl.style.display = 'none';
         listEl.innerHTML = `
-          <div class="wishlist-empty-state">
-            <div class="wishlist-empty-icon">🤍</div>
+          <div class="wishlist-empty-box">
+            <div class="wishlist-empty-symbol">🤍</div>
             <h4 style="font-size:1.1rem; font-weight:800; color:var(--text-main, #111827); margin:0 0 6px 0;">Your Wishlist is Empty</h4>
             <p style="font-size:0.85rem; color:var(--text-muted, #64748b); margin:0 0 20px 0; max-width:280px; line-height:1.5;">
               Tap the heart icon on any product to save it here and shop anytime later.
@@ -581,27 +604,26 @@
       if (footerEl) footerEl.style.display = 'flex';
 
       listEl.innerHTML = savedProducts.map(p => {
-        const isCombo = !!p.isCombo || p.category === 'combo-deals';
         return `
-          <div class="wishlist-item-card" id="wishlist-drawer-item-${p.id}">
+          <div class="wishlist-item-row" id="wishlist-drawer-item-${p.id}">
             <img src="${p.image || 'zozonepal.png'}" 
                  alt="${p.name}" 
-                 class="wishlist-item-img" 
+                 class="wishlist-item-thumb" 
                  onclick="window.ZozoWishlist.openProduct('${p.id}')"
                  onerror="this.onerror=null; this.src='zozonepal.png';">
-            <div class="wishlist-item-info">
-              <h4 class="wishlist-item-name" onclick="window.ZozoWishlist.openProduct('${p.id}')" title="${p.name}">
+            <div class="wishlist-item-details">
+              <h4 class="wishlist-item-title" onclick="window.ZozoWishlist.openProduct('${p.id}')" title="${p.name}">
                 ${p.name}
               </h4>
-              <div class="wishlist-item-price-row">
-                <span class="wishlist-item-price">Rs. ${Number(p.price || 0).toLocaleString()}</span>
-                ${p.oldPrice && p.oldPrice > p.price ? `<span class="wishlist-item-oldprice">Rs. ${Number(p.oldPrice).toLocaleString()}</span>` : ''}
+              <div class="wishlist-item-price-wrap">
+                <span class="wishlist-price-tag">Rs. ${Number(p.price || 0).toLocaleString()}</span>
+                ${p.oldPrice && p.oldPrice > p.price ? `<span class="wishlist-oldprice-tag">Rs. ${Number(p.oldPrice).toLocaleString()}</span>` : ''}
               </div>
-              <div class="wishlist-item-actions">
-                <button class="wishlist-add-cart-btn" onclick="window.ZozoWishlist.addItemToCart('${p.id}')">
+              <div class="wishlist-btn-row">
+                <button class="wishlist-move-cart-btn" onclick="window.ZozoWishlist.addItemToCart('${p.id}')">
                   <span>🛒</span> Add to Bag
                 </button>
-                <button class="wishlist-item-remove-btn" onclick="window.ZozoWishlist.removeItem('${p.id}', event)" title="Remove item">
+                <button class="wishlist-remove-btn" onclick="window.ZozoWishlist.removeItem('${p.id}', event)" title="Remove item">
                   <span>🗑️</span> Remove
                 </button>
               </div>
@@ -627,11 +649,9 @@
       const product = allProducts.find(p => String(p.id) === String(productId));
 
       if (product) {
-        // If addToCart or addCurrentDetailPageItemToCart is available
         if (typeof window.addToCart === 'function') {
           window.addToCart(product.id, product.name, product.price, product.image, 1, 'Standard');
         } else if (window.systemCart && Array.isArray(window.systemCart)) {
-          // Direct fallback to cart array
           const existing = window.systemCart.find(i => String(i.id) === String(product.id));
           if (existing) {
             existing.quantity = (existing.quantity || 1) + 1;
@@ -645,7 +665,9 @@
               selectedColor: 'Standard'
             });
           }
-          localStorage.setItem("zozo_cart", JSON.stringify(window.systemCart));
+          try {
+            localStorage.setItem("zozo_cart", JSON.stringify(window.systemCart));
+          } catch(e) {}
           if (typeof window.synchronizeShoppingBagUIState === 'function') {
             window.synchronizeShoppingBagUIState();
           }
@@ -701,30 +723,30 @@
   };
 
   window.openWishlistModal = function () {
-    createWishlistDrawer();
-    const overlay = document.getElementById('zozoWishlistDrawerOverlay');
-    const drawer = document.getElementById('zozoWishlistDrawer');
-    if (!overlay || !drawer) return;
+    ensureWishlistDOM();
+    const backdrop = document.getElementById('wishlistSidebarBackdrop');
+    const drawer = document.getElementById('wishlistSidebarLayer');
+    if (!backdrop || !drawer) return;
 
     window.ZozoWishlist.renderDrawerContents();
 
-    overlay.style.display = 'block';
-    requestAnimationFrame(() => {
-      overlay.style.opacity = '1';
-      drawer.classList.add('is-open');
-    });
+    backdrop.classList.add('open');
+    drawer.classList.add('open');
   };
 
   window.closeWishlistModal = function () {
-    const overlay = document.getElementById('zozoWishlistDrawerOverlay');
-    const drawer = document.getElementById('zozoWishlistDrawer');
-    if (!overlay || !drawer) return;
+    const backdrop = document.getElementById('wishlistSidebarBackdrop');
+    const drawer = document.getElementById('wishlistSidebarLayer');
+    if (!backdrop || !drawer) return;
 
-    drawer.classList.remove('is-open');
-    overlay.style.opacity = '0';
-    setTimeout(() => {
-      overlay.style.display = 'none';
-    }, 280);
+    backdrop.classList.remove('open');
+    drawer.classList.remove('open');
+  };
+
+  window.toggleDetailPageWishlist = function (event) {
+    if (window.currentSelectedProduct) {
+      window.ZozoWishlist.handleCardWishlistToggle(window.currentSelectedProduct.id, event, window.currentSelectedProduct);
+    }
   };
 
   // Escape key closes modal
@@ -737,14 +759,14 @@
   // Auto-init on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
+      ensureWishlistDOM();
       window.ZozoWishlist.updateBadges();
       window.ZozoWishlist.syncAllHeartButtons();
-      createWishlistDrawer();
     });
   } else {
+    ensureWishlistDOM();
     window.ZozoWishlist.updateBadges();
     window.ZozoWishlist.syncAllHeartButtons();
-    createWishlistDrawer();
   }
 
 })();

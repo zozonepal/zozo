@@ -1,4 +1,79 @@
 // Zozo Nepal Wishlist Manager
+(function() {
+  const wishlistStyles = `
+    .card-wishlist-heart-btn {
+      position: absolute !important;
+      top: 10px !important;
+      right: 10px !important;
+      z-index: 15 !important;
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      min-height: 32px !important;
+      max-width: 32px !important;
+      max-height: 32px !important;
+      border-radius: 50% !important;
+      background: rgba(255, 255, 255, 0.92) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: #64748b !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      outline: none !important;
+      touch-action: manipulation !important;
+      -webkit-tap-highlight-color: transparent !important;
+      box-sizing: border-box !important;
+    }
+    .card-wishlist-heart-btn:hover {
+      background: #ffffff !important;
+      color: #f43f5e !important;
+      transform: scale(1.12) !important;
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.22) !important;
+      border-color: rgba(244, 63, 94, 0.25) !important;
+    }
+    .card-wishlist-heart-btn:active {
+      transform: scale(0.92) !important;
+    }
+    .card-wishlist-heart-btn.is-saved {
+      background: #ffffff !important;
+      color: #f43f5e !important;
+      border-color: rgba(244, 63, 94, 0.35) !important;
+      box-shadow: 0 2px 10px rgba(244, 63, 94, 0.25) !important;
+    }
+    .card-wishlist-heart-btn svg {
+      width: 17px !important;
+      height: 17px !important;
+      display: block !important;
+      pointer-events: none !important;
+      transition: transform 0.2s ease, fill 0.2s ease, stroke 0.2s ease !important;
+    }
+    .card-wishlist-heart-btn.is-saved svg {
+      fill: #f43f5e !important;
+      stroke: #f43f5e !important;
+    }
+  `;
+
+  if (typeof document !== 'undefined') {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'zozo-wishlist-injected-styles';
+    styleEl.textContent = wishlistStyles;
+    if (document.head) {
+      document.head.appendChild(styleEl);
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.head.appendChild(styleEl);
+      });
+    }
+  }
+})();
+
 window.ZozoWishlist = {
   getSavedIds() {
     try {

@@ -1266,8 +1266,8 @@
               </div>
 
               <div class="form-group">
-                <label>Product Category Tag *</label>
-                <input type="text" id="pCategory" class="form-control" placeholder="e.g. mobile-covers" required>
+                <label>Product Category Tag (Optional)</label>
+                <input type="text" id="pCategory" class="form-control" placeholder="e.g. mobile-covers (Optional - Defaults to All Products)">
                 <div id="adminCategoryQuickSelect" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
                   <!-- Dynamic Categories Go Here -->
                 </div>
@@ -2954,7 +2954,9 @@
           return;
         }
 
-        container.innerHTML = allAvailable.map(cat => {
+        const noneBtnHtml = `<button type="button" class="action-btn" style="background:#f1f5f9; color:#475569; font-size:0.75rem; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:700; border:1px solid #cbd5e1;" onclick="setCategoryField('')">🛍️ None (All Products)</button>`;
+
+        container.innerHTML = noneBtnHtml + allAvailable.map(cat => {
           return `<button type="button" class="action-btn" style="background:#e2e8f0; color:#334155; font-size:0.75rem; padding:5px 10px; border-radius:6px; cursor:pointer;" onclick="setCategoryField('${cat.code}')">${cat.emoji || '📦'} ${cat.name}</button>`;
         }).join('');
       }
@@ -3500,7 +3502,7 @@
         document.getElementById('pName').value = item.name || "";
         document.getElementById('pPrice').value = item.price || "";
         document.getElementById('pOldPrice').value = item.oldPrice || "";
-        document.getElementById('pCategory').value = item.category || "";
+        document.getElementById('pCategory').value = (item.category && item.category !== 'all') ? item.category : "";
         document.getElementById('pDescription').value = item.description || "";
         
         const specs = Array.isArray(item.specifications) ? item.specifications.join('\n') : (item.specifications || "");
@@ -3600,12 +3602,15 @@
           const selectedSectionNodes = document.querySelectorAll('input[name="productSectionOption"]:checked');
           const selectedSections = Array.from(selectedSectionNodes).map(node => node.value);
 
+          const rawCategory = String(document.getElementById('pCategory').value || '').trim();
+          const finalCategory = rawCategory ? rawCategory.toLowerCase() : 'all';
+
           const payload = {
             name: String(document.getElementById('pName').value).trim(),
             price: Number(document.getElementById('pPrice').value),
             oldPrice: document.getElementById('pOldPrice').value ? Number(document.getElementById('pOldPrice').value) : null,
             imageUrl: String(compressedImageString || "").trim(), 
-            category: String(document.getElementById('pCategory').value).trim(),
+            category: finalCategory,
             description: String(document.getElementById('pDescription').value).trim(),
             specifications: cleanSpecs,
             colors: cleanColors,
@@ -3801,6 +3806,7 @@
           const isCombo = !!item.isCombo || item.category === 'combo-deals';
           const savings = (item.oldPrice && item.oldPrice > item.price) ? (item.oldPrice - item.price) : 0;
           const savingsPercent = (item.oldPrice && item.oldPrice > item.price) ? Math.round(((item.oldPrice - item.price) / item.oldPrice) * 100) : 0;
+          const displayCategory = (item.category && item.category !== 'all' && item.category.trim() !== '') ? item.category : 'All Products';
 
           // If combo item, render linked items preview
           let comboComponentsHtml = '';
@@ -3835,7 +3841,7 @@
                       <span style="color:var(--nepal-blue); font-weight:800;">Rs. ${Number(item.price).toLocaleString()}</span> 
                       ${item.oldPrice ? `<span style="text-decoration:line-through; font-size:0.75rem; color:gray;">Rs. ${Number(item.oldPrice).toLocaleString()}</span>` : ''}
                       ${savings > 0 ? `<span style="color:#15803d; font-weight:700; font-size:0.75rem; background:#dcfce7; padding:1px 5px; border-radius:3px;">Save Rs. ${savings.toLocaleString()} (${savingsPercent}% OFF)</span>` : ''}
-                      &bull; <span class="badge badge-blue" style="font-size:0.6rem;">${item.category}</span>
+                      &bull; <span class="badge badge-blue" style="font-size:0.6rem;">${displayCategory}</span>
                     </div>
                     ${!isCombo ? `<small style="font-size:0.75rem; color:gray; display:block; margin-top:1px;">Colors: ${colorsStr}</small>` : ''}
                   </div>

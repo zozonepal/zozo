@@ -1968,7 +1968,7 @@
     function renderDetailPageContent(p) {
       if (!p) return;
 
-      const categoryDisplay = (p.category && p.category !== "undefined") ? String(p.category).replace('-', ' ').toUpperCase() : 'GENERAL';
+      const categoryDisplay = (p.category && p.category !== "undefined" && p.category !== "all" && String(p.category).trim() !== "") ? String(p.category).replace('-', ' ').toUpperCase() : 'ALL PRODUCTS';
       const productName = p.name || 'Product Details';
       
       document.title = `${productName} | Zozo Nepal`;

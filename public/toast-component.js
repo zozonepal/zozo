@@ -609,33 +609,6 @@
       });
     },
 
-    /**
-     * Dedicated Wishlist Toast Helper
-     * @param {string} productName 
-     * @param {boolean} isSaved 
-     * @param {object} options
-     */
-    wishlist(productName, isSaved = true, options = {}) {
-      const cleanName = productName || 'Product';
-      const title = isSaved ? 'Saved for Later' : 'Removed from Wishlist';
-      const message = isSaved 
-        ? `❤️ "${cleanName}" has been added to your Saved items.` 
-        : `🤍 "${cleanName}" removed from your Saved items.`;
-
-      return this.show(message, {
-        type: 'wishlist',
-        title: title,
-        icon: isSaved ? '❤️' : '🤍',
-        image: options.image || null,
-        actionText: isSaved ? (options.actionText || 'View Saved') : null,
-        onAction: options.onAction || function () {
-          const btn = document.getElementById('navWishlistBtn');
-          if (btn) btn.click();
-        },
-        duration: options.duration || DEFAULT_DURATION
-      });
-    },
-
     dismissAll() {
       activeToasts.forEach((toast) => {
         toast.dismiss();
@@ -660,9 +633,7 @@
 
     if (msg.includes('Added') && (msg.includes('cart') || msg.includes('Cart') || msg.includes('Bag'))) {
       detectedType = 'cart';
-    } else if (msg.includes('Wishlist') || msg.includes('Saved') || msg.includes('❤️')) {
-      detectedType = 'wishlist';
-    } else if (msg.includes('🎉') || msg.includes('✓') || msg.includes('success') || msg.includes('Saved')) {
+    } else if (msg.includes('🎉') || msg.includes('✓') || msg.includes('success')) {
       detectedType = 'success';
     } else if (msg.includes('⚠️') || msg.includes('warning') || msg.includes('Please')) {
       detectedType = 'warning';
@@ -678,28 +649,5 @@
 
   // Alias
   window.showToast = window.showToastNotification;
-
-  // Global Wishlist Event Listener to auto-trigger toast if not explicitly handled
-  window.addEventListener('zozo_wishlist_updated', (e) => {
-    if (e.detail && e.detail.silent !== true) {
-      const { productId, isNowSaved, productName, image } = e.detail;
-      // If a product name is available or can be looked up from catalog
-      let name = productName;
-      let img = image;
-      if (!name && window.globalProductsCatalog && Array.isArray(window.globalProductsCatalog)) {
-        const found = window.globalProductsCatalog.find(p => p.id === productId);
-        if (found) {
-          name = found.name;
-          img = found.image;
-        }
-      }
-      if (!name && window.currentSelectedProduct && window.currentSelectedProduct.id === productId) {
-        name = window.currentSelectedProduct.name;
-        img = window.currentSelectedProduct.image;
-      }
-
-      ZozoToast.wishlist(name || 'Item', isNowSaved, { image: img });
-    }
-  });
 
 })();

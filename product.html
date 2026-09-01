@@ -16,7 +16,6 @@
   
   <!-- GSAP Animation Library for Ultra-Smooth UI Transitions -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="/wishlist-component.js"></script>
   
   <style>
     /* --- 1. DESIGN SYSTEM & CORE CSS VARIABLES --- */
@@ -709,60 +708,6 @@
     @media (min-width: 640px) { .product-card { padding: 12px; border-radius: 12px; } }
     @media (min-width: 1024px) { .product-card { padding: 14px; border-radius: 14px; } }
 
-    .card-wishlist-heart-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 10;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      cursor: pointer;
-      padding: 0;
-      margin: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      outline: none;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      box-sizing: border-box;
-    }
-    .card-wishlist-heart-btn:hover {
-      background: #ffffff;
-      color: #f43f5e;
-      transform: scale(1.12);
-      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.22);
-      border-color: rgba(244, 63, 94, 0.25);
-    }
-    .card-wishlist-heart-btn:active {
-      transform: scale(0.92);
-    }
-    .card-wishlist-heart-btn.is-saved {
-      background: #ffffff;
-      color: #f43f5e;
-      border-color: rgba(244, 63, 94, 0.35);
-      box-shadow: 0 2px 10px rgba(244, 63, 94, 0.25);
-    }
-    .card-wishlist-heart-btn svg {
-      width: 17px;
-      height: 17px;
-      display: block;
-      pointer-events: none;
-      transition: transform 0.2s ease, fill 0.2s ease, stroke 0.2s ease;
-    }
-    .card-wishlist-heart-btn.is-saved svg {
-      fill: #f43f5e;
-      stroke: #f43f5e;
-    }
-    
     .image-frame { 
       width: 100%; 
       aspect-ratio: 1; 
@@ -1127,35 +1072,8 @@
       transform: translateY(-1px);
     }
 
-    .detail-wishlist-btn {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 12px 16px;
-      font-size: 0.95rem;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      box-sizing: border-box;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .detail-wishlist-btn:hover {
-      background: #fff1f2;
-      border-color: #fda4af;
-      color: #e11d48;
-    }
-    .detail-wishlist-btn.is-saved {
-      background: #fff1f2;
-      border-color: #fda4af;
-      color: #e11d48;
-    }
-
     .detail-share-btn {
+      grid-column: span 2;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       color: var(--text-main);
@@ -1179,7 +1097,7 @@
     }
 
     @media (max-width: 580px) {
-      .detail-share-btn, .detail-wishlist-btn {
+      .detail-share-btn {
         grid-column: span 1;
         padding: 11px 14px;
         font-size: 0.9rem;
@@ -1324,12 +1242,6 @@
       <button class="search-icon-btn" onclick="toggleHeaderSearchOverlay()" title="Search catalog" aria-label="Search Catalog">
         <svg style="width:20px; height:20px;" viewBox="0 0 24 24"><path fill="var(--text-muted)" d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </button>
-
-      <button class="wishlist-nav-btn" onclick="window.openWishlistModal()" title="Saved for Later" aria-label="Saved for Later" style="position:relative; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:6px 12px; font-weight:700; font-size:0.85rem; color:var(--text-main); display:flex; align-items:center; gap:6px; cursor:pointer;">
-        <span style="font-size:1rem; line-height:1;">❤️</span>
-        <span class="wishlist-nav-label" style="font-size:0.8rem; font-weight:800;">Saved</span>
-        <span class="wishlist-count-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:#f43f5e; color:#fff; font-size:0.7rem; font-weight:800; border-radius:999px; min-width:18px; height:18px; line-height:18px; text-align:center; padding:0 4px; box-shadow:0 2px 5px rgba(244,63,94,0.4);">0</span>
-      </button>
       
       <button class="cart-nav-btn" onclick="toggleCartSidebar(true)" title="View Cart" aria-label="View Shopping Cart">
         🛒 <span id="navCartCountBadge" class="cart-badge">0</span>
@@ -1400,12 +1312,6 @@
           <button class="drawer-nav-item" onclick="window.openOrderHistoryModal(); toggleMobileDrawer(false);">
             <span>📦 My Order History</span>
             <span class="drawer-badge" style="background:var(--nepal-blue); color:#ffffff;">Purchases</span>
-          </button>
-          <button class="drawer-nav-item" onclick="window.openWishlistModal(); toggleMobileDrawer(false);">
-            <span style="display:inline-flex; align-items:center; gap:8px;">
-              <span>❤️ Saved for Later</span>
-            </span>
-            <span class="drawer-badge drawer-wishlist-count" style="background:#fff1f2; color:#e11d48; border:1px solid #fda4af; font-weight:700;">0 items</span>
           </button>
           <button class="drawer-nav-item push-notifications-drawer-btn" onclick="if(window.ZozoPushManager) window.ZozoPushManager.openNotificationCenterModal(); toggleMobileDrawer(false);">
             <span style="display:inline-flex; align-items:center; gap:8px;">
@@ -1566,10 +1472,6 @@
             <button class="btn btn-crimson detail-action-btn" style="background: var(--nepal-blue); box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);" onclick="buyDetailPageItemNow()">
               <span>⚡ Buy It Now</span>
             </button>
-            <button id="detailWishlistBtn" class="btn detail-wishlist-btn" onclick="if(window.ZozoWishlist && window.currentSelectedProduct) window.ZozoWishlist.toggle(window.currentSelectedProduct, event)" title="Save for Later" aria-label="Save for Later">
-              <span class="wishlist-btn-icon" style="font-size:1.1rem; line-height:1;">🤍</span>
-              <span class="wishlist-btn-text" style="font-weight:700;">Save for Later</span>
-            </button>
             <button class="btn detail-share-btn" onclick="shareCurrentProduct()" title="Share Product Link">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
@@ -1662,13 +1564,6 @@
       <button class="modal-close" style="position:static;" onclick="toggleCartSidebar(false)">✕</button>
     </div>
     <div class="cart-items-container" id="cartDrawerItemsTarget"></div>
-    <div style="padding:10px 16px; border-top:1px dashed var(--border-color); background:var(--bg-main); display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
-      <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Saved items:</span>
-      <button onclick="window.openWishlistModal(); toggleCartSidebar(false);" style="background:none; border:none; color:#e11d48; font-weight:700; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:2px 6px; border-radius:6px;">
-        <span>❤️ View Saved</span>
-        <span class="wishlist-count-badge" style="background:#f43f5e; color:#fff; font-size:0.68rem; font-weight:800; border-radius:999px; padding:1px 6px; display:none;">0</span>
-      </button>
-    </div>
     <div class="cart-footer" id="cartDrawerFooterZone" style="display:none;">
       <div class="cart-total-row">
         <span>Subtotal:</span>
@@ -2164,9 +2059,6 @@
 
       updateDetailPageDeliveryQuote();
       populateDetailPageReviews(p.id, p.name);
-      if (window.ZozoWishlist) {
-        window.ZozoWishlist.updateDetailPageButton();
-      }
     }
 
     // Thumbnails control with smooth GSAP transition
@@ -2258,20 +2150,8 @@
               </div>
             `;
           }
-          const isSaved = window.ZozoWishlist ? window.ZozoWishlist.isSaved(p.id) : false;
-          
           return `
             <div class="product-card" onclick="window.location.href='product.html?id=${p.id}'" style="cursor:pointer; position:relative;">
-              <button class="card-wishlist-heart-btn ${isSaved ? 'is-saved' : ''}" 
-                      id="wishlist-btn-${p.id}"
-                      data-product-id="${p.id}"
-                      onclick="event.stopPropagation(); window.handleCardWishlistToggle('${p.id}', event);"
-                      title="${isSaved ? 'Remove from Saved for Later' : 'Save for Later'}" 
-                      aria-label="Save for Later">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="${isSaved ? '#f43f5e' : 'none'}" stroke="${isSaved ? '#f43f5e' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-              </button>
               <div class="image-frame" style="width:100%; aspect-ratio:1/1; position:relative; overflow:hidden;">
                 <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="280" height="280" style="width:100%; height:100%; object-fit:contain;" onerror="this.onerror=null; this.src='zozonepal.png'">
               </div>
@@ -2287,9 +2167,6 @@
             </div>
           `;
         }).join('');
-        if (window.ZozoWishlist) {
-          window.ZozoWishlist.syncAllHeartButtons();
-        }
         if (window.gsap) {
           const cards = container.querySelectorAll('.product-card');
           if (cards.length > 0) {
@@ -3771,6 +3648,5 @@
   <script src="/sw-push-manager.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="/order-history-component.js"></script>
-  <script src="/wishlist-component.js"></script>
 </body>
 </html>

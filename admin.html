@@ -13,6 +13,9 @@
   <link rel="dns-prefetch" href="https://firestore.googleapis.com">
   <link rel="dns-prefetch" href="https://images.unsplash.com">
 
+  <!-- jsPDF Library for Customer Dossier & Order PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
     :root {
       --bg-main: #f1f5f9;
@@ -1030,6 +1033,65 @@
         overflow-x: auto;
       }
     }
+
+    /* Customer Details Modal & PDF Action Styles */
+    .customer-detail-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .customer-detail-modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      animation: customerModalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes customerModalFadeIn {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .pdf-download-btn {
+      background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+      box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+      touch-action: manipulation;
+    }
+    .pdf-download-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
+      filter: brightness(1.05);
+    }
+    .pdf-download-btn:active {
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -1189,16 +1251,39 @@
       <!-- ================== TAB: ORDERS ================== -->
       <section id="tabPane-orders" class="tab-pane active">
         <div class="panel-card">
-          <h2>
-            <span>🛒 Live Incoming Customer Orders</span>
-            <select id="ordersFilterDropdown" class="form-control" style="width: 160px; display: inline-block; font-size: 0.8rem; height: 32px; padding: 4px 8px;" onchange="filterOrdersList()">
-              <option value="All">All Statuses</option>
-              <option value="Pending">Pending ⏳</option>
-              <option value="Processing">Processing ⚙️</option>
-              <option value="Shipped">Shipped 🚚</option>
-              <option value="Delivered">Delivered ✅</option>
-            </select>
-          </h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+            <h2 style="margin-bottom: 0;">
+              <span>🛒 Live Incoming Customer Orders</span>
+            </h2>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="pdf-download-btn" onclick="downloadAllCustomersReportPdf()" title="Export all filtered customer orders as a PDF document">
+                <span>📥</span>
+                <span>Export Customers Manifest (PDF)</span>
+              </button>
+              <button type="button" class="action-btn" onclick="fetchCustomerOrders()" style="background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); font-size: 0.8rem; padding: 7px 12px; border-radius: 8px;" title="Refresh orders list">
+                <span>🔄 Sync</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls Toolbar -->
+          <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; background: #f8fafc; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+            <div style="position: relative; flex: 1; min-width: 220px;">
+              <input type="text" id="ordersSearchInput" class="form-control" placeholder="🔍 Search customer name, phone, address, items, order ID..." style="font-size: 0.82rem; height: 38px; padding: 6px 12px 6px 34px; background: #fff;" oninput="filterOrdersList()">
+              <span style="position: absolute; left: 10px; top: 10px; font-size: 0.9rem; color: #94a3b8; pointer-events: none;">🔍</span>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label for="ordersFilterDropdown" style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin: 0; white-space: nowrap;">Status:</label>
+              <select id="ordersFilterDropdown" class="form-control" style="width: 150px; font-size: 0.82rem; height: 38px; padding: 6px 10px; background: #fff;" onchange="filterOrdersList()">
+                <option value="All">All Statuses (All)</option>
+                <option value="Pending">Pending ⏳</option>
+                <option value="Processing">Processing ⚙️</option>
+                <option value="Shipped">Shipped 🚚</option>
+                <option value="Delivered">Delivered ✅</option>
+              </select>
+            </div>
+          </div>
 
           <!-- Real-Time Delivery Stream Status Banner -->
           <div style="display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
@@ -1212,7 +1297,7 @@
             </div>
           </div>
 
-          <p class="sub-label">Incoming customer orders and deliveries stored. Maintain order delivery status streams below.</p>
+          <p class="sub-label">Incoming customer orders and deliveries stored. Download individual customer PDF invoices or master manifests below.</p>
           <div id="ordersListContainer" style="display: flex; flex-direction: column; gap: 14px;">
             <p style="text-align: center; color: var(--text-muted); padding: 30px;">Syncing orders stream...</p>
           </div>
@@ -2100,6 +2185,35 @@
       </section>
 
     </main>
+
+    <!-- CUSTOMER DETAILS & PDF EXPORT MODAL -->
+    <div id="adminCustomerDetailModal" class="customer-detail-modal-backdrop" onclick="if(event.target === this) closeCustomerDetailModal();">
+      <div class="customer-detail-modal-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #7c3aed, #9333ea); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);">👤</div>
+            <div>
+              <h3 id="cdmCustomerNameTitle" style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Customer Dossier</h3>
+              <span id="cdmOrderIdSub" style="font-size: 0.75rem; color: #7e22ce; font-weight: 700;">Order Details & Delivery Manifest</span>
+            </div>
+          </div>
+          <button type="button" onclick="closeCustomerDetailModal()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1.2rem; color: #64748b; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; line-height: 1;" aria-label="Close Modal">&times;</button>
+        </div>
+
+        <div id="cdmModalBody" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Content populated dynamically -->
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="cdmActionButtonsContainer">
+            <!-- Dynamic Actions -->
+          </div>
+          <button type="button" onclick="closeCustomerDetailModal()" class="action-btn" style="background: #e2e8f0; color: #334155; border: none; font-size: 0.78rem; padding: 7px 14px; border-radius: 8px;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -5063,16 +5177,21 @@
 
       function renderFilteredOrders() {
         if (window.syncAdminMetricsAndDrawerBadges) window.syncAdminMetricsAndDrawerBadges();
-        const filter = document.getElementById('ordersFilterDropdown').value;
+        const filter = document.getElementById('ordersFilterDropdown') ? document.getElementById('ordersFilterDropdown').value : 'All';
+        const search = document.getElementById('ordersSearchInput') ? document.getElementById('ordersSearchInput').value.trim().toLowerCase() : '';
         const container = document.getElementById('ordersListContainer');
+        if (!container) return;
 
         const filtered = allOrdersCache.filter(o => {
-          if (filter === 'All') return true;
-          return (o.status || 'Pending').toLowerCase() === filter.toLowerCase();
+          const matchStatus = filter === 'All' || (o.status || 'Pending').toLowerCase() === filter.toLowerCase();
+          if (!matchStatus) return false;
+          if (!search) return true;
+          const term = `${o.customerName || ''} ${o.customerPhone || ''} ${o.customerEmail || ''} ${o.deliveryLocation || ''} ${o.famousPlace || ''} ${o.id || ''} ${o.productName || ''} ${o.transactionId || ''}`.toLowerCase();
+          return term.includes(search);
         });
 
         if (filtered.length === 0) {
-          container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:30px;">No matches found under status "${filter}".</p>`;
+          container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:30px;">No matching customer orders found under current filter & search parameters.</p>`;
           return;
         }
 
@@ -5119,11 +5238,14 @@
             <div class="order-card" id="order-card-${order.id}">
               <div class="order-row">
                 <div>
-                  <h3 style="font-size: 1rem; color: var(--text-main); font-weight: 800;">${order.customerName || 'Guest'}</h3>
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">${orderDateStr}</span>
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <h3 style="font-size: 1.05rem; color: var(--text-main); font-weight: 800; margin:0;">${order.customerName || 'Guest Customer'}</h3>
+                    <span style="background:#ede9fe; color:#6d28d9; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:12px;">ID: #${(order.id || '').substring(0, 8)}</span>
+                  </div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); display:block; margin-top:3px;">📅 Placed: ${orderDateStr}</span>
                 </div>
                 <div style="text-align: right;">
-                  <span style="font-size: 1.1rem; color: var(--nepal-blue); font-weight: 800;">Rs. ${(order.amountPaid || 0).toLocaleString()}</span>
+                  <span style="font-size: 1.15rem; color: var(--nepal-blue); font-weight: 800;">Rs. ${(order.amountPaid || 0).toLocaleString()}</span>
                   <div style="font-size:0.75rem; font-weight:700; color:#15803d; margin-top:2px;">💰 ${order.paymentMethod || 'COD'}</div>
                   ${order.transactionId ? `<code style="font-size:0.65rem; color:gray; display:block; margin-top:1px;">Ref: ${order.transactionId}</code>` : ''}
                 </div>
@@ -5131,14 +5253,19 @@
 
               ${couponBlock}
 
-              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: #334155; margin-bottom: 12px; line-height: 1.4;">
-                <div><strong>✉️ Email:</strong> <span style="color:var(--text-muted);">${order.customerEmail || 'N/A'}</span></div>
-                <div><strong>📞 Phone:</strong> <a href="tel:${order.customerPhone}" style="color:var(--accent-color); text-decoration:none; font-weight:700;">${order.customerPhone || 'N/A'}</a></div>
-                <div><strong>📍 Address:</strong> <span style="color:var(--text-muted);">${order.deliveryLocation || 'N/A'}</span></div>
-                <div><strong>🏰 Landmark:</strong> <span style="color:var(--text-muted);">${order.famousPlace || 'N/A'}</span></div>
+              <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem; color: #334155; margin-bottom: 12px; line-height: 1.4; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0;">
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                  <div><strong>👤 Customer:</strong> <span style="color:var(--text-main); font-weight:600;">${order.customerName || 'Guest'}</span></div>
+                  <div><strong>📞 Phone:</strong> <a href="tel:${order.customerPhone}" style="color:var(--accent-color); text-decoration:none; font-weight:700;">${order.customerPhone || 'N/A'}</a></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                  <div><strong>✉️ Email:</strong> <span style="color:var(--text-muted);">${order.customerEmail || 'N/A'}</span></div>
+                  <div><strong>📍 Area:</strong> <span style="color:var(--text-main); font-weight:600;">${order.deliveryLocation || 'N/A'}</span></div>
+                </div>
+                ${order.famousPlace ? `<div><strong>🏰 Famous Landmark:</strong> <span style="color:var(--text-muted);">${order.famousPlace}</span></div>` : ''}
               </div>
 
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:12px;">
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:12px;">
                 <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:700; display:block; margin-bottom:3px;">Ordered Items Summary:</span>
                 <div style="font-size:0.85rem; font-weight:700; color:#1e293b; line-height:1.4;">🛒 ${order.productName || 'N/A'}</div>
               </div>
@@ -5148,11 +5275,21 @@
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid #f1f5f9; gap:10px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:6px;">
                   <strong style="font-size:0.8rem; color:var(--text-main);">Status:</strong>
-                  <select class="form-control" style="width:130px; padding:4px; font-size:0.8rem; border-color:var(--border-color); height: 28px;" onchange="updateOrderStatus('${order.id}', this.value)">
+                  <select class="form-control" style="width:125px; padding:4px; font-size:0.8rem; border-color:var(--border-color); height: 30px;" onchange="updateOrderStatus('${order.id}', this.value)">
                     ${selectOptions}
                   </select>
                 </div>
-                <button class="action-btn btn-danger" style="padding: 5px 12px; font-size:0.75rem;" onclick="deleteCustomerOrder('${order.id}')">Delete Order</button>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <button type="button" class="pdf-download-btn" onclick="downloadCustomerDetailPdf('${order.id}')" title="Download Official Customer Detail & Dispatch Slip PDF">
+                    <span>📥</span>
+                    <span>Download PDF</span>
+                  </button>
+                  <button type="button" class="action-btn" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; font-size: 0.75rem; padding: 6px 12px; border-radius: 8px; font-weight: 700;" onclick="openCustomerDetailModal('${order.id}')" title="View Detailed Customer Dossier & Contact Actions">
+                    <span>👁️ Details</span>
+                  </button>
+                  <button class="action-btn btn-danger" style="padding: 6px 12px; font-size:0.75rem; border-radius:8px;" onclick="deleteCustomerOrder('${order.id}')" title="Delete Order Record">Delete</button>
+                </div>
               </div>
             </div>
           `;
@@ -5161,6 +5298,714 @@
 
       window.filterOrdersList = () => {
         renderFilteredOrders();
+      };
+
+      // --- CUSTOMER DETAILS PDF GENERATION & MODAL CONTROLS ---
+
+      window.downloadCustomerDetailPdf = function(orderId) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          alert("PDF library is still initializing. Please check your internet connection and try again.");
+          return;
+        }
+
+        const order = allOrdersCache.find(o => o.id === orderId);
+        if (!order) {
+          alert("Order record not found in cache!");
+          return;
+        }
+
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+
+          const pageWidth = 210;
+          const pageHeight = 297;
+          const margin = 14;
+          const contentWidth = pageWidth - (margin * 2); // 182mm
+
+          // Header Background
+          doc.setFillColor(126, 34, 206); // #7e22ce
+          doc.rect(0, 0, pageWidth, 28, 'F');
+
+          // Accent line under header
+          doc.setFillColor(168, 85, 247); // #a855f7
+          doc.rect(0, 28, pageWidth, 2, 'F');
+
+          // Header Typography
+          doc.setTextColor(255, 255, 255);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(18);
+          doc.text('ZOZO NEPAL', margin, 12);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(233, 213, 255);
+          doc.text('Official Customer Order Dossier & Delivery Dispatch Invoice', margin, 18);
+          doc.text('Nepal • E-Commerce Logistics Hub • +977 9766706246', margin, 23);
+
+          // Right Header Info
+          const genDate = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+          let orderDateStr = "N/A";
+          if (order.timestamp) {
+            try {
+              const dObj = typeof order.timestamp.toDate === 'function' ? order.timestamp.toDate() : new Date(order.timestamp);
+              orderDateStr = dObj.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+            } catch(e) {}
+          }
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(255, 255, 255);
+          doc.text(`ORDER ID: #${(order.id || 'N/A').toUpperCase()}`, pageWidth - margin, 11, { align: 'right' });
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(233, 213, 255);
+          doc.text(`Order Placed: ${orderDateStr}`, pageWidth - margin, 17, { align: 'right' });
+          doc.text(`Dossier Generated: ${genDate}`, pageWidth - margin, 22, { align: 'right' });
+
+          let currentY = 36;
+
+          // SECTION 1: CUSTOMER PROFILE & CONTACT DETAILS
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          doc.roundedRect(margin, currentY, contentWidth, 54, 3, 3, 'FD');
+
+          // Left accent badge bar
+          doc.setFillColor(147, 51, 234);
+          doc.rect(margin, currentY, 3.5, 54, 'F');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          doc.setTextColor(15, 23, 42);
+          doc.text('1. CUSTOMER PROFILE & CONTACT DOSSIER', margin + 7, currentY + 7);
+
+          doc.setFontSize(8.5);
+          
+          // Columns
+          const col1X = margin + 7;
+          const col2X = margin + 98;
+          
+          let infoY = currentY + 14;
+          
+          // Customer Name
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Customer Name:', col1X, infoY);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(15, 23, 42);
+          doc.text(String(order.customerName || 'Guest Customer'), col1X + 28, infoY);
+
+          // Phone
+          infoY += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Contact Phone:', col1X, infoY);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(15, 23, 42);
+          doc.text(String(order.customerPhone || 'N/A'), col1X + 28, infoY);
+
+          // Email
+          infoY += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Email Address:', col1X, infoY);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(15, 23, 42);
+          doc.text(String(order.customerEmail || 'N/A'), col1X + 28, infoY);
+
+          // Registered Account
+          infoY += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Account Auth:', col1X, infoY);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 116, 139);
+          doc.text(String(order.userEmail || 'Direct Guest Checkout'), col1X + 28, infoY);
+
+          // Right Column: Delivery Address & Landmark
+          let infoY2 = currentY + 14;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Delivery Address:', col2X, infoY2);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(15, 23, 42);
+          
+          const addressLines = doc.splitTextToSize(String(order.deliveryLocation || 'Nepal'), 54);
+          doc.text(addressLines, col2X + 28, infoY2);
+
+          infoY2 += Math.max(addressLines.length * 4.5, 7);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Landmark / Area:', col2X, infoY2);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(15, 23, 42);
+          const landmarkLines = doc.splitTextToSize(String(order.famousPlace || 'None specified'), 54);
+          doc.text(landmarkLines, col2X + 28, infoY2);
+
+          currentY += 60;
+
+          // SECTION 2: ORDER STATUS & FINANCIAL SUMMARY
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          doc.roundedRect(margin, currentY, contentWidth, 38, 3, 3, 'FD');
+
+          // Left accent bar
+          doc.setFillColor(59, 130, 246); // Blue accent
+          doc.rect(margin, currentY, 3.5, 38, 'F');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          doc.setTextColor(15, 23, 42);
+          doc.text('2. ORDER STATUS & FINANCIAL SETTLEMENT', margin + 7, currentY + 7);
+
+          let finY = currentY + 14;
+          // Status
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8.5);
+          doc.setTextColor(71, 85, 105);
+          doc.text('Order Status:', col1X, finY);
+          doc.setFont('helvetica', 'bold');
+          const statusVal = order.status || 'Pending';
+          if (statusVal === 'Delivered') doc.setTextColor(22, 163, 74);
+          else if (statusVal === 'Shipped') doc.setTextColor(37, 99, 235);
+          else doc.setTextColor(217, 119, 6);
+          doc.text(statusVal.toUpperCase(), col1X + 28, finY);
+
+          // Payment Method
+          finY += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Payment Channel:', col1X, finY);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(15, 23, 42);
+          doc.text(String(order.paymentMethod || 'Cash on Delivery (COD)'), col1X + 28, finY);
+
+          // Transaction ID
+          finY += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Transaction Ref:', col1X, finY);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 116, 139);
+          doc.text(String(order.transactionId || 'N/A'), col1X + 28, finY);
+
+          // Right Column Financials
+          let finY2 = currentY + 14;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Coupon Applied:', col2X, finY2);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(15, 23, 42);
+          doc.text(order.couponApplied ? `${order.couponApplied} (-Rs. ${order.discountGiven || 0})` : 'None', col2X + 28, finY2);
+
+          finY2 += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(71, 85, 105);
+          doc.text('Total Amount:', col2X, finY2);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(126, 34, 206);
+          doc.text(`Rs. ${(order.amountPaid || 0).toLocaleString()} NPR`, col2X + 28, finY2);
+
+          currentY += 44;
+
+          // SECTION 3: PURCHASED PRODUCTS & ITEM BREAKDOWN
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          
+          // Header for Items Table
+          doc.setFillColor(241, 245, 249);
+          doc.rect(margin, currentY, contentWidth, 8, 'FD');
+          
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8.5);
+          doc.setTextColor(15, 23, 42);
+          doc.text('#', margin + 4, currentY + 5.5);
+          doc.text('ITEM NAME & SPECIFICATIONS', margin + 14, currentY + 5.5);
+          doc.text('QTY / DETAILS', margin + 130, currentY + 5.5);
+          doc.text('SUBTOTAL', pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
+
+          currentY += 8;
+
+          // Parse items string
+          const itemsRaw = order.productName || 'Order Items';
+          const rawItemsList = itemsRaw.split(',').map(s => s.trim()).filter(Boolean);
+          const displayItems = rawItemsList.length > 0 ? rawItemsList : [itemsRaw];
+
+          displayItems.forEach((itemText, idx) => {
+            const itemRowHeight = 10;
+            doc.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252);
+            doc.rect(margin, currentY, contentWidth, itemRowHeight, 'FD');
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(71, 85, 105);
+            doc.text(String(idx + 1), margin + 4, currentY + 6.5);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42);
+            const splitItem = doc.splitTextToSize(itemText, 110);
+            doc.text(splitItem, margin + 14, currentY + 6.5);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100, 116, 139);
+            doc.text('Recorded in order', margin + 130, currentY + 6.5);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(126, 34, 206);
+            doc.text(idx === 0 ? `Rs. ${(order.amountPaid || 0).toLocaleString()}` : 'Included', pageWidth - margin - 4, currentY + 6.5, { align: 'right' });
+
+            currentY += itemRowHeight;
+          });
+
+          currentY += 6;
+
+          // SECTION 4: DISPATCH & LOGISTICS DELIVERY SLIP
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          doc.roundedRect(margin, currentY, contentWidth, 42, 3, 3, 'FD');
+
+          // Left accent bar
+          doc.setFillColor(16, 185, 129); // Green accent
+          doc.rect(margin, currentY, 3.5, 42, 'F');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(15, 23, 42);
+          doc.text('3. LOGISTICS DISPATCH & DELIVERY ACKNOWLEDGMENT', margin + 7, currentY + 7);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(100, 116, 139);
+          doc.text('Rider Instructions: Verify customer phone number before delivery. Inspect package upon handover.', margin + 7, currentY + 13);
+
+          // Signatures
+          const sigY = currentY + 28;
+          
+          // Courier signature
+          doc.setDrawColor(148, 163, 184);
+          doc.line(margin + 7, sigY, margin + 75, sigY);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7.5);
+          doc.setTextColor(71, 85, 105);
+          doc.text('Courier / Dispatch Agent Signature', margin + 7, sigY + 5);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Date: _______________', margin + 7, sigY + 9);
+
+          // Customer signature
+          doc.line(margin + 105, sigY, margin + 175, sigY);
+          doc.setFont('helvetica', 'bold');
+          doc.text('Customer Receiver Signature', margin + 105, sigY + 5);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Date: _______________', margin + 105, sigY + 9);
+
+          // FOOTER
+          doc.setFillColor(241, 245, 249);
+          doc.rect(0, pageHeight - 14, pageWidth, 14, 'F');
+          doc.setDrawColor(203, 213, 225);
+          doc.line(0, pageHeight - 14, pageWidth, pageHeight - 14);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(100, 116, 139);
+          doc.text('Zozo Nepal E-Commerce • Kathmandu, Nepal • Phone/WhatsApp: +977 9766706246 • Email: zozonepal5@gmail.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
+          doc.text('Confidential Customer Document • Generated via Zozo Nepal Master Control Hub', pageWidth / 2, pageHeight - 4, { align: 'center' });
+
+          // File name
+          const safeCustomer = (order.customerName || 'Customer').replace(/[^a-zA-Z0-9]/g, '_');
+          const safeId = (order.id || 'order').replace(/[^a-zA-Z0-9]/g, '_');
+          const fileName = `Zozo_Customer_Detail_${safeCustomer}_${safeId}.pdf`;
+
+          doc.save(fileName);
+
+          if (window.showToastNotification) {
+            window.showToastNotification(`📥 Customer PDF downloaded: ${fileName}`);
+          }
+        } catch (err) {
+          console.error("Failed to generate PDF:", err);
+          alert("Could not generate customer details PDF: " + err.message);
+        }
+      };
+
+      // Export Master Manifest of all customer orders
+      window.downloadAllCustomersReportPdf = function() {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          alert("PDF library is still initializing. Please check your internet connection and try again.");
+          return;
+        }
+
+        const filter = (document.getElementById('ordersFilterDropdown') ? document.getElementById('ordersFilterDropdown').value : 'All');
+        const search = (document.getElementById('ordersSearchInput') ? document.getElementById('ordersSearchInput').value.trim().toLowerCase() : '');
+
+        const filtered = allOrdersCache.filter(o => {
+          const matchStatus = filter === 'All' || (o.status || 'Pending').toLowerCase() === filter.toLowerCase();
+          if (!matchStatus) return false;
+          if (!search) return true;
+          const term = `${o.customerName || ''} ${o.customerPhone || ''} ${o.customerEmail || ''} ${o.deliveryLocation || ''} ${o.famousPlace || ''} ${o.id || ''} ${o.productName || ''} ${o.transactionId || ''}`.toLowerCase();
+          return term.includes(search);
+        });
+
+        if (filtered.length === 0) {
+          alert("No customer orders found to export under the current filter/search settings.");
+          return;
+        }
+
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+          });
+
+          const pageWidth = 297;
+          const pageHeight = 210;
+          const margin = 12;
+          const contentWidth = pageWidth - (margin * 2);
+
+          const totalOrders = filtered.length;
+          const totalRevenue = filtered.reduce((sum, o) => sum + Number(o.amountPaid || 0), 0);
+          const pendingCount = filtered.filter(o => (o.status || 'Pending').toLowerCase() === 'pending').length;
+          const processingCount = filtered.filter(o => (o.status || '').toLowerCase() === 'processing').length;
+          const shippedCount = filtered.filter(o => (o.status || '').toLowerCase() === 'shipped').length;
+          const deliveredCount = filtered.filter(o => (o.status || '').toLowerCase() === 'delivered').length;
+
+          // Header Banner
+          doc.setFillColor(126, 34, 206);
+          doc.rect(0, 0, pageWidth, 24, 'F');
+
+          doc.setTextColor(255, 255, 255);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(16);
+          doc.text('ZOZO NEPAL - MASTER CUSTOMER ORDERS MANIFEST', margin, 11);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(233, 213, 255);
+          doc.text(`Status Filter: ${filter} | Exported: ${new Date().toLocaleString()} | Total Records: ${totalOrders}`, margin, 18);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(255, 255, 255);
+          doc.text(`TOTAL VALUE: Rs. ${totalRevenue.toLocaleString()} NPR`, pageWidth - margin, 14, { align: 'right' });
+
+          // Summary Metric Bar
+          let currentY = 28;
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          doc.roundedRect(margin, currentY, contentWidth, 12, 2, 2, 'FD');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(71, 85, 105);
+          doc.text(`📦 Orders: ${totalOrders}`, margin + 4, currentY + 7.5);
+          doc.text(`⏳ Pending: ${pendingCount}`, margin + 40, currentY + 7.5);
+          doc.text(`⚙️ Processing: ${processingCount}`, margin + 85, currentY + 7.5);
+          doc.text(`🚚 Shipped: ${shippedCount}`, margin + 135, currentY + 7.5);
+          doc.text(`✅ Delivered: ${deliveredCount}`, margin + 180, currentY + 7.5);
+          doc.text(`💰 Total Revenue: Rs. ${totalRevenue.toLocaleString()} NPR`, margin + 225, currentY + 7.5);
+
+          currentY += 16;
+
+          // Table Header
+          function drawTableHeader(y) {
+            doc.setFillColor(241, 245, 249);
+            doc.setDrawColor(203, 213, 225);
+            doc.rect(margin, y, contentWidth, 8, 'FD');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.5);
+            doc.setTextColor(15, 23, 42);
+
+            doc.text('#', margin + 3, y + 5.5);
+            doc.text('CUSTOMER NAME', margin + 10, y + 5.5);
+            doc.text('PHONE NUMBER', margin + 54, y + 5.5);
+            doc.text('DELIVERY LOCATION', margin + 86, y + 5.5);
+            doc.text('ORDERED ITEMS', margin + 146, y + 5.5);
+            doc.text('AMOUNT', margin + 222, y + 5.5);
+            doc.text('PAYMENT', margin + 248, y + 5.5);
+            doc.text('STATUS', margin + 270, y + 5.5);
+          }
+
+          drawTableHeader(currentY);
+          currentY += 8;
+
+          filtered.forEach((order, index) => {
+            if (currentY > pageHeight - 20) {
+              doc.addPage();
+              currentY = 14;
+              drawTableHeader(currentY);
+              currentY += 8;
+            }
+
+            const rowHeight = 9;
+            doc.setFillColor(index % 2 === 0 ? 255 : 248, index % 2 === 0 ? 255 : 250, index % 2 === 0 ? 255 : 252);
+            doc.setDrawColor(226, 232, 240);
+            doc.rect(margin, currentY, contentWidth, rowHeight, 'FD');
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            doc.setTextColor(71, 85, 105);
+            doc.text(String(index + 1), margin + 3, currentY + 6);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42);
+            const nameText = (order.customerName || 'Guest').substring(0, 22);
+            doc.text(nameText, margin + 10, currentY + 6);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(30, 41, 59);
+            doc.text(String(order.customerPhone || 'N/A'), margin + 54, currentY + 6);
+
+            const locText = (order.deliveryLocation || 'Nepal').substring(0, 28);
+            doc.text(locText, margin + 86, currentY + 6);
+
+            const itemsText = (order.productName || 'Items').substring(0, 36);
+            doc.text(itemsText, margin + 146, currentY + 6);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(126, 34, 206);
+            doc.text(`Rs. ${(order.amountPaid || 0).toLocaleString()}`, margin + 222, currentY + 6);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(71, 85, 105);
+            const payText = (order.paymentMethod || 'COD').substring(0, 10);
+            doc.text(payText, margin + 248, currentY + 6);
+
+            const st = order.status || 'Pending';
+            if (st === 'Delivered') doc.setTextColor(22, 163, 74);
+            else if (st === 'Shipped') doc.setTextColor(37, 99, 235);
+            else doc.setTextColor(217, 119, 6);
+            doc.setFont('helvetica', 'bold');
+            doc.text(st, margin + 270, currentY + 6);
+
+            currentY += rowHeight;
+          });
+
+          const dateStr = new Date().toISOString().slice(0, 10);
+          const fileName = `Zozo_Customer_Orders_Manifest_${dateStr}.pdf`;
+          doc.save(fileName);
+
+          if (window.showToastNotification) {
+            window.showToastNotification(`📥 Customer Manifest exported: ${fileName}`);
+          }
+        } catch (err) {
+          console.error("Failed to export customers PDF manifest:", err);
+          alert("Could not export PDF report: " + err.message);
+        }
+      };
+
+      // Customer Details Modal display logic
+      window.openCustomerDetailModal = function(orderId) {
+        const order = allOrdersCache.find(o => o.id === orderId);
+        if (!order) {
+          alert("Order details not available in cache.");
+          return;
+        }
+
+        const modal = document.getElementById('adminCustomerDetailModal');
+        const title = document.getElementById('cdmCustomerNameTitle');
+        const sub = document.getElementById('cdmOrderIdSub');
+        const body = document.getElementById('cdmModalBody');
+        const actionContainer = document.getElementById('cdmActionButtonsContainer');
+
+        if (!modal || !body) return;
+
+        title.innerText = order.customerName || 'Customer Dossier';
+        sub.innerText = `Order ID: #${order.id || 'N/A'} • Placed: ${order.timestamp ? (typeof order.timestamp.toDate === 'function' ? order.timestamp.toDate().toLocaleString() : new Date(order.timestamp).toLocaleString()) : 'N/A'}`;
+
+        const cleanPhone = (order.customerPhone || '').replace(/[^0-9]/g, '');
+        const waPhone = cleanPhone.startsWith('977') ? cleanPhone : (cleanPhone.length === 10 ? '977' + cleanPhone : cleanPhone);
+
+        body.innerHTML = `
+          <!-- Customer Profile Section -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+              <span style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#7c3aed; letter-spacing:0.05em;">Customer & Delivery Contact Info</span>
+              <div style="display:flex; gap:6px;">
+                ${order.customerPhone ? `
+                  <a href="https://wa.me/${waPhone}" target="_blank" class="action-btn" style="background:#22c55e; color:#ffffff; padding:4px 10px; font-size:0.75rem; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:700;">
+                    <span>💬</span> WhatsApp
+                  </a>
+                  <a href="tel:${order.customerPhone}" class="action-btn" style="background:#3b82f6; color:#ffffff; padding:4px 10px; font-size:0.75rem; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:700;">
+                    <span>📞</span> Call
+                  </a>
+                ` : ''}
+                ${order.customerEmail ? `
+                  <a href="mailto:${order.customerEmail}" class="action-btn" style="background:#64748b; color:#ffffff; padding:4px 10px; font-size:0.75rem; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:700;">
+                    <span>✉️</span> Email
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
+              <div>
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Full Name:</span>
+                <strong style="color:#0f172a; font-size:0.95rem;">${order.customerName || 'Guest Customer'}</strong>
+              </div>
+              <div>
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Phone Number:</span>
+                <strong style="color:#0f172a; font-size:0.95rem;">${order.customerPhone || 'N/A'}</strong>
+              </div>
+              <div>
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Email Address:</span>
+                <span style="color:#334155;">${order.customerEmail || 'N/A'}</span>
+              </div>
+              <div>
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Account Auth Source:</span>
+                <span style="color:#334155;">${order.userEmail || 'Guest Checkout'}</span>
+              </div>
+              <div style="grid-column:1/-1;">
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Delivery Location / Address:</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:2px;">
+                  <strong style="color:#0f172a;">${order.deliveryLocation || 'Nepal'}</strong>
+                  ${order.deliveryLocation ? `
+                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.deliveryLocation + ' Nepal')}" target="_blank" style="font-size:0.72rem; color:#3b82f6; text-decoration:none; font-weight:700;">🗺️ View on Maps</a>
+                  ` : ''}
+                </div>
+              </div>
+              ${order.famousPlace ? `
+                <div style="grid-column:1/-1;">
+                  <span style="color:#64748b; font-size:0.75rem; display:block;">Landmark / Famous Place:</span>
+                  <span style="color:#334155; font-weight:600;">${order.famousPlace}</span>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Order Summary Section -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+              <span style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#7c3aed; letter-spacing:0.05em;">Order & Financial Breakdown</span>
+              <span style="font-size:0.8rem; font-weight:800; color:#15803d; background:#dcfce7; padding:3px 8px; border-radius:6px;">Status: ${(order.status || 'Pending').toUpperCase()}</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
+              <div>
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Total Settlement:</span>
+                <strong style="color:#7e22ce; font-size:1.15rem;">Rs. ${(order.amountPaid || 0).toLocaleString()} NPR</strong>
+              </div>
+              <div>
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Payment Method:</span>
+                <strong style="color:#0f172a;">${order.paymentMethod || 'COD'}</strong>
+              </div>
+              ${order.couponApplied ? `
+                <div>
+                  <span style="color:#64748b; font-size:0.75rem; display:block;">Coupon Applied:</span>
+                  <span style="color:#b45309; font-weight:700;">🏷️ ${order.couponApplied} (-Rs. ${order.discountGiven || 0})</span>
+                </div>
+              ` : ''}
+              ${order.transactionId ? `
+                <div>
+                  <span style="color:#64748b; font-size:0.75rem; display:block;">Transaction Ref ID:</span>
+                  <code style="color:#64748b; font-size:0.75rem;">${order.transactionId}</code>
+                </div>
+              ` : ''}
+              <div style="grid-column:1/-1;">
+                <span style="color:#64748b; font-size:0.75rem; display:block;">Purchased Items:</span>
+                <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-top:4px; font-weight:700; color:#1e293b;">
+                  🛒 ${order.productName || 'Order Items'}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (actionContainer) {
+          actionContainer.innerHTML = `
+            <button type="button" class="pdf-download-btn" onclick="downloadCustomerDetailPdf('${order.id}')">
+              <span>📥</span>
+              <span>Download Customer PDF</span>
+            </button>
+            <button type="button" class="action-btn" style="background:#ffffff; color:#334155; border:1px solid #cbd5e1; font-size:0.78rem; padding:7px 12px; border-radius:8px; font-weight:700;" onclick="window.printCustomerSlip('${order.id}')">
+              <span>🖨️ Print Slip</span>
+            </button>
+          `;
+        }
+
+        modal.style.display = 'flex';
+      };
+
+      window.closeCustomerDetailModal = function() {
+        const modal = document.getElementById('adminCustomerDetailModal');
+        if (modal) modal.style.display = 'none';
+      };
+
+      window.printCustomerSlip = function(orderId) {
+        const order = allOrdersCache.find(o => o.id === orderId);
+        if (!order) return;
+        
+        const printWin = window.open('', '_blank', 'width=800,height=600');
+        if (!printWin) {
+          alert("Pop-up blocked. Downloading PDF instead.");
+          downloadCustomerDetailPdf(orderId);
+          return;
+        }
+
+        printWin.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Zozo Nepal - Customer Delivery Slip #${order.id || ''}</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 24px; color: #0f172a; margin: 0; }
+              .header { background: #7e22ce; color: #fff; padding: 18px; border-radius: 8px; margin-bottom: 20px; }
+              .header h1 { margin: 0 0 6px 0; font-size: 22px; }
+              .section { border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 16px; background: #f8fafc; }
+              .section h2 { margin: 0 0 10px 0; font-size: 14px; color: #7e22ce; text-transform: uppercase; }
+              .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
+              .items { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #fff; font-weight: bold; margin-top: 6px; }
+              .signatures { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
+              .sig-line { width: 220px; border-top: 1px solid #000; padding-top: 6px; font-size: 12px; text-align: center; }
+              @media print {
+                body { padding: 0; }
+                button { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>ZOZO NEPAL - DELIVERY DISPATCH SLIP</h1>
+              <div>Order ID: #${order.id || 'N/A'} • Status: ${(order.status || 'Pending').toUpperCase()}</div>
+            </div>
+
+            <div class="section">
+              <h2>Customer Contact & Destination</h2>
+              <div class="grid">
+                <div><strong>Customer Name:</strong> ${order.customerName || 'Guest'}</div>
+                <div><strong>Phone Number:</strong> ${order.customerPhone || 'N/A'}</div>
+                <div><strong>Email:</strong> ${order.customerEmail || 'N/A'}</div>
+                <div><strong>Delivery Address:</strong> ${order.deliveryLocation || 'Nepal'}</div>
+                <div><strong>Landmark:</strong> ${order.famousPlace || 'None'}</div>
+                <div><strong>Payment:</strong> ${order.paymentMethod || 'COD'} (Rs. ${(order.amountPaid || 0).toLocaleString()})</div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h2>Ordered Items</h2>
+              <div class="items">🛒 ${order.productName || 'Order items'}</div>
+            </div>
+
+            <div class="signatures">
+              <div class="sig-line">Courier Dispatch Agent Signature</div>
+              <div class="sig-line">Customer Receiver Signature</div>
+            </div>
+
+            <script>
+              window.onload = function() {
+                window.print();
+              };
+            <\/script>
+          </body>
+          </html>
+        `);
+        printWin.document.close();
       };
 
       window.updateOrderStatus = async (docId, newStatus) => {

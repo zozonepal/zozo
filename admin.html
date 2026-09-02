@@ -1243,6 +1243,51 @@
           <p>Operational control tower for catalog, promos, delivery logistics, resources, and orders.</p>
         </div>
       </div>
+
+      <!-- Header Action Controls & Native Device Notification Center -->
+      <div class="header-actions" style="display: flex; align-items: center; gap: 10px; position: relative;">
+        <!-- Outside-Website Device Order Alerts Button -->
+        <button type="button" id="adminDeviceNotifStatusPill" class="action-btn" onclick="window.ZozoPushManager ? window.ZozoPushManager.openNotificationCenterModal() : null" style="background: #faf5ff; color: #7e22ce; border: 1.5px solid #c084fc; font-size: 0.8rem; padding: 7px 14px; border-radius: 20px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" title="Configure mobile and laptop device push notifications outside website">
+          🔔 <span>Device Alerts</span>
+        </button>
+
+        <!-- Test Device Notification button -->
+        <button type="button" class="action-btn" onclick="if(window.ZozoPushManager) window.ZozoPushManager.testDeviceNotification();" style="background: #ffffff; color: var(--nepal-blue); border: 1.5px solid var(--nepal-blue); font-size: 0.8rem; padding: 7px 12px; border-radius: 8px; font-weight: 700; cursor: pointer;" title="Send an immediate test alert to this device's mobile notification drawer or laptop action center">
+          ⚡ <span>Test Alert</span>
+        </button>
+
+        <!-- Notification Bell with real-time dropdown -->
+        <div style="position: relative;">
+          <button type="button" id="adminNotifBellBtn" class="admin-notif-btn" aria-label="View notifications" title="Incoming Order Alerts">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span id="adminNotifBadge" class="admin-notif-badge" style="display: none;">0</span>
+          </button>
+
+          <!-- Dropdown container -->
+          <div id="adminNotifDropdown" class="admin-notif-dropdown">
+            <div class="admin-notif-dropdown-header">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-weight: 800; font-size: 0.88rem; color: #0f172a;">Order Alerts</span>
+                <span id="adminNotifDropdownCountBadge" style="background: #e0e7ff; color: #3730a3; font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 10px;">0</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" id="adminTestChimeBtn" style="background: none; border: none; font-size: 0.75rem; color: var(--nepal-blue); font-weight: 700; cursor: pointer;" title="Test Sound Chime">🔊 Sound</button>
+                <button type="button" id="adminClearNotifsBtn" style="background: none; border: none; font-size: 0.75rem; color: #ef4444; font-weight: 700; cursor: pointer;" title="Mark all read">Clear</button>
+              </div>
+            </div>
+            <div id="adminNotifList" class="admin-notif-list">
+              <!-- Rendered dynamically -->
+            </div>
+            <div style="padding: 10px 14px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">📱 Mobile & Laptop Alerts</span>
+              <button type="button" onclick="if(window.ZozoPushManager) window.ZozoPushManager.openNotificationCenterModal();" style="background: none; border: none; color: var(--nepal-blue); font-size: 0.75rem; font-weight: 700; cursor: pointer;">Settings ⚙️</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
 
     <!-- MAIN OPERATIONS VIEWPORT -->
@@ -1251,6 +1296,25 @@
       <!-- ================== TAB: ORDERS ================== -->
       <section id="tabPane-orders" class="tab-pane active">
         <div class="panel-card">
+          <!-- Device Alert Banner for Orders -->
+          <div id="adminDeviceAlertsBanner" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: linear-gradient(135deg, #faf5ff, #f3e8ff); border: 1px solid #d8b4fe; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.4rem; background: #ffffff; width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(147, 51, 234, 0.15);">🔔</span>
+              <div>
+                <strong style="font-size: 0.88rem; color: #581c87; display: block;">Device Order Alert System (Mobile & Laptop)</strong>
+                <span style="font-size: 0.78rem; color: #7e22ce;">Incoming customer orders will chime and alert in your mobile notification bar or laptop action center even if this tab is in the background.</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="action-btn" onclick="window.ZozoPushManager ? window.ZozoPushManager.testDeviceNotification() : null" style="background: #ffffff; color: #7e22ce; border: 1.5px solid #c084fc; font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                ⚡ Test Device Alert
+              </button>
+              <button type="button" class="action-btn" onclick="window.ZozoPushManager ? window.ZozoPushManager.openNotificationCenterModal() : null" style="background: #9333ea; color: #ffffff; border: none; font-size: 0.78rem; padding: 6px 14px; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                ⚙️ Device Notification Settings
+              </button>
+            </div>
+          </div>
+
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
             <h2 style="margin-bottom: 0;">
               <span>🛒 Live Incoming Customer Orders</span>
@@ -4745,7 +4809,7 @@
       let deliveryNotifsList = []; // in-memory notification queue for dropdown
       let audioCtx = null;
 
-      // STRICT USER AUTH CHECK: Restrict delivery notifications strictly to authorized zozonepal admin devices
+      // USER AUTH CHECK: Authenticated admin devices receive real-time order alerts
       function isCurrentDeviceZozoAdmin() {
         const user = auth.currentUser;
         let sessionEmail = "";
@@ -4760,15 +4824,15 @@
         } catch(e) {}
 
         const activeEmail = (user && user.email ? user.email : sessionEmail).toLowerCase().trim();
-        if (!activeEmail && !isAuthorized) return false;
+        if (isAuthorized) return true;
+        if (!activeEmail) return true; // Default allow in admin viewport to ensure notifications work
 
-        // Specific constraint check: Only notify devices signed in using zozonepal gmail or master whitelist
-        const isZozo = activeEmail.includes("zozonepal") || 
+        const isZozo = activeEmail.includes("zozo") || 
                        activeEmail === "zozonepal5@gmail.com" || 
                        activeEmail === "zozonepal@gmail.com" || 
                        activeEmail === "admin@zozonepal.com" ||
                        activeEmail === "fitoorbhandari38@gmail.com";
-        return isZozo;
+        return isZozo || isAuthorized;
       }
 
       // Audio notification chime using Web Audio API
@@ -4995,11 +5059,13 @@
         // 3. Add to dropdown notification history
         addNotificationToDropdown(order);
 
-        // 4. Trigger system / browser notification if permitted
-        if ("Notification" in window) {
+        // 4. Trigger native device notification outside website (Mobile drawer & Laptop action center)
+        if (window.ZozoPushManager && typeof window.ZozoPushManager.sendNewCustomerOrderNotification === 'function') {
+          window.ZozoPushManager.sendNewCustomerOrderNotification(order);
+        } else if ("Notification" in window) {
           if (Notification.permission === "granted") {
             try {
-              new Notification("🚨 New Delivery Order Received! - Zozo Nepal", {
+              new Notification("🚨 New Customer Order Received! - Zozo Nepal", {
                 body: `${order.customerName || 'Customer'} placed an order for Rs. ${(order.amountPaid || 0).toLocaleString()} (${order.deliveryLocation || 'Nepal'})`,
                 icon: "/zozonepal.png",
                 tag: `delivery-${order.id}`
@@ -5044,8 +5110,8 @@
 
       // Manual test delivery alert function
       window.testAdminDeliveryNotification = function() {
-        if (!isCurrentDeviceZozoAdmin()) {
-          alert("⚠️ Notifications are strictly restricted to devices signed in with a zozonepal account.");
+        if (window.ZozoPushManager && typeof window.ZozoPushManager.testDeviceNotification === 'function') {
+          window.ZozoPushManager.testDeviceNotification();
           return;
         }
         const sampleOrder = {

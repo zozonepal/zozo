@@ -1,0 +1,17 @@
+{
+  "name": "Zozo Nepal",
+  "short_name": "Zozo Nepal",
+  "description": "Nepal's Premium Multi-Category Shopping Hub & Order Management",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9333ea",
+  "icons": [
+    {
+      "src": "/zozonepal.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

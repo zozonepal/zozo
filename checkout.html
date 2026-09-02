@@ -697,6 +697,20 @@
         <p style="font-size: 1.05rem; color: var(--nepal-blue); font-weight: 800; margin-top: 6px;"><strong>Amount Settled:</strong> <span id="recAmount"></span></p>
       </div>
 
+      <!-- Device Alerts Banner on Success Receipt -->
+      <div id="checkoutDeviceAlertPrompt" style="margin-top: -12px; margin-bottom: 20px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 10px; padding: 12px 14px; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">🔔</span>
+          <div>
+            <strong style="font-size: 0.85rem; color: #6b21a8; display: block;">Device Status Updates (Mobile & Laptop)</strong>
+            <span style="font-size: 0.76rem; color: #7e22ce;">Get notified directly on your phone's notification bar or laptop when your package ships and delivers.</span>
+          </div>
+        </div>
+        <button type="button" class="btn" style="background: #9333ea; color: #ffffff; border: none; padding: 7px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; cursor: pointer; white-space: nowrap; margin: 0;" onclick="if(window.ZozoPushManager) window.ZozoPushManager.requestPermission()">
+          🔔 Enable Device Alerts
+        </button>
+      </div>
+
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button class="btn" style="margin: 0; flex: 1; min-width: 160px; font-weight: 800; background: linear-gradient(135deg, #7c3aed, #9333ea); color: #ffffff; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);" onclick="if(window.lastPlacedOrderId && window.downloadOrderReceiptPdf) { window.downloadOrderReceiptPdf(window.lastPlacedOrderId, this); } else if (window.OrderHistoryComponent) { window.OrderHistoryComponent.openModal(); }">
           <span>📥</span> Download PDF Receipt
@@ -1481,6 +1495,25 @@
             `Thank you ${nameVal}! Your order of Rs. ${finalCalculatedBill.toLocaleString()} has been placed and is being verified.`,
             `/product.html?orderTrack=${docRef.id}`
           );
+
+          // Broadcast to admin dashboard tabs for immediate outside-website alert
+          if (window.ZozoPushManager.broadcastChannel) {
+            try {
+              window.ZozoPushManager.broadcastChannel.postMessage({
+                type: 'NEW_CUSTOMER_ORDER_BROADCAST',
+                order: {
+                  id: docRef.id,
+                  customerName: nameVal,
+                  customerPhone: phoneVal,
+                  amountPaid: finalCalculatedBill,
+                  deliveryLocation: `${rawLocation}, ${districtVal}`,
+                  productName: orderSummaryString
+                }
+              });
+            } catch (bcErr) {
+              console.warn('Broadcast error:', bcErr);
+            }
+          }
         }
 
         // Set invoice elements

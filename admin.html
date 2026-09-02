@@ -5590,11 +5590,11 @@
           doc.rect(margin, currentY, contentWidth, 8, 'FD');
           
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8.5);
+          doc.setFontSize(8);
           doc.setTextColor(15, 23, 42);
           doc.text('#', margin + 4, currentY + 5.5);
           doc.text('ITEM NAME & SPECIFICATIONS', margin + 14, currentY + 5.5);
-          doc.text('QTY / DETAILS', margin + 130, currentY + 5.5);
+          doc.text('QTY / DETAILS', margin + 120, currentY + 5.5);
           doc.text('SUBTOTAL', pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
 
           currentY += 8;
@@ -5605,77 +5605,32 @@
           const displayItems = rawItemsList.length > 0 ? rawItemsList : [itemsRaw];
 
           displayItems.forEach((itemText, idx) => {
-            const itemRowHeight = 10;
+            const splitItem = doc.splitTextToSize(itemText, 102);
+            const rowLines = Math.max(splitItem.length, 1);
+            const itemRowHeight = Math.max(9, rowLines * 4.5 + 4);
+
             doc.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252);
             doc.rect(margin, currentY, contentWidth, itemRowHeight, 'FD');
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
             doc.setTextColor(71, 85, 105);
-            doc.text(String(idx + 1), margin + 4, currentY + 6.5);
+            doc.text(String(idx + 1), margin + 4, currentY + 5.5);
 
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(15, 23, 42);
-            const splitItem = doc.splitTextToSize(itemText, 110);
-            doc.text(splitItem, margin + 14, currentY + 6.5);
+            doc.text(splitItem, margin + 14, currentY + 5.5);
 
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(100, 116, 139);
-            doc.text('Recorded in order', margin + 130, currentY + 6.5);
+            doc.text('Recorded in order', margin + 120, currentY + 5.5);
 
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(126, 34, 206);
-            doc.text(idx === 0 ? `Rs. ${(order.amountPaid || 0).toLocaleString()}` : 'Included', pageWidth - margin - 4, currentY + 6.5, { align: 'right' });
+            doc.text(idx === 0 ? `Rs. ${(order.amountPaid || 0).toLocaleString()}` : 'Included', pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
 
             currentY += itemRowHeight;
           });
-
-          currentY += 6;
-
-          // SECTION 4: DISPATCH & LOGISTICS DELIVERY SLIP
-          doc.setFillColor(248, 250, 252);
-          doc.setDrawColor(203, 213, 225);
-          doc.roundedRect(margin, currentY, contentWidth, 42, 3, 3, 'FD');
-
-          // Left accent bar
-          doc.setFillColor(16, 185, 129); // Green accent
-          doc.rect(margin, currentY, 3.5, 42, 'F');
-
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(15, 23, 42);
-          doc.text('3. LOGISTICS DISPATCH & DELIVERY ACKNOWLEDGMENT', margin + 7, currentY + 7);
-
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(7.5);
-          doc.setTextColor(100, 116, 139);
-          if (isDelivered) {
-            doc.setTextColor(22, 163, 74);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Delivery Fulfilled: Package handed over to customer ${rawCustName}. Confirmation registered in system.`, margin + 7, currentY + 13);
-          } else {
-            doc.text('Rider Instructions: Verify customer phone number before delivery. Inspect package upon handover.', margin + 7, currentY + 13);
-          }
-
-          // Signatures
-          const sigY = currentY + 28;
-          
-          // Courier signature
-          doc.setDrawColor(148, 163, 184);
-          doc.line(margin + 7, sigY, margin + 75, sigY);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(7.5);
-          doc.setTextColor(71, 85, 105);
-          doc.text('Courier / Dispatch Agent Signature', margin + 7, sigY + 5);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Date: _______________', margin + 7, sigY + 9);
-
-          // Customer signature
-          doc.line(margin + 105, sigY, margin + 175, sigY);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Customer Receiver Signature', margin + 105, sigY + 5);
-          doc.setFont('helvetica', 'normal');
-          doc.text(isDelivered ? 'Status: Received & Verified' : 'Date: _______________', margin + 105, sigY + 9);
 
           // FOOTER
           doc.setFillColor(241, 245, 249);
@@ -5779,27 +5734,27 @@
           
           // Total Orders
           doc.setTextColor(71, 85, 105);
-          doc.text(`Orders: ${totalOrders}`, margin + 6, currentY + 7.5);
+          doc.text(`Orders: ${totalOrders}`, margin + 5, currentY + 7.5);
           
           // Pending
           doc.setTextColor(217, 119, 6);
-          doc.text(`Pending: ${pendingCount}`, margin + 42, currentY + 7.5);
+          doc.text(`Pending: ${pendingCount}`, margin + 34, currentY + 7.5);
           
           // Processing
           doc.setTextColor(202, 138, 4);
-          doc.text(`Processing: ${processingCount}`, margin + 84, currentY + 7.5);
+          doc.text(`Processing: ${processingCount}`, margin + 72, currentY + 7.5);
           
           // Shipped
           doc.setTextColor(37, 99, 235);
-          doc.text(`Shipped: ${shippedCount}`, margin + 130, currentY + 7.5);
+          doc.text(`Shipped: ${shippedCount}`, margin + 114, currentY + 7.5);
           
           // Delivered
           doc.setTextColor(22, 163, 74);
-          doc.text(`Delivered: ${deliveredCount}`, margin + 172, currentY + 7.5);
+          doc.text(`Delivered: ${deliveredCount}`, margin + 154, currentY + 7.5);
           
-          // Total Revenue
+          // Total Revenue - aligned to right of card with safe margin
           doc.setTextColor(126, 34, 206);
-          doc.text(`Total Revenue: Rs. ${totalRevenue.toLocaleString()} NPR`, margin + 218, currentY + 7.5);
+          doc.text(`Total Revenue: Rs. ${totalRevenue.toLocaleString()} NPR`, pageWidth - margin - 6, currentY + 7.5, { align: 'right' });
 
           currentY += 16;
 
@@ -5810,17 +5765,17 @@
             doc.rect(margin, y, contentWidth, 8, 'FD');
 
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(7.5);
+            doc.setFontSize(7.2);
             doc.setTextColor(15, 23, 42);
 
-            doc.text('#', margin + 3, y + 5.5);
-            doc.text('CUSTOMER NAME & STATUS', margin + 10, y + 5.5);
+            doc.text('#', margin + 2, y + 5.5);
+            doc.text('CUSTOMER NAME & STATUS', margin + 9, y + 5.5);
             doc.text('PHONE NUMBER', margin + 64, y + 5.5);
-            doc.text('DELIVERY LOCATION', margin + 96, y + 5.5);
-            doc.text('ORDERED ITEMS', margin + 152, y + 5.5);
-            doc.text('AMOUNT', margin + 224, y + 5.5);
-            doc.text('PAYMENT', margin + 248, y + 5.5);
-            doc.text('STATUS', margin + 268, y + 5.5);
+            doc.text('DELIVERY LOCATION', margin + 91, y + 5.5);
+            doc.text('ORDERED ITEMS', margin + 138, y + 5.5);
+            doc.text('AMOUNT', margin + 189, y + 5.5);
+            doc.text('PAYMENT', margin + 214, y + 5.5);
+            doc.text('STATUS', margin + 242, y + 5.5);
           }
 
           drawTableHeader(currentY);
@@ -5844,30 +5799,26 @@
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(7);
             doc.setTextColor(71, 85, 105);
-            doc.text(String(index + 1), margin + 3, currentY + 6.2);
+            doc.text(String(index + 1), margin + 2, currentY + 6.2);
 
             // Customer Name with explicit [DELIVERED] status
             const baseName = (order.customerName || 'Guest Customer').trim();
-            const cleanName = baseName.length > 18 ? baseName.substring(0, 18) + '..' : baseName;
+            const cleanName = baseName.length > 16 ? baseName.substring(0, 16) + '..' : baseName;
             
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text(cleanName, margin + 9, currentY + 6.2);
+            
+            const tagX = margin + 9 + Math.min(cleanName.length * 2.1 + 2, 32);
             if (isOrderDelivered) {
               doc.setFont('helvetica', 'bold');
-              doc.setTextColor(15, 23, 42);
-              doc.text(cleanName, margin + 10, currentY + 6.2);
-              
-              // Green DELIVERED text tag right next to the customer name
-              doc.setFont('helvetica', 'bold');
               doc.setTextColor(22, 163, 74);
-              doc.text('[DELIVERED]', margin + 10 + Math.min(cleanName.length * 2.2 + 2, 34), currentY + 6.2);
+              doc.text('[DELIVERED]', tagX, currentY + 6.2);
             } else {
-              doc.setFont('helvetica', 'bold');
-              doc.setTextColor(15, 23, 42);
-              doc.text(cleanName, margin + 10, currentY + 6.2);
-              
               const statusTag = `[${(order.status || 'Pending').toUpperCase()}]`;
               doc.setFont('helvetica', 'normal');
               doc.setTextColor(100, 116, 139);
-              doc.text(statusTag, margin + 10 + Math.min(cleanName.length * 2.2 + 2, 34), currentY + 6.2);
+              doc.text(statusTag, tagX, currentY + 6.2);
             }
 
             // Phone
@@ -5876,23 +5827,23 @@
             doc.text(String(order.customerPhone || 'N/A'), margin + 64, currentY + 6.2);
 
             // Location
-            const locText = (order.deliveryLocation || 'Nepal').substring(0, 26);
-            doc.text(locText, margin + 96, currentY + 6.2);
+            const locText = (order.deliveryLocation || 'Nepal').substring(0, 24);
+            doc.text(locText, margin + 91, currentY + 6.2);
 
             // Items
-            const itemsText = (order.productName || 'Items').substring(0, 34);
-            doc.text(itemsText, margin + 152, currentY + 6.2);
+            const itemsText = (order.productName || 'Items').substring(0, 28);
+            doc.text(itemsText, margin + 138, currentY + 6.2);
 
             // Amount
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(126, 34, 206);
-            doc.text(`Rs. ${(order.amountPaid || 0).toLocaleString()}`, margin + 224, currentY + 6.2);
+            doc.text(`Rs. ${(order.amountPaid || 0).toLocaleString()}`, margin + 189, currentY + 6.2);
 
             // Payment Method
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(71, 85, 105);
-            const payText = (order.paymentMethod || 'COD').substring(0, 10);
-            doc.text(payText, margin + 248, currentY + 6.2);
+            const payText = (order.paymentMethod || 'COD').substring(0, 12);
+            doc.text(payText, margin + 214, currentY + 6.2);
 
             // Status Column
             const st = order.status || 'Pending';
@@ -5901,7 +5852,7 @@
             else if (st.toLowerCase() === 'processing') doc.setTextColor(202, 138, 4);
             else doc.setTextColor(217, 119, 6);
             doc.setFont('helvetica', 'bold');
-            doc.text(st.toUpperCase(), margin + 268, currentY + 6.2);
+            doc.text(st.toUpperCase(), margin + 242, currentY + 6.2);
 
             currentY += rowHeight;
           });

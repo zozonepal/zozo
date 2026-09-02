@@ -5205,6 +5205,7 @@
           }
 
           const currentStatus = order.status || "Pending";
+          const isDelivered = currentStatus.toLowerCase() === 'delivered';
           const statuses = ["Pending", "Processing", "Shipped", "Delivered"];
           const selectOptions = statuses.map(st => `
             <option value="${st}" ${st === currentStatus ? 'selected' : ''}>${st}</option>
@@ -5240,6 +5241,7 @@
                 <div>
                   <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <h3 style="font-size: 1.05rem; color: var(--text-main); font-weight: 800; margin:0;">${order.customerName || 'Guest Customer'}</h3>
+                    ${isDelivered ? `<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:3px;"><span>✓</span> DELIVERED</span>` : ''}
                     <span style="background:#ede9fe; color:#6d28d9; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:12px;">ID: #${(order.id || '').substring(0, 8)}</span>
                   </div>
                   <span style="font-size: 0.75rem; color: var(--text-muted); display:block; margin-top:3px;">📅 Placed: ${orderDateStr}</span>
@@ -5255,7 +5257,7 @@
 
               <div style="display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem; color: #334155; margin-bottom: 12px; line-height: 1.4; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0;">
                 <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-                  <div><strong>👤 Customer:</strong> <span style="color:var(--text-main); font-weight:600;">${order.customerName || 'Guest'}</span></div>
+                  <div><strong>👤 Customer:</strong> <span style="color:var(--text-main); font-weight:600;">${order.customerName || 'Guest'}</span> ${isDelivered ? '<strong style="color:#16a34a;">(DELIVERED)</strong>' : ''}</div>
                   <div><strong>📞 Phone:</strong> <a href="tel:${order.customerPhone}" style="color:var(--accent-color); text-decoration:none; font-weight:700;">${order.customerPhone || 'N/A'}</a></div>
                 </div>
                 <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
@@ -5327,6 +5329,11 @@
           const margin = 14;
           const contentWidth = pageWidth - (margin * 2); // 182mm
 
+          const currentStatus = (order.status || 'Pending').trim();
+          const isDelivered = currentStatus.toLowerCase() === 'delivered';
+          const isShipped = currentStatus.toLowerCase() === 'shipped';
+          const isProcessing = currentStatus.toLowerCase() === 'processing';
+
           // Header Background
           doc.setFillColor(126, 34, 206); // #7e22ce
           doc.rect(0, 0, pageWidth, 28, 'F');
@@ -5345,7 +5352,7 @@
           doc.setFontSize(8.5);
           doc.setTextColor(233, 213, 255);
           doc.text('Official Customer Order Dossier & Delivery Dispatch Invoice', margin, 18);
-          doc.text('Nepal • E-Commerce Logistics Hub • +977 9766706246', margin, 23);
+          doc.text('Nepal | E-Commerce Logistics Hub | Phone/WhatsApp: +977 9766706246', margin, 23);
 
           // Right Header Info
           const genDate = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
@@ -5365,8 +5372,14 @@
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(7.5);
           doc.setTextColor(233, 213, 255);
-          doc.text(`Order Placed: ${orderDateStr}`, pageWidth - margin, 17, { align: 'right' });
-          doc.text(`Dossier Generated: ${genDate}`, pageWidth - margin, 22, { align: 'right' });
+          doc.text(`Order Placed: ${orderDateStr}`, pageWidth - margin, 16.5, { align: 'right' });
+          doc.text(`Dossier Generated: ${genDate}`, pageWidth - margin, 21, { align: 'right' });
+          
+          if (isDelivered) {
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(134, 239, 172); // light green
+            doc.text('ORDER STATUS: DELIVERED (COMPLETED)', pageWidth - margin, 25.5, { align: 'right' });
+          }
 
           let currentY = 36;
 
@@ -5376,13 +5389,48 @@
           doc.roundedRect(margin, currentY, contentWidth, 54, 3, 3, 'FD');
 
           // Left accent badge bar
-          doc.setFillColor(147, 51, 234);
+          if (isDelivered) {
+            doc.setFillColor(22, 163, 74); // Green accent if delivered
+          } else {
+            doc.setFillColor(147, 51, 234); // Purple accent
+          }
           doc.rect(margin, currentY, 3.5, 54, 'F');
 
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10.5);
           doc.setTextColor(15, 23, 42);
           doc.text('1. CUSTOMER PROFILE & CONTACT DOSSIER', margin + 7, currentY + 7);
+
+          // Status Badge on Top-Right of Section 1
+          if (isDelivered) {
+            doc.setFillColor(22, 163, 74); // Green
+            doc.roundedRect(pageWidth - margin - 46, currentY + 3.5, 42, 6, 1.5, 1.5, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(6.8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('STATUS: DELIVERED', pageWidth - margin - 25, currentY + 7.6, { align: 'center' });
+          } else if (isShipped) {
+            doc.setFillColor(37, 99, 235); // Blue
+            doc.roundedRect(pageWidth - margin - 44, currentY + 3.5, 40, 6, 1.5, 1.5, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(6.8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('STATUS: SHIPPED', pageWidth - margin - 24, currentY + 7.6, { align: 'center' });
+          } else if (isProcessing) {
+            doc.setFillColor(202, 138, 4); // Amber
+            doc.roundedRect(pageWidth - margin - 46, currentY + 3.5, 42, 6, 1.5, 1.5, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(6.8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('STATUS: PROCESSING', pageWidth - margin - 25, currentY + 7.6, { align: 'center' });
+          } else {
+            doc.setFillColor(217, 119, 6); // Orange
+            doc.roundedRect(pageWidth - margin - 42, currentY + 3.5, 38, 6, 1.5, 1.5, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(6.8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('STATUS: PENDING', pageWidth - margin - 23, currentY + 7.6, { align: 'center' });
+          }
 
           doc.setFontSize(8.5);
           
@@ -5392,13 +5440,20 @@
           
           let infoY = currentY + 14;
           
-          // Customer Name
+          // Customer Name (explicitly updated with [DELIVERED] when delivered)
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(71, 85, 105);
           doc.text('Customer Name:', col1X, infoY);
+          
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(15, 23, 42);
-          doc.text(String(order.customerName || 'Guest Customer'), col1X + 28, infoY);
+          const rawCustName = String(order.customerName || 'Guest Customer');
+          if (isDelivered) {
+            doc.setTextColor(22, 163, 74); // Green text
+            doc.text(`${rawCustName} [DELIVERED]`, col1X + 28, infoY);
+          } else {
+            doc.setTextColor(15, 23, 42);
+            doc.text(`${rawCustName} [${currentStatus.toUpperCase()}]`, col1X + 28, infoY);
+          }
 
           // Phone
           infoY += 7;
@@ -5455,7 +5510,11 @@
           doc.roundedRect(margin, currentY, contentWidth, 38, 3, 3, 'FD');
 
           // Left accent bar
-          doc.setFillColor(59, 130, 246); // Blue accent
+          if (isDelivered) {
+            doc.setFillColor(22, 163, 74);
+          } else {
+            doc.setFillColor(59, 130, 246); // Blue accent
+          }
           doc.rect(margin, currentY, 3.5, 38, 'F');
 
           doc.setFont('helvetica', 'bold');
@@ -5470,11 +5529,19 @@
           doc.setTextColor(71, 85, 105);
           doc.text('Order Status:', col1X, finY);
           doc.setFont('helvetica', 'bold');
-          const statusVal = order.status || 'Pending';
-          if (statusVal === 'Delivered') doc.setTextColor(22, 163, 74);
-          else if (statusVal === 'Shipped') doc.setTextColor(37, 99, 235);
-          else doc.setTextColor(217, 119, 6);
-          doc.text(statusVal.toUpperCase(), col1X + 28, finY);
+          if (isDelivered) {
+            doc.setTextColor(22, 163, 74);
+            doc.text('DELIVERED (ORDER COMPLETED & HANDED OVER)', col1X + 28, finY);
+          } else if (isShipped) {
+            doc.setTextColor(37, 99, 235);
+            doc.text('SHIPPED (IN TRANSIT WITH COURIER)', col1X + 28, finY);
+          } else if (isProcessing) {
+            doc.setTextColor(202, 138, 4);
+            doc.text('PROCESSING (PACKING IN STORE)', col1X + 28, finY);
+          } else {
+            doc.setTextColor(217, 119, 6);
+            doc.text('PENDING CONFIRMATION', col1X + 28, finY);
+          }
 
           // Payment Method
           finY += 7;
@@ -5582,7 +5649,13 @@
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(7.5);
           doc.setTextColor(100, 116, 139);
-          doc.text('Rider Instructions: Verify customer phone number before delivery. Inspect package upon handover.', margin + 7, currentY + 13);
+          if (isDelivered) {
+            doc.setTextColor(22, 163, 74);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Delivery Fulfilled: Package handed over to customer ${rawCustName}. Confirmation registered in system.`, margin + 7, currentY + 13);
+          } else {
+            doc.text('Rider Instructions: Verify customer phone number before delivery. Inspect package upon handover.', margin + 7, currentY + 13);
+          }
 
           // Signatures
           const sigY = currentY + 28;
@@ -5602,7 +5675,7 @@
           doc.setFont('helvetica', 'bold');
           doc.text('Customer Receiver Signature', margin + 105, sigY + 5);
           doc.setFont('helvetica', 'normal');
-          doc.text('Date: _______________', margin + 105, sigY + 9);
+          doc.text(isDelivered ? 'Status: Received & Verified' : 'Date: _______________', margin + 105, sigY + 9);
 
           // FOOTER
           doc.setFillColor(241, 245, 249);
@@ -5613,18 +5686,19 @@
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(7.5);
           doc.setTextColor(100, 116, 139);
-          doc.text('Zozo Nepal E-Commerce • Kathmandu, Nepal • Phone/WhatsApp: +977 9766706246 • Email: zozonepal5@gmail.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
-          doc.text('Confidential Customer Document • Generated via Zozo Nepal Master Control Hub', pageWidth / 2, pageHeight - 4, { align: 'center' });
+          doc.text('Zozo Nepal E-Commerce | Kathmandu, Nepal | Phone/WhatsApp: +977 9766706246 | Email: zozonepal5@gmail.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
+          doc.text('Confidential Customer Document | Generated via Zozo Nepal Master Control Hub', pageWidth / 2, pageHeight - 4, { align: 'center' });
 
           // File name
           const safeCustomer = (order.customerName || 'Customer').replace(/[^a-zA-Z0-9]/g, '_');
           const safeId = (order.id || 'order').replace(/[^a-zA-Z0-9]/g, '_');
-          const fileName = `Zozo_Customer_Detail_${safeCustomer}_${safeId}.pdf`;
+          const statusSlug = isDelivered ? 'DELIVERED_' : '';
+          const fileName = `Zozo_${statusSlug}Customer_Detail_${safeCustomer}_${safeId}.pdf`;
 
           doc.save(fileName);
 
           if (window.showToastNotification) {
-            window.showToastNotification(`📥 Customer PDF downloaded: ${fileName}`);
+            window.showToastNotification(`Customer PDF downloaded: ${fileName}`);
           }
         } catch (err) {
           console.error("Failed to generate PDF:", err);
@@ -5632,7 +5706,7 @@
         }
       };
 
-      // Export Master Manifest of all customer orders
+      // Export Master Manifest of all customer orders (Landscape A4, Zero Emoji Corruption, Explicit [DELIVERED] status)
       window.downloadAllCustomersReportPdf = function() {
         if (!window.jspdf || !window.jspdf.jsPDF) {
           alert("PDF library is still initializing. Please check your internet connection and try again.");
@@ -5694,7 +5768,7 @@
           doc.setTextColor(255, 255, 255);
           doc.text(`TOTAL VALUE: Rs. ${totalRevenue.toLocaleString()} NPR`, pageWidth - margin, 14, { align: 'right' });
 
-          // Summary Metric Bar
+          // Summary Metric Bar (Zero emojis to guarantee pure ASCII rendering without glyph corruption)
           let currentY = 28;
           doc.setFillColor(248, 250, 252);
           doc.setDrawColor(203, 213, 225);
@@ -5702,13 +5776,30 @@
 
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8);
+          
+          // Total Orders
           doc.setTextColor(71, 85, 105);
-          doc.text(`📦 Orders: ${totalOrders}`, margin + 4, currentY + 7.5);
-          doc.text(`⏳ Pending: ${pendingCount}`, margin + 40, currentY + 7.5);
-          doc.text(`⚙️ Processing: ${processingCount}`, margin + 85, currentY + 7.5);
-          doc.text(`🚚 Shipped: ${shippedCount}`, margin + 135, currentY + 7.5);
-          doc.text(`✅ Delivered: ${deliveredCount}`, margin + 180, currentY + 7.5);
-          doc.text(`💰 Total Revenue: Rs. ${totalRevenue.toLocaleString()} NPR`, margin + 225, currentY + 7.5);
+          doc.text(`Orders: ${totalOrders}`, margin + 6, currentY + 7.5);
+          
+          // Pending
+          doc.setTextColor(217, 119, 6);
+          doc.text(`Pending: ${pendingCount}`, margin + 42, currentY + 7.5);
+          
+          // Processing
+          doc.setTextColor(202, 138, 4);
+          doc.text(`Processing: ${processingCount}`, margin + 84, currentY + 7.5);
+          
+          // Shipped
+          doc.setTextColor(37, 99, 235);
+          doc.text(`Shipped: ${shippedCount}`, margin + 130, currentY + 7.5);
+          
+          // Delivered
+          doc.setTextColor(22, 163, 74);
+          doc.text(`Delivered: ${deliveredCount}`, margin + 172, currentY + 7.5);
+          
+          // Total Revenue
+          doc.setTextColor(126, 34, 206);
+          doc.text(`Total Revenue: Rs. ${totalRevenue.toLocaleString()} NPR`, margin + 218, currentY + 7.5);
 
           currentY += 16;
 
@@ -5723,13 +5814,13 @@
             doc.setTextColor(15, 23, 42);
 
             doc.text('#', margin + 3, y + 5.5);
-            doc.text('CUSTOMER NAME', margin + 10, y + 5.5);
-            doc.text('PHONE NUMBER', margin + 54, y + 5.5);
-            doc.text('DELIVERY LOCATION', margin + 86, y + 5.5);
-            doc.text('ORDERED ITEMS', margin + 146, y + 5.5);
-            doc.text('AMOUNT', margin + 222, y + 5.5);
+            doc.text('CUSTOMER NAME & STATUS', margin + 10, y + 5.5);
+            doc.text('PHONE NUMBER', margin + 64, y + 5.5);
+            doc.text('DELIVERY LOCATION', margin + 96, y + 5.5);
+            doc.text('ORDERED ITEMS', margin + 152, y + 5.5);
+            doc.text('AMOUNT', margin + 224, y + 5.5);
             doc.text('PAYMENT', margin + 248, y + 5.5);
-            doc.text('STATUS', margin + 270, y + 5.5);
+            doc.text('STATUS', margin + 268, y + 5.5);
           }
 
           drawTableHeader(currentY);
@@ -5743,56 +5834,90 @@
               currentY += 8;
             }
 
-            const rowHeight = 9;
+            const isOrderDelivered = (order.status || '').toLowerCase() === 'delivered';
+            const rowHeight = 9.5;
             doc.setFillColor(index % 2 === 0 ? 255 : 248, index % 2 === 0 ? 255 : 250, index % 2 === 0 ? 255 : 252);
             doc.setDrawColor(226, 232, 240);
             doc.rect(margin, currentY, contentWidth, rowHeight, 'FD');
 
+            // #
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(7);
             doc.setTextColor(71, 85, 105);
-            doc.text(String(index + 1), margin + 3, currentY + 6);
+            doc.text(String(index + 1), margin + 3, currentY + 6.2);
 
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(15, 23, 42);
-            const nameText = (order.customerName || 'Guest').substring(0, 22);
-            doc.text(nameText, margin + 10, currentY + 6);
+            // Customer Name with explicit [DELIVERED] status
+            const baseName = (order.customerName || 'Guest Customer').trim();
+            const cleanName = baseName.length > 18 ? baseName.substring(0, 18) + '..' : baseName;
+            
+            if (isOrderDelivered) {
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(15, 23, 42);
+              doc.text(cleanName, margin + 10, currentY + 6.2);
+              
+              // Green DELIVERED text tag right next to the customer name
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(22, 163, 74);
+              doc.text('[DELIVERED]', margin + 10 + Math.min(cleanName.length * 2.2 + 2, 34), currentY + 6.2);
+            } else {
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(15, 23, 42);
+              doc.text(cleanName, margin + 10, currentY + 6.2);
+              
+              const statusTag = `[${(order.status || 'Pending').toUpperCase()}]`;
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(100, 116, 139);
+              doc.text(statusTag, margin + 10 + Math.min(cleanName.length * 2.2 + 2, 34), currentY + 6.2);
+            }
 
+            // Phone
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(30, 41, 59);
-            doc.text(String(order.customerPhone || 'N/A'), margin + 54, currentY + 6);
+            doc.text(String(order.customerPhone || 'N/A'), margin + 64, currentY + 6.2);
 
-            const locText = (order.deliveryLocation || 'Nepal').substring(0, 28);
-            doc.text(locText, margin + 86, currentY + 6);
+            // Location
+            const locText = (order.deliveryLocation || 'Nepal').substring(0, 26);
+            doc.text(locText, margin + 96, currentY + 6.2);
 
-            const itemsText = (order.productName || 'Items').substring(0, 36);
-            doc.text(itemsText, margin + 146, currentY + 6);
+            // Items
+            const itemsText = (order.productName || 'Items').substring(0, 34);
+            doc.text(itemsText, margin + 152, currentY + 6.2);
 
+            // Amount
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(126, 34, 206);
-            doc.text(`Rs. ${(order.amountPaid || 0).toLocaleString()}`, margin + 222, currentY + 6);
+            doc.text(`Rs. ${(order.amountPaid || 0).toLocaleString()}`, margin + 224, currentY + 6.2);
 
+            // Payment Method
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(71, 85, 105);
             const payText = (order.paymentMethod || 'COD').substring(0, 10);
-            doc.text(payText, margin + 248, currentY + 6);
+            doc.text(payText, margin + 248, currentY + 6.2);
 
+            // Status Column
             const st = order.status || 'Pending';
-            if (st === 'Delivered') doc.setTextColor(22, 163, 74);
-            else if (st === 'Shipped') doc.setTextColor(37, 99, 235);
+            if (st.toLowerCase() === 'delivered') doc.setTextColor(22, 163, 74);
+            else if (st.toLowerCase() === 'shipped') doc.setTextColor(37, 99, 235);
+            else if (st.toLowerCase() === 'processing') doc.setTextColor(202, 138, 4);
             else doc.setTextColor(217, 119, 6);
             doc.setFont('helvetica', 'bold');
-            doc.text(st, margin + 270, currentY + 6);
+            doc.text(st.toUpperCase(), margin + 268, currentY + 6.2);
 
             currentY += rowHeight;
           });
+
+          // Footer
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`Master Customer Orders Manifest | Zozo Nepal Logistics Control | Total Orders: ${totalOrders} | Revenue: Rs. ${totalRevenue.toLocaleString()} NPR`, pageWidth / 2, pageHeight - 5, { align: 'center' });
 
           const dateStr = new Date().toISOString().slice(0, 10);
           const fileName = `Zozo_Customer_Orders_Manifest_${dateStr}.pdf`;
           doc.save(fileName);
 
           if (window.showToastNotification) {
-            window.showToastNotification(`📥 Customer Manifest exported: ${fileName}`);
+            window.showToastNotification(`Customer Manifest exported: ${fileName}`);
           }
         } catch (err) {
           console.error("Failed to export customers PDF manifest:", err);
@@ -5816,13 +5941,38 @@
 
         if (!modal || !body) return;
 
-        title.innerText = order.customerName || 'Customer Dossier';
+        const currentStatus = order.status || 'Pending';
+        const isDelivered = currentStatus.toLowerCase() === 'delivered';
+
+        title.innerHTML = `
+          <span>${order.customerName || 'Customer Dossier'}</span>
+          ${isDelivered ? `<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:12px; margin-left:8px;">✓ DELIVERED</span>` : `<span style="background:#f1f5f9; color:#475569; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:8px;">${currentStatus.toUpperCase()}</span>`}
+        `;
+        
         sub.innerText = `Order ID: #${order.id || 'N/A'} • Placed: ${order.timestamp ? (typeof order.timestamp.toDate === 'function' ? order.timestamp.toDate().toLocaleString() : new Date(order.timestamp).toLocaleString()) : 'N/A'}`;
 
         const cleanPhone = (order.customerPhone || '').replace(/[^0-9]/g, '');
         const waPhone = cleanPhone.startsWith('977') ? cleanPhone : (cleanPhone.length === 10 ? '977' + cleanPhone : cleanPhone);
 
+        const statuses = ["Pending", "Processing", "Shipped", "Delivered"];
+        const modalSelectOptions = statuses.map(st => `
+          <option value="${st}" ${st === currentStatus ? 'selected' : ''}>${st}</option>
+        `).join('');
+
         body.innerHTML = `
+          <!-- Quick Status Changer Bar inside Modal -->
+          <div style="background:#ede9fe; border:1px solid #ddd6fe; border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <strong style="font-size:0.85rem; color:#5b21b6;">Live Order Status:</strong>
+              <select class="form-control" style="width:135px; padding:4px 8px; font-size:0.85rem; border-color:#c4b5fd; font-weight:700; color:#5b21b6; background:#fff; height:32px;" onchange="updateOrderStatus('${order.id}', this.value, true)">
+                ${modalSelectOptions}
+              </select>
+            </div>
+            <div style="font-size:0.75rem; color:#6d28d9; font-weight:600;">
+              ⚡ Updating status immediately synchronizes the downloadable PDF.
+            </div>
+          </div>
+
           <!-- Customer Profile Section -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
@@ -5848,6 +5998,7 @@
               <div>
                 <span style="color:#64748b; font-size:0.75rem; display:block;">Full Name:</span>
                 <strong style="color:#0f172a; font-size:0.95rem;">${order.customerName || 'Guest Customer'}</strong>
+                ${isDelivered ? `<span style="display:block; color:#16a34a; font-size:0.75rem; font-weight:800; margin-top:2px;">[DELIVERED - FULFILLED]</span>` : ''}
               </div>
               <div>
                 <span style="color:#64748b; font-size:0.75rem; display:block;">Phone Number:</span>
@@ -5883,7 +6034,7 @@
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
               <span style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#7c3aed; letter-spacing:0.05em;">Order & Financial Breakdown</span>
-              <span style="font-size:0.8rem; font-weight:800; color:#15803d; background:#dcfce7; padding:3px 8px; border-radius:6px;">Status: ${(order.status || 'Pending').toUpperCase()}</span>
+              <span style="font-size:0.8rem; font-weight:800; color:${isDelivered ? '#15803d' : '#4338ca'}; background:${isDelivered ? '#dcfce7' : '#e0e7ff'}; padding:3px 8px; border-radius:6px;">Status: ${(order.status || 'Pending').toUpperCase()}</span>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.85rem;">
@@ -5941,6 +6092,7 @@
         const order = allOrdersCache.find(o => o.id === orderId);
         if (!order) return;
         
+        const isDelivered = (order.status || '').toLowerCase() === 'delivered';
         const printWin = window.open('', '_blank', 'width=800,height=600');
         if (!printWin) {
           alert("Pop-up blocked. Downloading PDF instead.");
@@ -5963,6 +6115,7 @@
               .items { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #fff; font-weight: bold; margin-top: 6px; }
               .signatures { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
               .sig-line { width: 220px; border-top: 1px solid #000; padding-top: 6px; font-size: 12px; text-align: center; }
+              .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-weight: bold; font-size: 11px; background: ${isDelivered ? '#dcfce7' : '#ede9fe'}; color: ${isDelivered ? '#15803d' : '#6d28d9'}; }
               @media print {
                 body { padding: 0; }
                 button { display: none; }
@@ -5972,13 +6125,13 @@
           <body>
             <div class="header">
               <h1>ZOZO NEPAL - DELIVERY DISPATCH SLIP</h1>
-              <div>Order ID: #${order.id || 'N/A'} • Status: ${(order.status || 'Pending').toUpperCase()}</div>
+              <div>Order ID: #${order.id || 'N/A'} • Status: <span class="badge">${(order.status || 'Pending').toUpperCase()}${isDelivered ? ' (DELIVERED)' : ''}</span></div>
             </div>
 
             <div class="section">
               <h2>Customer Contact & Destination</h2>
               <div class="grid">
-                <div><strong>Customer Name:</strong> ${order.customerName || 'Guest'}</div>
+                <div><strong>Customer Name:</strong> ${order.customerName || 'Guest'} ${isDelivered ? '<strong style="color:#15803d;">[DELIVERED]</strong>' : ''}</div>
                 <div><strong>Phone Number:</strong> ${order.customerPhone || 'N/A'}</div>
                 <div><strong>Email:</strong> ${order.customerEmail || 'N/A'}</div>
                 <div><strong>Delivery Address:</strong> ${order.deliveryLocation || 'Nepal'}</div>
@@ -5994,7 +6147,7 @@
 
             <div class="signatures">
               <div class="sig-line">Courier Dispatch Agent Signature</div>
-              <div class="sig-line">Customer Receiver Signature</div>
+              <div class="sig-line">${isDelivered ? 'Customer Receiver (Delivered)' : 'Customer Receiver Signature'}</div>
             </div>
 
             <script>
@@ -6008,10 +6161,27 @@
         printWin.document.close();
       };
 
-      window.updateOrderStatus = async (docId, newStatus) => {
+      window.updateOrderStatus = async (docId, newStatus, isFromModal = false) => {
         try {
           await updateDoc(doc(db, "transactions", docId), { status: newStatus });
-          alert(`Order shipment status updated to "${newStatus}"!`);
+          
+          // Immediately update in-memory cache so subsequent PDF downloads or modal views reflect this change
+          const cached = allOrdersCache.find(o => o.id === docId);
+          if (cached) {
+            cached.status = newStatus;
+          }
+
+          renderFilteredOrders();
+
+          if (isFromModal) {
+            openCustomerDetailModal(docId);
+          }
+
+          if (window.showToastNotification) {
+            window.showToastNotification(`Order shipment status updated to "${newStatus}"!`);
+          } else {
+            alert(`Order shipment status updated to "${newStatus}"!`);
+          }
 
           if (window.ZozoPushManager) {
             window.ZozoPushManager.sendOrderUpdateNotification(
@@ -6024,7 +6194,8 @@
 
           fetchCustomerOrders();
         } catch (err) {
-          alert("Could not adjust status.");
+          console.error("Could not adjust status:", err);
+          alert("Could not adjust status: " + err.message);
         }
       };
 

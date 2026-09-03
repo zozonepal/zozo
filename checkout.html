@@ -418,6 +418,40 @@
       justify-content: center;
       gap: 8px;
       margin-top: 16px;
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+
+    @media (max-width: 640px) {
+      .checkout-container {
+        padding: 10px 8px;
+      }
+      .checkout-card, .summary-card {
+        padding: 16px 12px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+      .checkout-title {
+        font-size: 1.15rem;
+        margin-bottom: 14px;
+      }
+      .details-form-input {
+        font-size: 16px !important; /* Prevents auto zoom in iOS */
+        min-height: 44px;
+      }
+      .payment-options-row {
+        grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+        gap: 6px;
+      }
+      .method-selector-card {
+        padding: 10px 4px;
+        font-size: 0.78rem;
+        min-height: 46px;
+      }
+      .success-card {
+        padding: 20px 14px;
+        border-radius: 14px;
+      }
     }
     .btn-blue {
       background: var(--nepal-blue);

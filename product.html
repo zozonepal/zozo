@@ -1040,10 +1040,31 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    @media (max-width: 640px) {
+      #detailProductName {
+        font-size: 1.45rem !important;
+      }
+      .detail-action-btn {
+        min-height: 44px;
+      }
+      .qty-btn {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.3rem !important;
+      }
+      .detail-thumbnail-item {
+        width: 54px !important;
+        height: 54px !important;
+        min-width: 54px !important;
+      }
+    }
     @media (max-width: 380px) {
       .detail-action-btn {
         padding: 10px 12px;
         font-size: 0.85rem;
+      }
+      #detailProductName {
+        font-size: 1.25rem !important;
       }
     }
 
@@ -2008,12 +2029,19 @@
 
       // Render thumbnails list
       const thumbsContainer = document.getElementById('detailThumbnailsContainer');
+      const imagesList = Array.isArray(p.images) && p.images.length > 0 ? p.images : [activeImage];
+      window.detailGalleryList = imagesList;
+      window.detailGalleryIndex = imagesList.indexOf(activeImage);
+      if (window.detailGalleryIndex === -1) window.detailGalleryIndex = 0;
+
       if (thumbsContainer) {
-        const imagesList = Array.isArray(p.images) && p.images.length > 0 ? p.images : [activeImage];
         thumbsContainer.innerHTML = imagesList.map((imgSrc, idx) => `
-          <img class="detail-thumbnail-item ${idx === 0 ? 'active-thumb' : ''}" src="${imgSrc}" loading="lazy" decoding="async" width="60" height="60" onclick="changeDetailPageImage(this, '${imgSrc}')" onerror="this.onerror=null; this.src='zozonepal.png'">
+          <img class="detail-thumbnail-item ${idx === window.detailGalleryIndex ? 'active-thumb' : ''}" src="${imgSrc}" loading="lazy" decoding="async" width="60" height="60" onclick="changeDetailPageImage(this, '${imgSrc}')" onerror="this.onerror=null; this.src='zozonepal.png'">
         `).join('');
       }
+
+      // Initialize swipe gestures for product page
+      initProductDetailPageSwipe();
 
       // Populate Color swatches
       const colorsContainer = document.getElementById('detailColorsContainer');
@@ -2061,10 +2089,74 @@
       populateDetailPageReviews(p.id, p.name);
     }
 
+    // --- SWIPE GESTURE CONTROLLER FOR PRODUCT DETAIL PAGE ---
+    function initProductDetailPageSwipe() {
+      const previewEl = document.getElementById('detailMainLargePreview');
+      if (!previewEl || !previewEl.parentElement || previewEl.parentElement.dataset.swipeInit === 'true') return;
+      const container = previewEl.parentElement;
+      container.dataset.swipeInit = 'true';
+      container.style.touchAction = 'pan-y';
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+      let isHorizontal = false;
+
+      container.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+        isHorizontal = false;
+      }, { passive: true });
+
+      container.addEventListener('touchmove', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        if (!isHorizontal && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+          isHorizontal = Math.abs(dx) > Math.abs(dy);
+        }
+        if (isHorizontal && e.cancelable) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      container.addEventListener('touchend', (e) => {
+        if (!isHorizontal || !window.detailGalleryList || window.detailGalleryList.length <= 1) return;
+        const touch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+        if (!touch) return;
+        const dx = touch.clientX - touchStartX;
+        const duration = Date.now() - touchStartTime;
+
+        if (Math.abs(dx) > 40 || (duration < 300 && Math.abs(dx) > 25)) {
+          const total = window.detailGalleryList.length;
+          if (dx < 0) {
+            // Swipe left -> Next photo
+            window.detailGalleryIndex = (window.detailGalleryIndex + 1) % total;
+          } else {
+            // Swipe right -> Prev photo
+            window.detailGalleryIndex = (window.detailGalleryIndex - 1 + total) % total;
+          }
+          const thumbs = document.querySelectorAll('.detail-thumbnail-item');
+          const targetThumb = thumbs[window.detailGalleryIndex];
+          const targetSrc = window.detailGalleryList[window.detailGalleryIndex];
+          if (targetThumb && targetSrc) {
+            window.changeDetailPageImage(targetThumb, targetSrc);
+            targetThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          }
+        }
+      }, { passive: true });
+    }
+
     // Thumbnails control with smooth GSAP transition
     window.changeDetailPageImage = function(elm, src) {
       document.querySelectorAll('.detail-thumbnail-item').forEach(t => t.classList.remove('active-thumb'));
-      elm.classList.add('active-thumb');
+      if (elm) elm.classList.add('active-thumb');
+      if (window.detailGalleryList) {
+        const idx = window.detailGalleryList.indexOf(src);
+        if (idx !== -1) window.detailGalleryIndex = idx;
+      }
       const previewEl = document.getElementById('detailMainLargePreview');
       if (previewEl) {
         if (window.gsap) {

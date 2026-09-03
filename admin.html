@@ -1028,9 +1028,42 @@
       }
 
       /* Responsive Table & Code Elements */
-      table, pre, code {
+      table {
+        display: block;
+        width: 100%;
         max-width: 100%;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      pre, code {
+        max-width: 100%;
+        overflow-x: auto;
+        word-break: break-word;
+      }
+
+      /* Mobile Touch-Friendly Inputs & Selects */
+      input, select, textarea, .form-control {
+        font-size: 15px !important; /* Prevents unwanted iOS zoom */
+        min-height: 40px;
+        box-sizing: border-box;
+      }
+
+      /* Mobile Modal Adaptations */
+      .customer-detail-modal-card {
+        width: 98% !important;
+        max-width: 98% !important;
+        max-height: 92vh !important;
+        border-radius: 12px !important;
+      }
+
+      .customer-detail-modal-backdrop {
+        padding: 8px !important;
+      }
+
+      #cdmModalBody {
+        padding: 14px 10px !important;
+        gap: 12px !important;
       }
     }
 

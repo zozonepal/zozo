@@ -6,6 +6,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+  },
   plugins: [
     {
       name: 'html-ext-fallback-and-cache',
@@ -47,6 +51,7 @@ export default defineConfig({
         product: path.resolve(__dirname, 'product.html'),
         checkout: path.resolve(__dirname, 'checkout.html'),
         admin: path.resolve(__dirname, 'admin.html'),
+        login: path.resolve(__dirname, 'login.html'),
       },
       output: {
         manualChunks(id) {

@@ -5327,9 +5327,69 @@
         renderFilteredOrders();
       };
 
+      // Helper to safely load and convert receipt screenshot for jsPDF
+      function loadReceiptImageData(src) {
+        return new Promise((resolve) => {
+          if (!src || typeof src !== 'string' || !src.trim()) {
+            return resolve(null);
+          }
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            try {
+              const naturalW = img.naturalWidth || img.width || 400;
+              const naturalH = img.naturalHeight || img.height || 600;
+              const maxDim = 1200;
+              let targetW = naturalW;
+              let targetH = naturalH;
+              if (targetW > maxDim || targetH > maxDim) {
+                if (targetW > targetH) {
+                  targetH = Math.round((targetH * maxDim) / targetW);
+                  targetW = maxDim;
+                } else {
+                  targetW = Math.round((targetW * maxDim) / targetH);
+                  targetH = maxDim;
+                }
+              }
+              const canvas = document.createElement("canvas");
+              canvas.width = targetW;
+              canvas.height = targetH;
+              const ctx = canvas.getContext("2d");
+              ctx.fillStyle = "#ffffff";
+              ctx.fillRect(0, 0, targetW, targetH);
+              ctx.drawImage(img, 0, 0, targetW, targetH);
+              const dataUrl = canvas.toDataURL("image/jpeg", 0.90);
+              resolve({
+                dataUrl,
+                width: targetW,
+                height: targetH,
+                aspectRatio: targetW / targetH
+              });
+            } catch (err) {
+              console.warn("Canvas export fallback:", err);
+              if (src.startsWith("data:image/")) {
+                resolve({
+                  dataUrl: src,
+                  width: img.naturalWidth || 400,
+                  height: img.naturalHeight || 600,
+                  aspectRatio: (img.naturalWidth || 400) / (img.naturalHeight || 600)
+                });
+              } else {
+                resolve(null);
+              }
+            }
+          };
+          img.onerror = () => {
+            console.warn("Image load failed for PDF:", src.slice(0, 60));
+            resolve(null);
+          };
+          img.src = src;
+        });
+      }
+
       // --- CUSTOMER DETAILS PDF GENERATION & MODAL CONTROLS ---
 
-      window.downloadCustomerDetailPdf = function(orderId) {
+      window.downloadCustomerDetailPdf = async function(orderId) {
         if (!window.jspdf || !window.jspdf.jsPDF) {
           alert("PDF library is still initializing. Please check your internet connection and try again.");
           return;
@@ -5339,6 +5399,10 @@
         if (!order) {
           alert("Order record not found in cache!");
           return;
+        }
+
+        if (window.showToastNotification) {
+          window.showToastNotification("Generating order confirmation PDF with payment receipt screenshot...");
         }
 
         try {
@@ -5548,6 +5612,7 @@
           doc.text('2. ORDER STATUS & FINANCIAL SETTLEMENT', margin + 7, currentY + 7);
 
           let finY = currentY + 14;
+
           // Status
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8.5);
@@ -5657,17 +5722,177 @@
             currentY += itemRowHeight;
           });
 
-          // FOOTER
-          doc.setFillColor(241, 245, 249);
-          doc.rect(0, pageHeight - 14, pageWidth, 14, 'F');
-          doc.setDrawColor(203, 213, 225);
-          doc.line(0, pageHeight - 14, pageWidth, pageHeight - 14);
+          // SECTION 4: PAYMENT CONFIRMATION & RECEIPT SCREENSHOT PROOF
+          currentY += 6;
 
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(7.5);
-          doc.setTextColor(100, 116, 139);
-          doc.text('Zozo Nepal E-Commerce | Kathmandu, Nepal | Phone/WhatsApp: +977 9766706246 | Email: zozonepal5@gmail.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
-          doc.text('Confidential Customer Document | Generated via Zozo Nepal Master Control Hub', pageWidth / 2, pageHeight - 4, { align: 'center' });
+          // Load screenshot proof if present
+          let receiptImgData = null;
+          if (order.screenshotProof) {
+            try {
+              receiptImgData = await loadReceiptImageData(order.screenshotProof);
+            } catch (loadErr) {
+              console.warn("Could not load receipt image for PDF:", loadErr);
+            }
+          }
+
+          if (receiptImgData && receiptImgData.dataUrl) {
+            // Check if Section 4 fits on the current page or needs a new page
+            const minRequiredSpace = 85; // mm
+            const spaceRemaining = pageHeight - 20 - currentY;
+            if (spaceRemaining < minRequiredSpace) {
+              doc.addPage();
+              // Page 2 header banner
+              doc.setFillColor(126, 34, 206);
+              doc.rect(0, 0, pageWidth, 16, 'F');
+              doc.setFillColor(168, 85, 247);
+              doc.rect(0, 16, pageWidth, 1.5, 'F');
+              doc.setTextColor(255, 255, 255);
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(10.5);
+              doc.text('ZOZO NEPAL - PAYMENT CONFIRMATION & RECEIPT PROOF', margin, 11);
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8);
+              doc.setTextColor(233, 213, 255);
+              doc.text(`Order #${(order.id || 'N/A').toUpperCase()} | Customer: ${order.customerName || 'Guest'}`, pageWidth - margin, 11, { align: 'right' });
+              currentY = 24;
+            }
+
+            // Calculate scaled image size preserving aspect ratio
+            const maxAvailableImgH = Math.min(135, (pageHeight - 22) - (currentY + 28));
+            let renderH = Math.max(55, maxAvailableImgH);
+            let renderW = renderH * receiptImgData.aspectRatio;
+            const maxAllowedW = 120; // mm
+            if (renderW > maxAllowedW) {
+              renderW = maxAllowedW;
+              renderH = renderW / receiptImgData.aspectRatio;
+            }
+
+            const cardH = 24 + renderH + 8;
+
+            // Card background
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(203, 213, 225);
+            doc.roundedRect(margin, currentY, contentWidth, cardH, 3, 3, 'FD');
+
+            // Left accent bar
+            doc.setFillColor(126, 34, 206); // Purple
+            doc.rect(margin, currentY, 3.5, cardH, 'F');
+
+            // Section Title
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10.5);
+            doc.setTextColor(15, 23, 42);
+            doc.text('4. PAYMENT VERIFICATION & RECEIPT SCREENSHOT PROOF', margin + 7, currentY + 7);
+
+            // Verification Badge
+            doc.setFillColor(22, 163, 74); // Green
+            doc.roundedRect(pageWidth - margin - 58, currentY + 3.5, 54, 6, 1.5, 1.5, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(6.8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('VERIFIED PAYMENT SLIP ATTACHED', pageWidth - margin - 31, currentY + 7.6, { align: 'center' });
+
+            // Metadata row
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8.2);
+            doc.setTextColor(71, 85, 105);
+            doc.text('Payment Channel:', margin + 7, currentY + 14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text(String(order.paymentMethod || 'Safe Mobile Payment'), margin + 35, currentY + 14);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(71, 85, 105);
+            doc.text('Txn Reference ID:', margin + 85, currentY + 14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(126, 34, 206);
+            doc.text(String(order.transactionId || 'N/A'), margin + 115, currentY + 14);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(71, 85, 105);
+            doc.text('Settled Amount:', margin + 7, currentY + 20);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(22, 163, 74);
+            doc.text(`Rs. ${(order.amountPaid || 0).toLocaleString()} NPR`, margin + 35, currentY + 20);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100, 116, 139);
+            doc.text('Official proof screenshot provided by customer to confirm order dispatch:', margin + 85, currentY + 20);
+
+            // Centered Image Box
+            const imgX = margin + (contentWidth - renderW) / 2;
+            const imgY = currentY + 24;
+
+            // Frame container behind image
+            doc.setFillColor(255, 255, 255);
+            doc.setDrawColor(203, 213, 225);
+            doc.roundedRect(imgX - 1.5, imgY - 1.5, renderW + 3, renderH + 3, 1.5, 1.5, 'FD');
+
+            // Draw image
+            doc.addImage(receiptImgData.dataUrl, 'JPEG', imgX, imgY, renderW, renderH);
+
+            // Caption
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(7);
+            doc.setTextColor(100, 116, 139);
+            doc.text(`Payment Receipt Screenshot • Order #${(order.id || '').toUpperCase()} • Ref: ${order.transactionId || 'N/A'} • Zozo Nepal Confirmation`, pageWidth / 2, imgY + renderH + 4.5, { align: 'center' });
+
+            currentY += cardH;
+          } else {
+            // No screenshot or COD
+            const minRequiredSpace = 32; // mm
+            const spaceRemaining = pageHeight - 20 - currentY;
+            if (spaceRemaining < minRequiredSpace) {
+              doc.addPage();
+              currentY = 22;
+            }
+
+            const cardH = 26;
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(203, 213, 225);
+            doc.roundedRect(margin, currentY, contentWidth, cardH, 3, 3, 'FD');
+
+            doc.setFillColor(202, 138, 4); // Amber
+            doc.rect(margin, currentY, 3.5, cardH, 'F');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10.5);
+            doc.setTextColor(15, 23, 42);
+            doc.text('4. PAYMENT VERIFICATION RECORD', margin + 7, currentY + 7);
+
+            // Badge
+            doc.setFillColor(234, 179, 8);
+            doc.roundedRect(pageWidth - margin - 54, currentY + 3.5, 50, 6, 1.5, 1.5, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(6.8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NO SCREENSHOT ATTACHED', pageWidth - margin - 29, currentY + 7.6, { align: 'center' });
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.2);
+            doc.setTextColor(71, 85, 105);
+            doc.text(`Payment Channel: ${order.paymentMethod || 'Cash on Delivery (COD)'}  |  Txn Ref ID: ${order.transactionId || 'N/A'}  |  Amount: Rs. ${(order.amountPaid || 0).toLocaleString()} NPR`, margin + 7, currentY + 14);
+            doc.setTextColor(100, 116, 139);
+            doc.text('Note: No digital payment receipt screenshot was attached to this transaction. Confirm payment directly upon courier handover or verify Transaction Code against bank statement.', margin + 7, currentY + 20);
+
+            currentY += cardH;
+          }
+
+          // FOOTER (Rendered on ALL pages)
+          const totalPages = doc.getNumberOfPages();
+          for (let p = 1; p <= totalPages; p++) {
+            doc.setPage(p);
+            doc.setFillColor(241, 245, 249);
+            doc.rect(0, pageHeight - 14, pageWidth, 14, 'F');
+            doc.setDrawColor(203, 213, 225);
+            doc.line(0, pageHeight - 14, pageWidth, pageHeight - 14);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(100, 116, 139);
+            doc.text('Zozo Nepal E-Commerce | Kathmandu, Nepal | Phone/WhatsApp: +977 9766706246 | Email: zozonepal5@gmail.com', pageWidth / 2, pageHeight - 8, { align: 'center' });
+            doc.text(`Confidential Customer Document | Page ${p} of ${totalPages} | Generated via Zozo Nepal Master Control Hub`, pageWidth / 2, pageHeight - 4, { align: 'center' });
+          }
 
           // File name
           const safeCustomer = (order.customerName || 'Customer').replace(/[^a-zA-Z0-9]/g, '_');
@@ -5678,7 +5903,7 @@
           doc.save(fileName);
 
           if (window.showToastNotification) {
-            window.showToastNotification(`Customer PDF downloaded: ${fileName}`);
+            window.showToastNotification(`Customer PDF with payment receipt proof downloaded: ${fileName}`);
           }
         } catch (err) {
           console.error("Failed to generate PDF:", err);
@@ -6120,6 +6345,17 @@
               <h2>Ordered Items</h2>
               <div class="items">🛒 ${order.productName || 'Order items'}</div>
             </div>
+
+            ${order.screenshotProof ? `
+              <div class="section">
+                <h2>Payment Verification Screenshot Proof</h2>
+                <div style="text-align:center; padding:12px; background:#fff; border:1px solid #cbd5e1; border-radius:8px;">
+                  <img src="${order.screenshotProof}" style="max-width:320px; max-height:420px; border-radius:6px; border:1px solid #cbd5e1; box-shadow:0 2px 6px rgba(0,0,0,0.08); display:inline-block;">
+                  <div style="font-size:12px; font-weight:bold; color:#0f172a; margin-top:8px;">Transaction Ref: ${order.transactionId || 'N/A'} • ${order.paymentMethod || 'Safe Mobile Payment'} (Rs. ${(order.amountPaid || 0).toLocaleString()})</div>
+                  <div style="font-size:11px; color:#64748b; margin-top:2px;">Official Customer Uploaded Payment Proof for Order Confirmation</div>
+                </div>
+              </div>
+            ` : ''}
 
             <div class="signatures">
               <div class="sig-line">Courier Dispatch Agent Signature</div>

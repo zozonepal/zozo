@@ -777,6 +777,53 @@
     .btn-outline { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); }
     .btn-outline:hover { background: var(--frame-bg); }
 
+    /* --- ACTIVE-STATE TACTILE FEEDBACK --- */
+    :root {
+      -webkit-tap-highlight-color: rgba(147, 51, 234, 0.18);
+    }
+    button,
+    .btn,
+    .detail-action-btn,
+    .cart-nav-btn,
+    .native-share-badge-btn,
+    .detail-share-btn,
+    .qty-btn,
+    .drawer-nav-item,
+    .category-pill-btn,
+    .thumbnail-btn,
+    .action-btn,
+    .modal-close,
+    .nav-icon-btn,
+    .filter-pill,
+    .tab-btn {
+      touch-action: manipulation;
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), filter 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease !important;
+    }
+    button:active,
+    .btn:active,
+    .detail-action-btn:active,
+    .cart-nav-btn:active,
+    .native-share-badge-btn:active,
+    .detail-share-btn:active,
+    .drawer-nav-item:active,
+    .action-btn:active,
+    .tab-btn:active {
+      transform: scale(0.95) translateY(1px) !important;
+      filter: brightness(0.92) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+    }
+    .qty-btn:active,
+    .modal-close:active {
+      transform: scale(0.88) !important;
+      filter: brightness(0.9) !important;
+    }
+    .category-pill-btn:active {
+      transform: scale(0.92) translateY(1px) !important;
+      background-color: #f3e8ff !important;
+      border-color: var(--nepal-blue, #9333ea) !important;
+      color: var(--nepal-blue, #9333ea) !important;
+    }
+
     /* --- 5. MODALS --- */
     .modal-overlay {
       position: fixed;
@@ -1682,11 +1729,30 @@
     let systemCart = [];
     let globalProductsCatalog = [];
 
-    const nepalDeliveryRates = {
-      "Rupandehi": 50, "Kapilvastu": 100, "Nawalparasi": 100, "Palpa": 120, "Arghakhanchi": 130, "Gulmi": 130,
-      "Kathmandu": 150, "Lalitpur": 150, "Bhaktapur": 150, "Kaski": 150, "Chitwan": 140, "Banke": 160,
-      "Parsa": 160, "Morang": 180, "Dang": 150, "Jhapa": 220, "Sunsari": 200, "Surkhet": 200, "Kailali": 220
+    let nepalDeliveryRates = {
+      "Rupandehi": 100, "Kapilvastu": 150, "Nawalparasi": 150, "Palpa": 170, "Arghakhanchi": 180, "Gulmi": 180,
+      "Kathmandu": 200, "Lalitpur": 200, "Bhaktapur": 200, "Kaski": 200, "Chitwan": 190, "Banke": 210,
+      "Parsa": 210, "Morang": 230, "Dang": 200, "Jhapa": 270, "Sunsari": 250, "Surkhet": 250, "Kailali": 270
     };
+
+    // Live sync delivery rates from Firestore
+    async function listenToLiveDeliveryRatesProduct() {
+      try {
+        const snap = await getDoc(doc(db, "settings", "delivery_rates"));
+        if (snap.exists() && snap.data().rates) {
+          const loadedRates = snap.data().rates;
+          if (loadedRates.Rupandehi === 50) {
+            Object.keys(loadedRates).forEach(k => {
+              loadedRates[k] = (loadedRates[k] || 0) + 50;
+            });
+          }
+          nepalDeliveryRates = loadedRates;
+          if (typeof window.updateDetailPageDeliveryQuote === 'function') {
+            window.updateDetailPageDeliveryQuote();
+          }
+        }
+      } catch(e) {}
+    }
 
     // Parse product ID from query parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -2203,7 +2269,7 @@
       const selectElement = document.getElementById('detailDeliveryDistrictSelect');
       if (!selectElement) return;
       const dist = selectElement.value;
-      const rate = nepalDeliveryRates[dist] !== undefined ? nepalDeliveryRates[dist] : 150;
+      const rate = nepalDeliveryRates[dist] !== undefined ? nepalDeliveryRates[dist] : 200;
       const costBadge = document.getElementById('detailDeliveryCostBadge');
       if (costBadge) costBadge.innerText = "Rs. " + rate;
       const days = dist === "Rupandehi" ? "Tomorrow" : "2-3 working days";
@@ -3681,18 +3747,28 @@
               targetProductId = currentSelectedProduct.id;
             }
             
-            if (targetProductId) {
-              btn.innerText = `⭐ Review ${latestDelivered.productName.split('[')[0].trim() || 'Product'}`;
-              btn.onclick = () => {
-                window.location.href = `product.html?id=${targetProductId}`;
-              };
-            } else {
-              btn.innerText = `⭐ Review Product`;
-              btn.onclick = () => {
+            const prodLabel = (latestDelivered.productName || 'Product').split('[')[0].trim();
+            btn.innerText = `⭐ Rate & Review "${prodLabel}"`;
+            btn.onclick = () => {
+              if (currentSelectedProduct && (currentSelectedProduct.id === targetProductId || !targetProductId)) {
+                const reviewSection = document.getElementById('submitReviewForm') || document.getElementById('productDetailPageReviews');
+                if (reviewSection) {
+                  reviewSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  reviewSection.style.transition = 'all 0.4s ease';
+                  reviewSection.style.boxShadow = '0 0 0 4px #f59e0b, 0 10px 25px rgba(245, 158, 11, 0.2)';
+                  setTimeout(() => {
+                    reviewSection.style.boxShadow = '';
+                  }, 3000);
+                  const reviewInput = document.getElementById('revText');
+                  if (reviewInput) reviewInput.focus();
+                }
+              } else if (targetProductId) {
+                window.location.href = `product.html?id=${targetProductId}&openReview=1&orderId=${latestDelivered.id}`;
+              } else {
                 window.location.href = 'index.html#catalogSection';
                 banner.style.display = 'none';
-              };
-            }
+              }
+            };
           }
         }
       } catch (err) {
@@ -3727,6 +3803,23 @@
     loadInitialShoppingBag();
     listenToTargetProduct();
     listenToProductCatalog();
+    listenToLiveDeliveryRatesProduct();
+
+    // Auto open/scroll to review if requested via URL params
+    if (urlParams.get('openReview') === '1' || urlParams.get('reviewOrder')) {
+      setTimeout(() => {
+        const reviewForm = document.getElementById('submitReviewForm');
+        if (reviewForm) {
+          reviewForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          reviewForm.style.boxShadow = '0 0 0 4px #f59e0b, 0 10px 25px rgba(245, 158, 11, 0.2)';
+          const reviewInput = document.getElementById('revText');
+          if (reviewInput) reviewInput.focus();
+        }
+      }, 1200);
+    }
+
+    // Enable immediate CSS :active feedback on mobile devices (especially iOS WebKit)
+    document.addEventListener('touchstart', function() {}, {passive: true});
 
     // Defer non-critical store metadata
     if ('requestIdleCallback' in window) {

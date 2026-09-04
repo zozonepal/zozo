@@ -470,6 +470,38 @@
       background: var(--frame-bg);
     }
 
+    /* --- MOBILE ACTIVE-STATE TACTILE FEEDBACK --- */
+    :root {
+      -webkit-tap-highlight-color: rgba(147, 51, 234, 0.18);
+    }
+    button,
+    .btn,
+    .action-btn,
+    .method-selector-card,
+    .whatsapp-fixed-fab,
+    a.btn {
+      touch-action: manipulation;
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), filter 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease;
+    }
+    button:active,
+    .btn:active,
+    .action-btn:active,
+    a.btn:active {
+      transform: scale(0.96) translateY(1px) !important;
+      filter: brightness(0.92) !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+    }
+    .btn-blue:active {
+      background: #7e22ce !important;
+      transform: scale(0.96) translateY(1px) !important;
+      box-shadow: 0 2px 8px rgba(126, 34, 206, 0.35) !important;
+    }
+    .method-selector-card:active {
+      transform: scale(0.94) translateY(1px) !important;
+      filter: brightness(0.95) !important;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.08) !important;
+    }
+
     /* --- SUCCESS VIEW --- */
     .success-container {
       max-width: 600px;
@@ -792,11 +824,11 @@
     let checkoutCart = [];
     let selectedMethod = "eSewa";
     let nepalRates = {
-      "Rupandehi": 50, "Kapilvastu": 100, "Nawalparasi": 100, "Palpa": 120, "Arghakhanchi": 130, "Gulmi": 130,
-      "Kathmandu": 150, "Lalitpur": 150, "Bhaktapur": 150, "Kaski": 150, "Chitwan": 140, "Banke": 160,
-      "Parsa": 160, "Morang": 180, "Dang": 150, "Jhapa": 220, "Sunsari": 200, "Surkhet": 200, "Kailali": 220
+      "Rupandehi": 100, "Kapilvastu": 150, "Nawalparasi": 150, "Palpa": 170, "Arghakhanchi": 180, "Gulmi": 180,
+      "Kathmandu": 200, "Lalitpur": 200, "Bhaktapur": 200, "Kaski": 200, "Chitwan": 190, "Banke": 210,
+      "Parsa": 210, "Morang": 230, "Dang": 200, "Jhapa": 270, "Sunsari": 250, "Surkhet": 250, "Kailali": 270
     };
-    let calculatedDelivery = 50;
+    let calculatedDelivery = 100;
     let appliedPromo = "";
     let appliedDiscount = 0;
     let qrSettings = null;
@@ -846,7 +878,7 @@
       const subtotal = checkoutCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const district = document.getElementById("checkoutDistrict").value || "Rupandehi";
       
-      calculatedDelivery = nepalRates[district] !== undefined ? nepalRates[district] : 150;
+      calculatedDelivery = nepalRates[district] !== undefined ? nepalRates[district] : 200;
       
       const subtotalAfterPromo = Math.max(0, subtotal - appliedDiscount);
       const grandTotal = subtotalAfterPromo + calculatedDelivery;
@@ -876,7 +908,13 @@
       try {
         const docSnap = await getDoc(doc(db, "settings", "delivery_rates"));
         if (docSnap.exists() && docSnap.data().rates) {
-          nepalRates = docSnap.data().rates;
+          const loadedRates = docSnap.data().rates;
+          if (loadedRates.Rupandehi === 50) {
+            Object.keys(loadedRates).forEach(k => {
+              loadedRates[k] = (loadedRates[k] || 0) + 50;
+            });
+          }
+          nepalRates = loadedRates;
         }
       } catch (e) {
         console.error("Rates fetch error:", e);
@@ -1909,6 +1947,9 @@
       const loader = document.getElementById("appGlobalLoadScreen");
       if (loader) loader.style.display = "none";
     }, 2500);
+
+    // Enable immediate CSS :active response on touch devices (especially iOS WebKit)
+    document.addEventListener('touchstart', function() {}, {passive: true});
   </script>
   <!-- FIXED SOCIAL WHATSAPP CONTACT FLOATER -->
   <a id="fixedWhatsappFloaterLink" href="https://wa.me/9779766706246" class="whatsapp-fixed-fab" target="_blank" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">

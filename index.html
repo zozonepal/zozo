@@ -776,11 +776,12 @@
       cursor: pointer;
       white-space: nowrap;
       color: var(--text-muted);
-      outline: none !important;
-      -webkit-tap-highlight-color: transparent !important;
+      outline: none;
+      -webkit-tap-highlight-color: rgba(147, 51, 234, 0.18);
       user-select: none;
       -webkit-user-select: none;
-      transition: none !important;
+      touch-action: manipulation;
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
     }
     @media (min-width: 640px) {
       .category-pill-btn { padding: 8px 16px; font-size: 0.85rem; }
@@ -788,21 +789,30 @@
     @media (min-width: 1024px) {
       .category-pill-btn { padding: 9px 18px; font-size: 0.88rem; }
     }
-    .category-pill-btn:focus,
-    .category-pill-btn:active,
     .category-pill-btn:hover {
-      outline: none !important;
-      -webkit-tap-highlight-color: transparent !important;
-      box-shadow: none !important;
+      border-color: var(--nepal-blue);
+      color: var(--nepal-blue);
+    }
+    .category-pill-btn:active {
+      transform: scale(0.92) translateY(1px) !important;
+      background-color: #f3e8ff !important;
+      border-color: var(--nepal-blue, #9333ea) !important;
+      color: var(--nepal-blue, #9333ea) !important;
+      box-shadow: 0 1px 4px rgba(147, 51, 234, 0.25) !important;
     }
     .category-pill-btn.active-category {
       background: #ffffff !important;
       border: 1.5px solid var(--text-main) !important;
       color: var(--text-main) !important;
       font-weight: 700 !important;
-      outline: none !important;
-      -webkit-tap-highlight-color: transparent !important;
-      box-shadow: none !important;
+      outline: none;
+    }
+    .category-pill-btn.active-category:active {
+      transform: scale(0.92) translateY(1px) !important;
+      background-color: #faf5ff !important;
+      border-color: var(--nepal-blue, #9333ea) !important;
+      color: var(--nepal-blue, #9333ea) !important;
+      box-shadow: 0 2px 8px rgba(147, 51, 234, 0.25) !important;
     }
 
     /* --- 4. CATALOG GRID & TOOLBAR --- */
@@ -1414,6 +1424,68 @@
     @media (min-width: 1024px) { .btn { padding: 10px 16px; font-size: 0.85rem; } }
     .btn-crimson { background: var(--nepal-red); color: #ffffff; }
     .btn-crimson:hover { background: #6b21a8; }
+
+    /* --- ACTIVE-STATE TACTILE FEEDBACK FOR INTERACTIVE BUTTONS --- */
+    button,
+    input[type="button"],
+    input[type="submit"],
+    .btn,
+    .action-btn,
+    .submit-btn,
+    .pdf-download-btn,
+    .cart-btn,
+    .nav-icon-btn,
+    .mobile-drawer-toggle-btn,
+    .drawer-close-btn,
+    .drawer-nav-item,
+    .search-btn,
+    .voice-search-btn,
+    .clear-search-btn,
+    .filter-pill,
+    .sort-btn,
+    .view-mode-btn,
+    .method-selector-card,
+    .qty-btn,
+    .tab-btn {
+      touch-action: manipulation;
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), 
+                  filter 0.12s ease, 
+                  box-shadow 0.12s ease, 
+                  background-color 0.15s ease;
+    }
+    button:active,
+    input[type="button"]:active,
+    input[type="submit"]:active,
+    .btn:active,
+    .action-btn:active,
+    .submit-btn:active,
+    .drawer-nav-item:active,
+    .tab-btn:active {
+      transform: scale(0.95) translateY(1px) !important;
+      filter: brightness(0.92) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+    }
+    .btn-crimson:active {
+      background: #581c87 !important;
+      transform: scale(0.95) translateY(1px) !important;
+      box-shadow: 0 1px 4px rgba(88, 28, 135, 0.3) !important;
+    }
+    .nav-icon-btn:active,
+    .mobile-drawer-toggle-btn:active,
+    .drawer-close-btn:active,
+    .cart-btn:active,
+    .modal-close:active {
+      transform: scale(0.88) !important;
+      background-color: rgba(147, 51, 234, 0.15) !important;
+    }
+    .method-selector-card:active {
+      transform: scale(0.94) translateY(1px) !important;
+      filter: brightness(0.95) !important;
+    }
+    .filter-pill:active {
+      transform: scale(0.93) translateY(1px) !important;
+      background-color: #f3e8ff !important;
+    }
 
     /* --- 5. MODALS --- */
     .modal-overlay {
@@ -3066,9 +3138,9 @@
     let appliedDiscountAmount = 0;
 
     let nepalDeliveryRates = {
-      "Rupandehi": 50, "Kapilvastu": 100, "Nawalparasi": 100, "Palpa": 120, "Arghakhanchi": 130, "Gulmi": 130,
-      "Kathmandu": 150, "Lalitpur": 150, "Bhaktapur": 150, "Kaski": 150, "Chitwan": 140, "Banke": 160,
-      "Parsa": 160, "Morang": 180, "Dang": 150, "Jhapa": 220, "Sunsari": 200, "Surkhet": 200, "Kailali": 220
+      "Rupandehi": 100, "Kapilvastu": 150, "Nawalparasi": 150, "Palpa": 170, "Arghakhanchi": 180, "Gulmi": 180,
+      "Kathmandu": 200, "Lalitpur": 200, "Bhaktapur": 200, "Kaski": 200, "Chitwan": 190, "Banke": 210,
+      "Parsa": 210, "Morang": 230, "Dang": 200, "Jhapa": 270, "Sunsari": 250, "Surkhet": 250, "Kailali": 270
     };
     let calculatedDeliveryChargeAmount = 0;
 
@@ -5501,7 +5573,7 @@
       const district = document.getElementById('custFormDistrict').value;
       const subtotal = systemCart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
       
-      calculatedDeliveryChargeAmount = nepalDeliveryRates[district] !== undefined ? nepalDeliveryRates[district] : 150;
+      calculatedDeliveryChargeAmount = nepalDeliveryRates[district] !== undefined ? nepalDeliveryRates[district] : 200;
       const finalSubtotalAfterDiscount = Math.max(0, subtotal - appliedDiscountAmount);
       const grandTotal = finalSubtotalAfterDiscount + calculatedDeliveryChargeAmount;
 
@@ -6541,12 +6613,18 @@
     function listenToLiveDeliveryRates() {
       onSnapshot(doc(db, "settings", "delivery_rates"), (docSnap) => {
         if (docSnap.exists() && docSnap.data().rates) {
-          nepalDeliveryRates = docSnap.data().rates;
+          const loadedRates = docSnap.data().rates;
+          if (loadedRates.Rupandehi === 50) {
+            Object.keys(loadedRates).forEach(k => {
+              loadedRates[k] = (loadedRates[k] || 0) + 50;
+            });
+          }
+          nepalDeliveryRates = loadedRates;
         } else {
           nepalDeliveryRates = {
-            "Rupandehi": 50, "Kapilvastu": 100, "Nawalparasi": 100, "Palpa": 120, "Arghakhanchi": 130, "Gulmi": 130,
-            "Kathmandu": 150, "Lalitpur": 150, "Bhaktapur": 150, "Kaski": 150, "Chitwan": 140, "Banke": 160,
-            "Parsa": 160, "Morang": 180, "Dang": 150, "Jhapa": 220, "Sunsari": 200, "Surkhet": 200, "Kailali": 220
+            "Rupandehi": 100, "Kapilvastu": 150, "Nawalparasi": 150, "Palpa": 170, "Arghakhanchi": 180, "Gulmi": 180,
+            "Kathmandu": 200, "Lalitpur": 200, "Bhaktapur": 200, "Kaski": 200, "Chitwan": 190, "Banke": 210,
+            "Parsa": 210, "Morang": 230, "Dang": 200, "Jhapa": 270, "Sunsari": 250, "Surkhet": 250, "Kailali": 270
           };
         }
         
@@ -6772,6 +6850,9 @@
     } else {
       setTimeout(runDeferredInits, 800);
     }
+
+    // Enable immediate CSS :active tactile feedback on touch devices
+    document.addEventListener('touchstart', function() {}, {passive: true});
   </script>
   <script src="/toast-component.js"></script>
   <script src="/sw-push-manager.js"></script>
